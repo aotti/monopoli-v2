@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/monopoliStyle.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>Monopoli Indog</title>
+</head>
+<body class="darkkhaki">
+    <main id="kotak_game">
+        <div class="header_game">
+            <button type="button" id="cekPlayer"> Player &#x1F435; </button>
+            <button type="button" id="cekMods"> Mods &#x1F414; </button>
+            <span> <span>&#127976;</span> Mabar Monopoli Onglen <span id="resetHp">v2.0</span> <span>&#127968;</span> </span>
+            <button type="button" id="hardRefresh"> Hard Refresh </button>
+            <button type="button" id="clearStorage"> Reset Storage </button>
+        </div>
+        <table id="papan_game"></table>
+        <!-- include audioInput.html -->
+        <div id="audio_input"></div>
+        <div class="rules_game">
+            <!-- include rulesPage.html -->
+            <div id="rules_page"></div>
+            <div class="player_info">
+                <span> Player List </span>
+                <span class="dropdown">
+                <svg class="setting_button" width="18" height="18" viewBox="0 0 24 24">
+                    <path class="setting_button" d="M24 13.616v-3.232c-1.651-.587-2.694-.752-3.219-2.019v-.001c-.527-1.271.1-2.134.847-3.707l-2.285-2.285c-1.561.742-2.433 1.375-3.707.847h-.001c-1.269-.526-1.435-1.576-2.019-3.219h-3.232c-.582 1.635-.749 2.692-2.019 3.219h-.001c-1.271.528-2.132-.098-3.707-.847l-2.285 2.285c.745 1.568 1.375 2.434.847 3.707-.527 1.271-1.584 1.438-3.219 2.02v3.232c1.632.58 2.692.749 3.219 2.019.53 1.282-.114 2.166-.847 3.707l2.285 2.286c1.562-.743 2.434-1.375 3.707-.847h.001c1.27.526 1.436 1.579 2.019 3.219h3.232c.582-1.636.75-2.69 2.027-3.222h.001c1.262-.524 2.12.101 3.698.851l2.285-2.286c-.744-1.563-1.375-2.433-.848-3.706.527-1.271 1.588-1.44 3.221-2.021zm-12 2.384c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/>
+                </svg>
+                <div class="setting_menu">
+                    <div class="leaveGame">
+                    Udahan dulu lah
+                    </div>
+                    <div class="myCityList">
+                    Daftar kota saia
+                    <div class="myCityBox">
+                        <!-- <div class="myCityItem">
+                        <i class="myCityItem_c"> kota Jokjakarta </i> <i class="myCityItem_c"> Rp 500.000 </i> <button class="myCityItem_c"> Jual </button>
+                        </div>
+                        <div class="myCityItem">
+                        <i> kota Semarang </i> <i> Rp 200.000 </i> <button type="button"> Jual </button>
+                        </div> -->
+                        <div class="myCityButton">
+                        <button type="button" class="myCityUpgrade" disabled> Upgrade </button>
+                        <button type="button" class="myCityTutup"> Tutup </button>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="transferUang">
+                    Transfer Uang
+                    <div class="transferBox">
+                        <div class="">
+                        Range: <span class="transferInfo"></span>
+                        </div>
+                        <div class="">
+                        Transfer Stack: <span class="transferStack"></span>
+                        </div>
+                        <div class="transferItem">
+                        <select class="userTFCB" name="">
+                            <!-- <option value=""> AAAA </option>
+                            <option value=""> SSSS </option>
+                            <option value=""> DDDD </option> -->
+                        </select>
+                        <select class="uangTFCB" name="">
+                            <!-- <option value=""> Rp 15.000 </option>
+                            <option value=""> Rp 35.000 </option>
+                            <option value=""> Rp 50.000 </option> -->
+                        </select>
+                        <button type="button" class="transferKirim"> Kirim </button>
+                        </div>
+                        <div class="transferButton">
+                        <button type="button" class="transferTutup"> Tutup </button>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="serangPlayer">
+                    Serangan
+                    </div>
+                    <div class="awtoKocokDadu">
+                    <label for="awtoKocokDadu"> Awto Kocok Dadu </label>
+                    <input type="checkbox" id="awtoKocokDadu" disabled>
+                    </div>
+                </div>
+                </span>
+                <div class="player_list"></div>
+            </div>
+        </div>
+        <div class="confirm_box">
+            <p> Mau beli? </p>
+            <button type="button" id="yesButton"> Beli </button>
+            <button type="button" id="noButton"> Males </button>
+        </div>
+        <div class="reset_file">
+            <div> Yakin ingin reset semua file? </div>
+            <button type="button" id="resetYes"> Yes </button>
+            <button type="button" id="resetNo"> No </button>
+        </div>
+        <div class="setting_mods">
+            <div> Atur Mods </div>
+            <div class="mods_item">
+                <span> > Bentuk Papan </span>
+                <div>
+                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan1" name="mod_bentukPapan" value="persegiPanjangV1" checked>
+                <label for="mod_bentukPapan1"> Persegi Panjang </label>
+                <br>
+                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan2" name="mod_bentukPapan" value="persegiPanjangV2">
+                <label for="mod_bentukPapan2"> Agak Persegi Panjang </label>
+                <br>
+                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan3" name="mod_bentukPapan" value="anggapSegitiga">
+                <label for="mod_bentukPapan3"> Anggap Segitiga </label>
+                <br>
+                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan4" name="mod_bentukPapan" value="bercabangDua">
+                <label for="mod_bentukPapan4"> Bercabang </label>
+                </div>
+            </div>
+            <div class="mods_item">
+                <span> > Uang diawal game </span>
+                <div>
+                <span> Uang = </span>
+                <span class="uangStart"></span>
+                <br>
+                <input type="range" id="uangStart" min="50000" max="150000" step="25000" value="75000">
+                </div>
+            </div>
+            <div class="mods_item">
+                <span> > Syarat uang kalah </span>
+                <div>
+                <span> Uang = </span>
+                <span class="uangKalah"></span>
+                <br>
+                <input type="range" id="uangKalah" min="75000" max="225000" step="75000" value="200000">
+                </div>
+            </div>
+            <div class="mods_item">
+                <span> > Rand% kota terkutuk </span>
+                <div>
+                <span> Min = </span>
+                <span class="minRand"></span>
+                <br>
+                <input type="range" id="minRand" min="5" max="10" step="2.5" value="5">
+                <br>
+                <span> Max = </span>
+                <span class="maxRand"></span>
+                <br>
+                <input type="range" id="maxRand" min="10" max="25" step="5" value="25">
+                </div>
+            </div>
+            <div class="mods_item">
+                <span> > Cabang % </span>
+                <div>
+                <span> Persen = </span>
+                <span class="branchP"></span>
+                <br>
+                <input type="range" id="branchP" min="20" max="40" step="10" value="30">
+                </div>
+            </div>
+            <div class="mods_item">
+                <button type="button" id="saveMods"> Save </button>
+                <button type="button" id="cancelMods"> Cancel </button>
+            </div>
+        </div>
+        <div class="feedback_box">
+            <div></div>
+        </div>
+        <div class="mods_confirm">
+            password:
+            <input type="text" maxlength="6">
+            <button type="button"> Open </button>
+        </div>
+      </main>
+      <script src="js/include.js"></script>
+</body>
+</html>
