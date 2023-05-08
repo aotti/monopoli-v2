@@ -1,0 +1,213 @@
+# BUG LIST
+v1.2
+  - fix transfer uang kalo minus **
+  - transfer uang hanya boleh saat sedang giliran **
+  - sistem game over lupa di nyalain **
+  - tambah limit & slice pada papan_game.php **
+  - hilangkan timer1 jika player berhenti di kota **
+  - posisi konfirmasi box kurang tengah **
+  - bug dua kali kocok dadu, ubah sistem giliran **
+
+v1.3
+  - kartu nerf pajak tidak hilang saat terpakai #akwoakwoakwo **
+  - fitur pajak sebaris masi ada bug **
+  - icon list kartu terlalu dekat dengan angka uang, ngalangin banh **
+
+v1.31
+  - tidak boleh ada spasi di username /^[a-zA-Z]+$/ **
+  - saat player kalah, awto klik dadu tidak berfungsi kalaw tab ditutup **
+  - kartu dana umum & kesempatan seperti menuju kota, bisa membuat 
+     kode bentrok, karna ajax dari kartu & ajax dari player kalah **
+  - fix tooltip nama player terhalang angka petak **
+
+v1.4
+  - kartu adu nasib jadi error karna jumlah petak bertambah **
+  - kartu pilih kota anda bug (uda kea parkir bebas) **
+  - kartu upgrade 1 kota random bug (notif tak muncul) **
+  - kepemilikan kota khusus tidak hilang saat player kalah **
+
+v1.41
+  - petak start tiap papan berbeda, jadi mabok **
+
+v1.42
+  - jangan pakai localStorage('username') untuk cek player yg sudah kalah **
+
+v1.42f
+  - kalo main 5 player lalu sisa 2 orang, ada bug player lain gk bisa jalan *99%*
+    # 5 player lalu 3 player leave (tak beli kota) = aman
+    # 5 player lalu 3 player leave (beli kota) = aman
+    # 5 player lalu 3 player leave (x beli kota, transfer yes) = aman
+    # kalo main onlen, karna internet sangad mempengaruhi, maka kemungkinan
+      bug menjadi lebih tinggi
+    # sehingga saat bermain 5 player, lalu tersisa 2 player.
+      ada kemungkinan 2 player tsb mengirim data yg sama sehingga
+      terjadi 2x pengiriman data yg sama dan mengakibatkan player
+      yg sedang main tidak mendapat giliran jalan
+    ## SOLUSI
+    - tambah array untuk list giliran player, lalu sesuaikan data array
+      dgn data playerpos. jika urutannya sesuai maka jalankan ajax_post
+      untuk playerNow
+
+v1.5
+  - saat baru mulai game, pastikan tempMoveChance = 100 agar **
+    tidak masuk petak 2a 
+  - transfer box langsung terbuka saat buka setting **
+  - volume audio parkir & area buff kurang tinggi **
+  - kondisi if else untuk petak normal kurang 1 **
+  - bug kota asing bisa terjual saat mendapat kartu 'jual kota random' *99%*
+    lalu uang jadi undefined
+
+  - teks uang pajak & transfer diterima tidak ada \n **
+  - code untuk icon rumah menjadi unicode **
+  - bug di papan bercabang, bisa teleport ke start **
+
+v1.51
+  - buat sistem transfer tidak bisa kirim uang ke player kalah
+  - player tidak bisa jalan (tambah info jangan pause game)
+  - ubah sistem refresh page
+    # perubahan
+      > tahan semua player sblm bisa klik Mulai
+      > saat selesai giliran, untuk menghindari bug uang 
+      > pakai ajax_noRefresh tiap 5x refreshPage untuk mengurangi error
+  - tambah info "klik angka di kotak ini" saat masuk parkir bebas 
+
+  ## tiap aplod versi baru, pastikan nama file selalu berbeda
+    (namafile + dd/mm/yy + .js)
+
+=======================================================================
+=======================================================================
+UU   UU   PPPPP    DDD        AA     TTTTTTTT   EEEEE
+UU   UU   PP  PP   D  D      A  A       TT      EE
+UU   UU   PPPPP    D   D    A    A      TT      EEEEE
+UU   UU   PP       D  D    AAAAAAAA     TT      EE
+ UUUUU    PP       DDD    A        A    TT      EEEEE
+
+LL        II    SSSSS    TTTTTTTT
+LL        II    SS          TT
+LL        II    SSSSS       TT
+LL        II       SS       TT
+LLLLLL    II    SSSSS       TT
+
+v1.3
+  - fitur inventori buat jual kota yg dimiliki **
+  - tambah petak tanah warnet (ayah bunda) & kota (kota pontianak) **
+  - punya rumah sebaris, harga pajak naik **
+  - tambah kartu & buat rarity kartu baru **
+  - tombol otomatis kocok dadu **
+  - popup pilihan untuk memakai kartu anti pajak **
+  - notif feedback tiap event **
+  - tambah gambar kota irl **
+  - status kartu penjara, dll. dirubah jadi icon lalu bisa di hover **
+  - tombol untuk cek max player & player join **
+  - update & perpendek aturan / cara main **
+  - tambah audio untuk dana umum, kesempatan, penjara, parkir bebas **
+
+v1.31
+  - tambah notif buat paksa mulai **
+  - tambah notif kalo semua player sudah join **
+  - tambah notif kalo transfer uang **
+  - tambah notif kalo salah username**
+
+v1.4
+  - update sistem putaran agar punya efek tertentu **
+     # jika putaran > 10, uang lewat start +40% atau 80%
+  - update sistem transfer agar punya efek tertentu **
+     # tiap transfer uang akan mendapat beberapa keuntungan
+        > jika transfer 25k, maka 
+           + kartu nerf dadu gaming / kartu nerf parkir (20:30)
+        > jika transfer 40k, maka
+           + kartu nerf dadu gaming / kartu dadu gaming (20:20)
+           + kartu nerf pajak / kartu penghambat rezeki (20:20)
+        > jika transfer 65k, maka
+           + kartu anti pajak / kartu dadu gaming (50:50)
+           + upgrade 1 kota / kartu nerf pajak (65:35)
+  - tambah 2 petak terkutuk untuk menguras uang pemain **
+     # rand% = min 5% ~ 10% / max 10% ~ 25% (sesuai setting)
+     # rumus = (4k x jml player x putaran) + (10k x putaran x rand%)
+  - tambah 3 petak khusus **
+     # jika pemilik petak menginjak = dapat uang
+     # jika bukan pemilik menginjak = perpajakan
+  - tambah bentuk papan dan buat sistem agar bisa pilih bentuk papan **
+     # bentuk: persegi panjang, agak persegi panjang, segitiga 
+  - tambah tombol untuk atur uang player, uang kalah, bentuk papan & rand% **
+  - perluas map (horizontal & vertikal) **
+  - urutan kota dari sabang - merauke **
+  - tambah audio kalo game selesai **
+  - kasih alert kalo mau klik 'udahan dulu lah' **
+  - tambah list kota khusus ke kartu pilih kota anda **
+
+v1.41
+  - tambah animasi ril dadu **
+
+v1.42
+  - tambah notif saat player lain dapat kartu dana/kesempatan **
+
+v1.5
+  - buat layar awto landscape **
+  - beri warna berbeda pada tiap player (merah, ungu, pink, biru, oren) **
+  - beri tanda untuk player yg jalan saat ini (player list) **
+  - beri tanda jika ada player yg memaksa **
+  - ubah chance kartu upgrade di transfer jadi 75:25 **
+  - tambah kartu upgrade ke dana & kesempatan (5% chance) **
+  - tambah buff untuk kota khusus seperti kota terkutuk **
+  - print teks saat memilih petak (parkir bebas & kartu pilih kota) **
+  - tambah mod waktu (refresh 6s, wait 11s) @@
+  - ubah tampilan + warna **
+  - tambah 1 map bercabang **
+    # tambah petak buff (hanya lewat) dan petak normal (harus injak)
+      > petak buff (dapat 1-2 buff) 		  phase 1 / phase 2
+						  0 - 50 / 51 - 100
+						-------------------
+	+ dapat uang 5k * jml putaran	>> 35% =  0 - 15 / 51 - 70
+	+ kartu upgrade kota		>> 10% = 16 - 20 / 71 - 75
+	+ kartu nerf dadu / pajak	>> 35% = 21 - 40 / 76 - 90
+	+ kartu bebas penjara		>> 20% = 41 - 50 / 91 - 100
+				total	>> 100%
+      > petak normal (dapat salah satu) 
+        + maju 1 langkah		>> 25% = 16-30 / 71-80
+        + maju 2 langkah		>> 15% = 31-40 / 66-70
+        + kartu nerf dadu gaming	>> 10% = 41-50
+        + kartu nerf parkir		>> 8%  = 51-58
+	+ pindah ke petak normal lain	>> 7%  = 59-65
+				total	>> 65%
+  - ubah sistem transfer uang, lalu ganti biaya transfer (15k 35k 50k) **
+    # cara transfer (submenu setting) **
+      buka setting > transfer > muncul window transfer 
+    # sistem transfer (transfer stack)
+      akumulasi jumlah transfer, lalu reset ke 0 jika >= 60k
+    # ubah teks BONUS TRANSFER di aturan & cara
+  - ubah teks "jika muncul error 500" jadi "relod jika halaman blank" **
+  - tambah audio baru **
+  - tambah info untuk petak normal & area buff **
+
+v1.51
+  - tambah alert saat pilih petak di parkir **
+  - tambah pilihan untuk pakai kartu bebas penjara **
+  - tambah kartu giga dadugaming **
+  - window.location.reload(true) untuk hard refresh **
+  - ubah list hadiah transfer **
+    # stack 15k ~ 35k = dadu gaming & nerf parkir
+    # stack 35k ~ 50k = tidak ada perubahan 
+    # stack 50k lebih = nerf dadu, giga dadu gaming & upgrade kota, anti pajak 
+
+v1.6
+  - tambah info "JANGAN pause game saat sedang bermain"
+  - buat cara mengambil kartu dana/kesempatan sesuai urutan
+  - buat 2 mode untuk harga kota, murah dan normal ??
+  - tambah fitur serangan (submenu setting)
+    # jenis serangan
+      > manipulasi angka dadu
+        + membuat angka dadu lawan jadi terbatas (1-3)
+        + membuat lawan maju sampai kota kita
+      > menghancurkan kota
+        + bisa menghancurkan 1 property (tanah/rumah/hotel)
+        + bisa menghancurkan 1 kota (perlu pengorbanan)
+      > memberi kartu debuff
+        + kartu nerf parkir v2
+        + kartu sad pajak (+15% pajak)
+      > mengulang waktu lawan, semua aksi yg dilakukan pada putaran
+        saat ini, dianggap tidak ada (misal beli rumah, lalu jadi tanah)
+  - buat buff khusus untuk tiap bentuk papan
+  - tambah fitur history (submenu setting), misal daftar dapet kartu, 
+    angka dadu, injek petak
+  - tambah bahasa enggres?

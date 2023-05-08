@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/kelonpis.ico">
     <link rel="stylesheet" href="css/monopoliStyle.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.js"></script>
+    <script src="js/shorthand.js"></script>
+    <script src="js/papanGameShapes.js"></script>
+    <script src="js/papanGame.js"></script>
+    <script src="js/info.js"></script>
     <title>Monopoli Indogs</title>
 </head>
 <body class="darkkhaki">
@@ -14,91 +20,18 @@
             <button type="button" id="cekPlayer"> Player &#x1F435; </button>
             <button type="button" id="cekMods"> Mods &#x1F414; </button>
             <span> <span>&#127976;</span> Mabar Monopoli Onglen <span id="resetHp">v2.0</span> <span>&#127968;</span> </span>
-            <button type="button" id="hardRefresh"> Hard Refresh </button>
-            <button type="button" id="clearStorage"> Reset Storage </button>
         </div>
         <table id="papan_game"></table>
         <!-- include audioInput.html -->
-        <div id="audio_input"></div>
+        <div class="audio_input"></div>
         <!-- include rulesPage.html -->
         <div class="rules_game"></div>
-        <div class="confirm_box">
-            <p> Mau beli? </p>
-            <button type="button" id="yesButton"> Beli </button>
-            <button type="button" id="noButton"> Males </button>
-        </div>
-        <div class="reset_file">
-            <div> Yakin ingin reset semua file? </div>
-            <button type="button" id="resetYes"> Yes </button>
-            <button type="button" id="resetNo"> No </button>
-        </div>
-        <div class="setting_mods">
-            <div> Atur Mods </div>
-            <div class="mods_item">
-                <span> > Bentuk Papan </span>
-                <div>
-                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan1" name="mod_bentukPapan" value="persegiPanjangV1" checked>
-                <label for="mod_bentukPapan1"> Persegi Panjang </label>
-                <br>
-                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan2" name="mod_bentukPapan" value="persegiPanjangV2">
-                <label for="mod_bentukPapan2"> Agak Persegi Panjang </label>
-                <br>
-                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan3" name="mod_bentukPapan" value="anggapSegitiga">
-                <label for="mod_bentukPapan3"> Anggap Segitiga </label>
-                <br>
-                <input type="radio" class="mod_bentukPapan" id="mod_bentukPapan4" name="mod_bentukPapan" value="bercabangDua">
-                <label for="mod_bentukPapan4"> Bercabang </label>
-                </div>
-            </div>
-            <div class="mods_item">
-                <span> > Uang diawal game </span>
-                <div>
-                <span> Uang = </span>
-                <span class="uangStart"></span>
-                <br>
-                <input type="range" id="uangStart" min="50000" max="150000" step="25000" value="75000">
-                </div>
-            </div>
-            <div class="mods_item">
-                <span> > Syarat uang kalah </span>
-                <div>
-                <span> Uang = </span>
-                <span class="uangKalah"></span>
-                <br>
-                <input type="range" id="uangKalah" min="75000" max="225000" step="75000" value="200000">
-                </div>
-            </div>
-            <div class="mods_item">
-                <span> > Rand% kota terkutuk </span>
-                <div>
-                <span> Min = </span>
-                <span class="minRand"></span>
-                <br>
-                <input type="range" id="minRand" min="5" max="10" step="2.5" value="5">
-                <br>
-                <span> Max = </span>
-                <span class="maxRand"></span>
-                <br>
-                <input type="range" id="maxRand" min="10" max="25" step="5" value="25">
-                </div>
-            </div>
-            <div class="mods_item">
-                <span> > Cabang % </span>
-                <div>
-                <span> Persen = </span>
-                <span class="branchP"></span>
-                <br>
-                <input type="range" id="branchP" min="20" max="40" step="10" value="30">
-                </div>
-            </div>
-            <div class="mods_item">
-                <button type="button" id="saveMods"> Save </button>
-                <button type="button" id="cancelMods"> Cancel </button>
-            </div>
-        </div>
+        <!-- include settingMods.html -->
+        <div class="setting_mods"></div>
         <div class="feedback_box">
             <div></div>
         </div>
+        <!-- buat dialog untuk box mods, lalu hapus elemen jika sudah exit dialog -->
         <div class="mods_confirm">
             password:
             <input type="text" maxlength="6">
@@ -106,5 +39,6 @@
         </div>
       </main>
       <script src="js/include.js"></script>
+      <script src="js/main.js"></script>
 </body>
 </html>

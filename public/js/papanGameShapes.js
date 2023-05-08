@@ -1,3 +1,11 @@
+function urutanPetak(baris, kolom, petak, i, j, u, huruf) {
+  petak.classList.add(`petak${u}`);
+  // petak.innerText = 'baris:'+i+' kolom:'+j+' urutan:'+u;
+  petak.title = u + (huruf == null ? '' : huruf);
+  kolom.appendChild(petak);
+  baris.appendChild(kolom);
+}
+
 function persegiPanjangV1() {
   for(let i=0; i<6; i++) {
     let baris = cE('tr'),
