@@ -389,7 +389,7 @@
   /* border: 1px solid; */
 }
 
-.userName > input {
+.userNameSpan > input {
   width: 70px;
   border-radius: 4px;
 }
@@ -413,12 +413,17 @@
   text-align: center;
 }
 
-.confirm_box > button {
+.confirm_box > input {
   display: table-cell;
   margin: 0 5px 5px 5px;
   height: 30px;
   max-width: fit-content;
   min-width: 50px;
+}
+
+.confirm_box > div {
+  padding: 10px 0;
+  line-height: 20px;
 }
 
 .feedback_box {

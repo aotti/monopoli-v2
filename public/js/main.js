@@ -4,6 +4,8 @@ let mods = []
 createBoard()
 // insert images to board
 insertImagesToBoard()
+// create game buttons
+gameButtons()
 // info buttons and dialog box
 infoButtons()
 confirmDialog()

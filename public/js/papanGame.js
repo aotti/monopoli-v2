@@ -41,7 +41,9 @@ function insertImagesToBoard() {
     })
     .then(data => data.json())
     .then(result => {
-        mods = [result.data[0].board_shape, result.data[0].money_start, result.data[0].money_lose, result.data[0].curse_min, result.data[0].curse_max]
+        mods = [result.data[0].board_shape, result.data[0].money_start, 
+                result.data[0].money_lose, result.data[0].curse_min, 
+                result.data[0].curse_max, result.data[0].branch]
         const randKutukan = Math.floor(Math.random() * ((+mods[4] + 1) - +mods[3])) + +mods[3]
         const rumusKutukan1 = (4e3 * (getLocStorage('jpStorage') != null ? +getLocStorage('jpStorage') : 1) * (getLocStorage('putaran') != null ? +getLocStorage('putaran') : 1))
         const rumusKutukan2 = (1e4 * (getLocStorage('putaran') != null ? +getLocStorage('putaran') : 1) * (randKutukan / 100))
@@ -75,7 +77,7 @@ function insertImagesToBoard() {
                             {[np[29]]:'img/kesempatan'}, {[np[30]]:'img/danaUmum'}, {[np[31]]:'img/kesempatan'}, {[np[32]]:'img/danaUmum'}
                            ]
     
-        const landsClass = [{[np[0]]:'kota_padang_tanah_48000'}, {[np[1]]:'kota_bengkulu_tanah_50000'}, {[np[2]]:'kota_pontianak_tanah_62000'},
+        const landClasses =[{[np[0]]:'kota_padang_tanah_48000'}, {[np[1]]:'kota_bengkulu_tanah_50000'}, {[np[2]]:'kota_pontianak_tanah_62000'},
                             {[np[3]]:'kota_jakarta_tanah_69000'}, {[np[4]]:'kota_bekasi_tanah_71000'}, {[np[5]]:'kota_bandung_tanah_73500'},
                             {[np[6]]:'kota_ciamis_tanah_76000'}, {[np[7]]:'kota_jokja_tanah_83000'}, {[np[8]]:'kota_semarang_tanah_87000'},
                             {[np[9]]:'kota_maumere_tanah_90000'}, {[np[10]]:'kota_merauke_tanah_94000'}, {[np[11]]:'lewat_start_25000'},
@@ -90,11 +92,11 @@ function insertImagesToBoard() {
         // get all lands
         const getLands = qSA('[class^=petak]');
         // insert class to each lands
-        for(let i=0; i<landsClass.length; i++) {
+        for(let i=0; i<landClasses.length; i++) {
             const landCls = cE('span');
             for(let j=0; j<getLands.length; j++) {
-                if(Object.keys(landsClass[i])[0] == getLands[j].title) {
-                    landCls.classList.add(Object.values(landsClass[i])[0]);
+                if(Object.keys(landClasses[i])[0] == getLands[j].title) {
+                    landCls.classList.add(Object.values(landClasses[i])[0]);
                     getLands[j].appendChild(landCls);
                     break;
                 }
