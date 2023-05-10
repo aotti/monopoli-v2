@@ -48,7 +48,6 @@ function gameButtons() {
     // paksa start
     const paksaMulaiSpan = cE('span')
     const paksaMulaiButton = cE('input')
-    paksaMulaiButton.disabled = true
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
         true,
@@ -63,11 +62,10 @@ function gameButtons() {
         // innerText
         [null, null, 'Paksa Mulai']
     )
+    paksaMulaiButton.disabled = true
     // username
     const userNameSpan = cE('span')
     const userName = cE('input')
-    userName.placeholder = 'Username';
-    userName.maxLength = '8';
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
         true,
@@ -82,10 +80,11 @@ function gameButtons() {
         // innerText
         [null, null, null]
     )
+    userName.placeholder = 'Username';
+    userName.maxLength = '8';
     // mulai button
     const tombolMulaiSpan = cE('span')
     const tombolMulaiButton = cE('input')
-    tombolMulaiButton.disabled = true
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
         true,
@@ -100,6 +99,7 @@ function gameButtons() {
         // innerText
         [null, null, 'Mulai']
     )
+    tombolMulaiButton.disabled = true
     // acak dadu
     const acakDaduSpan = cE('span')
     const acakDaduButton = cE('input')

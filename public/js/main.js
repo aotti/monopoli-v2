@@ -9,3 +9,5 @@ gameButtons()
 // info buttons and dialog box
 infoButtons()
 confirmDialog()
+// player actions
+decidePlayersTurn()
