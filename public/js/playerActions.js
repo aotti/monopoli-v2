@@ -1,3 +1,5 @@
+// by clicking Kocok Giliran, player get random number
+// higher number = first turn
 function decidePlayersTurn() {
     const acakGiliranButton = qS('.acakGiliran')
     const acakGiliranTeks = qS('.acakGiliranTeks')
@@ -9,16 +11,19 @@ function decidePlayersTurn() {
             userName.disabled = true;
             const randNumber = Math.floor(Math.random() * (10001 - 1000)) + 1000;
             acakGiliranTeks.innerText = `Angka: ${randNumber}`
-            fetch(`${url}/api/prepare`, {
-                method: 'post',
-                body: JSON.stringify({
-                    randNumber: randNumber,
-                    username: userName.value
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
+            const jsonData = { randNumber: randNumber, username: userName.value }
+            fetcher(`${url}/api/prepare`, 'post', jsonData)
+            .then(data => data.json())
+            .then(result => {
+                // if response status != 200, then display it to the screen
+                // console.log(result.status);
+                if(result.status != 200) {
+                    qS('.feedback_box').style.opacity = 1;
+                    qS('.feedback_box').children[0].innerText = "an error occured\n";
+                    return console.log(result.errorMessage);
                 }
             })
+            .catch(err => console.log(err))
         }
         else {
             qS('.feedback_box').style.opacity = 1;
@@ -29,7 +34,27 @@ function decidePlayersTurn() {
             feedbackTurnOff()
         }
     } 
-} 
+}
+
+function waitingOtherPlayers(otherPlayers) {
+    const urutanGiliran = qS('.urutanGiliran')
+    switch(otherPlayers.length) {
+        case 1:
+            // waiting more players 
+            urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
+            break
+        case 2:
+        case 3:
+        case 4:
+            // paksa mulai button enabled
+            qS('.paksaMulai').disabled = false
+            urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
+            break
+        case 5:
+            // start the game
+            break
+    }
+}
 
 function createPlayers() {
 

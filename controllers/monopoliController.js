@@ -44,9 +44,10 @@ class Monopoli {
             const {randNumber, username} = req.body
             const {data, error} = await supabase.from(table).insert([
                 {
-                    player_joined: `${randNumber},${username}`,
+                    player_joined: username,
                     player_forcing: false,
-                    player_ready: false
+                    player_ready: false,
+                    player_rand: randNumber
                 }
             ])
             if(error) {
@@ -54,9 +55,10 @@ class Monopoli {
             }
             return {data: data, error: error}
         }
-        const getInsertedData = async () => {
+        const getPlayerJoined = async () => {
             // ambil data yang baru di insert
-            const {data, error} = await supabase.from(table).select().order('id', {ascending: false}).limit(1)
+            // const {data, error} = await supabase.from(table).select().order('id', {ascending: false}).limit(1)
+            const {data, error} = await supabase.from(table).select()
             if(error) {
                 newResponse(500, res, error)
             }
@@ -64,9 +66,17 @@ class Monopoli {
         }
         insertPlayerJoined()
         .then(() => {
-            newPromise(getInsertedData)
-            .then(data => {
-                newResponse(200, res, data)
+            newPromise(getPlayerJoined)
+            .then(playerJoined => {
+                // send realtime data
+                pubnub.publish({
+                    channel: 'monopoli_v2',
+                    message: {type: 'playerJoined', data: playerJoined}
+                }, function (status, response) {
+                    // console.log(status);
+                    // console.log(response);
+                    newResponse(200, res, playerJoined)
+                })
             }).catch(err => {
                 newResponse(500, res, err)
             })
@@ -77,10 +87,6 @@ class Monopoli {
     }
 
     realtimeTrigger(req, res) {
-        console.log(req.body.text);
-        pubnub.subscribe({
-            channels: ['test_channel']
-        })
         pubnub.publish({
             channel: 'test_channel',
             message: "hello world"

@@ -49,7 +49,8 @@ function insertImagesToBoard() {
         const rumusKutukan2 = (1e4 * (getLocStorage('putaran') != null ? +getLocStorage('putaran') : 1) * (randKutukan / 100))
         const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2)
         const hargaKhusus = (getLocStorage('putaran') != null && +getLocStorage('putaran') > 6 ? 12_000 : 0)
-        const np = [2, 5, 6,
+        const np = [
+                    2, 5, 6,
                     11, 12, 13,
                     18, 19, 21,
                     25, 26, 1,
@@ -66,7 +67,8 @@ function insertImagesToBoard() {
                     mods[0] == 'bercabangDua' ? '2a' : null
                    ]
     
-        const landImages =[{[np[0]]:'img/padang'}, {[np[1]]:'img/bengkulu'}, {[np[2]]:'img/pontianak'},
+        const landImages = [
+                            {[np[0]]:'img/padang'}, {[np[1]]:'img/bengkulu'}, {[np[2]]:'img/pontianak'},
                             {[np[3]]:'img/jakarta'}, {[np[4]]:'img/bekasi'}, {[np[5]]:'img/bandung'},
                             {[np[6]]:'img/ciamis'}, {[np[7]]:'img/jokja'}, {[np[8]]:'img/semarang'},
                             {[np[9]]:'img/maumere'}, {[np[10]]:'img/merauke'}, {[np[11]]:'img/start'},
@@ -77,7 +79,8 @@ function insertImagesToBoard() {
                             {[np[29]]:'img/kesempatan'}, {[np[30]]:'img/danaUmum'}, {[np[31]]:'img/kesempatan'}, {[np[32]]:'img/danaUmum'}
                            ]
     
-        const landClasses =[{[np[0]]:'kota_padang_tanah_48000'}, {[np[1]]:'kota_bengkulu_tanah_50000'}, {[np[2]]:'kota_pontianak_tanah_62000'},
+        const landClasses =[
+                            {[np[0]]:'kota_padang_tanah_48000'}, {[np[1]]:'kota_bengkulu_tanah_50000'}, {[np[2]]:'kota_pontianak_tanah_62000'},
                             {[np[3]]:'kota_jakarta_tanah_69000'}, {[np[4]]:'kota_bekasi_tanah_71000'}, {[np[5]]:'kota_bandung_tanah_73500'},
                             {[np[6]]:'kota_ciamis_tanah_76000'}, {[np[7]]:'kota_jokja_tanah_83000'}, {[np[8]]:'kota_semarang_tanah_87000'},
                             {[np[9]]:'kota_maumere_tanah_90000'}, {[np[10]]:'kota_merauke_tanah_94000'}, {[np[11]]:'lewat_start_25000'},
@@ -104,7 +107,8 @@ function insertImagesToBoard() {
         }
 
         const allLands = qSA('[class^=kota], [class^=kartu], [class^=area], [class^=lewat]')
-        const landNames = [{[np[0]]:'Kota Padang Rp 48.000'}, {[np[1]]:'Kota Bengkulus Rp 50.000'}, {[np[2]]:'Kota Pontianac Rp 62.000'},
+        const landNames = [
+                            {[np[0]]:'Kota Padang Rp 48.000'}, {[np[1]]:'Kota Bengkulus Rp 50.000'}, {[np[2]]:'Kota Pontianac Rp 62.000'},
                             {[np[3]]:'Kota Jakarta Rp 69.000'}, {[np[4]]:'Kota Bekasih Rp 71.000'}, {[np[5]]:'Kota Bandung Rp 73.500'},
                             {[np[6]]:'Kota Ciamis Rp 76.000'}, {[np[7]]:'Kota Jokjakarta Rp 83.000'}, {[np[8]]:'Kota Semarang Rp 87.000'},
                             {[np[9]]:'Kota Maumere Rp 90.000'}, {[np[10]]:'Kota Merauke Rp 94.000'}, {[np[11]]:'Imagine lewat start..'},
@@ -113,7 +117,7 @@ function insertImagesToBoard() {
                             {[np[20]]:`Kota khusus-1 Rp ${(15000 + hargaKhusus).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`}, {[np[21]]:`Kota khusus-2 Rp ${(25000 + hargaKhusus).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`}, {[np[22]]:`Kota khusus-3 Rp ${(35000 + hargaKhusus).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`},
                             {[np[23]]:`Kota terkutuk-1 Rp ${hargaKutukan.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`}, {[np[24]]:`Kota terkutuk-2 Rp ${hargaKutukan.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`},
                             {[np[29]]:'Kartu Kesempatan'}, {[np[30]]:'Kartu Dana Umum'}, {[np[31]]:'Kartu Kesempatan'}, {[np[32]]:'Kartu Dana Umum'}
-                           ]
+                          ]
         
         for(let i=0; i<allLands.length; i++) {
             // insert city/land name to each land
@@ -128,4 +132,5 @@ function insertImagesToBoard() {
             }
         }
     })
+    .catch(err => console.log(err))
 }
