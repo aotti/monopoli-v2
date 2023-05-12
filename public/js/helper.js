@@ -3,6 +3,8 @@ const qSA = el => {return document.querySelectorAll(el)}
 const cE = el => {return document.createElement(el)}
 const docFrag = document.createDocumentFragment()
 
+function getLocStorage(name) { return localStorage.getItem(name) }
+
 function feedbackTurnOff() {
     setTimeout(() => {
         qS('.feedback_box').style.opacity = .3;
@@ -15,30 +17,22 @@ function feedbackTurnOff() {
  * @param {String} method - http method get/post/etc (string)
  * @param {{key: string|number}|null} jsonData - payload data (object)
  */
-function fetcher(apiUrl, method, jsonData, userUUID) {
+function fetcher(apiUrl, method, jsonData) {
     if(jsonData == null) {
-        return fetch(apiUrl, {
+        return fetch(`${apiUrl}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
             method: method,
             headers: {
-                'Content-Type': 'application/json',
-                'X-Custom-Header': 'userUUID'
+                'Content-Type': 'application/json'
             }
         })
     }
     else {
-        return fetch(apiUrl, {
+        return fetch(`${apiUrl}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
             method: method,
             headers: {
-                'Content-Type': 'application/json',
-                'X-Custom-Header': 'userUUID'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(jsonData)
         })
     }
-}
-
-function uuidv4() {
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    );
 }

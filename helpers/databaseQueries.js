@@ -1,0 +1,72 @@
+const supabase = require('./database')
+const { newResponse } = require('./response')
+
+async function selectAll(req, res, queryObject) {
+    if(supabase == null)
+        return res.send('cannot connect to database')
+    // get all data from supabase
+    const selectAllDataFromDB = async () => {
+        const {data, error} = await supabase.from(queryObject.table).select()
+        if(error) {
+            newResponse(500, res, error)
+        }
+        return {data: data, error: error}
+    }
+    return selectAllDataFromDB()
+}
+
+async function selectOne(req, res, queryObject) {
+    if(supabase == null)
+        return res.send('cannot connect to database')
+    // get specific data from supabase
+    const selectOneDataFromDB = async () => {
+        const {data, error} = await supabase.from(queryObject.table)
+                            .select(queryObject.selectColumn)
+                            .eq(queryObject.chooseColumn, queryObject.columnValue)
+        if(error) {
+            newResponse(500, res, error)
+        }
+        return {data: data, error: error}
+    }
+    return selectOneDataFromDB()
+}
+
+async function selectNewInsertedData(req, res) {
+
+}
+
+async function insertDataRow(req, res, queryObject) {
+    if(supabase == null)
+        return res.send('cannot connect to database')
+    const insertDataToDB = async () => {
+        // insert player data who joined the game
+        const {data, error} = await supabase.from(queryObject.table).insert([queryObject.insertColumn])
+        if(error) {
+            newResponse(500, res, error)
+        }
+        return {data: data, error: error}
+    }
+    return insertDataToDB()
+}
+
+async function insertDataCol(req, res) {
+
+}
+
+async function updateData(req, res) {
+
+}
+
+async function deleteAll(req, res) {
+
+}
+
+module.exports = { 
+    selectAll, 
+    selectOne, 
+    selectNewInsertedData, 
+    insertDataRow, 
+    insertDataCol,
+    updateData, 
+    deleteAll 
+}

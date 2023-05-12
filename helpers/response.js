@@ -11,6 +11,11 @@ function newResponse(type, res, data) {
                 status: 400,
                 errorMessage: data
             })
+        case 401:
+            return res.status(401).json({
+                status: 401,
+                errorMessage: data
+            })
         case 500:
             return res.status(500).json({
                 status: 500,

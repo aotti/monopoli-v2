@@ -1,6 +1,6 @@
 const pubnub = new PubNub({
     subscribeKey: 'sub-c-8d86234e-6606-4b80-a3df-96ccbe749a01',
-    userId: uuidv4()
+    userId: PubNub.generateUUID()
 })
 pubnub.subscribe({
     channels: ['monopoli_v2']

@@ -44,11 +44,16 @@ function waitingOtherPlayers(otherPlayers) {
             urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
             break
         case 2: case 3: case 4:
+            otherPlayers.forEach(v => {
+                console.log(v.player_joined);
+            })
             urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
             // paksa mulai button enabled
             qS('.paksaMulai').disabled = false
-            qS('.paksaMulai').onclick = () => {
-                forceStartGame(otherPlayers)
+            qS('.paksaMulai').onclick = (ev) => {
+                ev.target.disabled = true
+                const theOtherPlayer = otherPlayers.map(v => {return v.player_joined}).indexOf(qS('.userName').value)
+                forceStartGame(otherPlayers[theOtherPlayer])
             }
             break
         case 5:
@@ -57,12 +62,15 @@ function waitingOtherPlayers(otherPlayers) {
     }
 }
 
-function forceStartGame(otherPlayers) {
-    fetcher(`${url}/api/forcestart`, 'post', {username: otherPlayers.username})
+function forceStartGame(theOtherPlayer) {
+    fetcher(`${url}/api/forcestart`, 'post', {username: theOtherPlayer.player_joined})
     .then(data => data.json())
     .then(result => {
-        if(result.status != 200)
-            console.log(result);
+        if(result.status != 200) {
+            qS('.feedback_box').style.opacity = 1;
+            qS('.feedback_box').children[0].innerText = "an error occured\n";
+            return console.log(result);
+        }
     })
     .catch(err => console.log(err))
 }
