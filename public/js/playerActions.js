@@ -20,7 +20,7 @@ function decidePlayersTurn() {
                 if(result.status != 200) {
                     qS('.feedback_box').style.opacity = 1;
                     qS('.feedback_box').children[0].innerText = "an error occured\n";
-                    return console.log(result.errorMessage);
+                    return console.log(result);
                 }
             })
             .catch(err => console.log(err))
@@ -43,17 +43,28 @@ function waitingOtherPlayers(otherPlayers) {
             // waiting more players 
             urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
             break
-        case 2:
-        case 3:
-        case 4:
+        case 2: case 3: case 4:
+            urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
             // paksa mulai button enabled
             qS('.paksaMulai').disabled = false
-            urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
+            qS('.paksaMulai').onclick = () => {
+                forceStartGame(otherPlayers)
+            }
             break
         case 5:
             // start the game
             break
     }
+}
+
+function forceStartGame(otherPlayers) {
+    fetcher(`${url}/api/forcestart`, 'post', {username: otherPlayers.username})
+    .then(data => data.json())
+    .then(result => {
+        if(result.status != 200)
+            console.log(result);
+    })
+    .catch(err => console.log(err))
 }
 
 function createPlayers() {

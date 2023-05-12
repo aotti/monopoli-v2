@@ -10,14 +10,31 @@ function feedbackTurnOff() {
     }, 3e3);
 }
 
-function fetcher(apiUrl, method, jsonData) {
-    return fetch(apiUrl, {
-        method: method,
-        body: JSON.stringify(jsonData),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
+/**
+ * @param {String} apiUrl - base url + api endpoint (string)
+ * @param {String} method - http method get/post/etc (string)
+ * @param {{key: string|number}|null} jsonData - payload data (object)
+ */
+function fetcher(apiUrl, method, jsonData, userUUID) {
+    if(jsonData == null) {
+        return fetch(apiUrl, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Custom-Header': 'userUUID'
+            }
+        })
+    }
+    else {
+        return fetch(apiUrl, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Custom-Header': 'userUUID'
+            },
+            body: JSON.stringify(jsonData)
+        })
+    }
 }
 
 function uuidv4() {

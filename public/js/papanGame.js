@@ -32,13 +32,7 @@ function insertImage(allLands, i, imgEl, src) {
 }
 
 function insertImagesToBoard() {
-    fetch(`${url}/api/mods`, {
-        method: 'get',
-        // body: JSON.stringify(data),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
+    fetcher(`${url}/api/mods`, 'get', null, pubnub.getUUID())
     .then(data => data.json())
     .then(result => {
         mods = [result.data[0].board_shape, result.data[0].money_start, 

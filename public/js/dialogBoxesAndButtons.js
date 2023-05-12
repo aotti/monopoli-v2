@@ -227,7 +227,6 @@ function dadu3D(divGame, divCont, divDice) {
  * @param {Array<string>} attrs - attribute values (array)
  * @param {Array<string>} textValues - html text (array)
  */
-
 function appendGameDialogBoxesOrButtonsToBoard(secondContainer, elTypes, elements, attrTypes, attrs, textValues) {
     const papanGame = qS('#papan_game')
     // run gameDialogBoxesAndButtons
