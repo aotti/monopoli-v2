@@ -22,7 +22,7 @@ async function selectOne(req, res, queryObject) {
     const selectOneDataFromDB = async () => {
         const {data, error} = await supabase.from(queryObject.table)
                             .select(queryObject.selectColumn)
-                            .eq(queryObject.chooseColumn, queryObject.columnValue)
+                            .eq(queryObject.whereColumn, queryObject.whereValue)
         if(error) {
             newResponse(500, res, error)
         }
@@ -53,8 +53,17 @@ async function insertDataCol(req, res) {
 
 }
 
-async function updateData(req, res) {
-
+async function updateData(req, res, queryObject) {
+    if(supabase == null)
+        return res.send('cannot connect to database')
+    const updateDataToDB = async () => {
+        const {data, error} = await supabase.from(queryObject.table).update(queryObject.updateColumn).eq(queryObject.whereColumn, queryObject.whereValue)
+        if(error) {
+            newResponse(500, res, error)
+        }
+        return {data: data, error: error}
+    }
+    return updateDataToDB()
 }
 
 async function deleteAll(req, res) {

@@ -44,20 +44,27 @@ function waitingOtherPlayers(otherPlayers) {
             urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
             break
         case 2: case 3: case 4:
-            otherPlayers.forEach(v => {
-                console.log(v.player_joined);
+            let forceCounter = 0
+            let paksaMulaiDisable = false
+            otherPlayers.forEach((v, i, arr) => {
+                if(v.player_forcing == true) {
+                    forceCounter += 1
+                    if(v.player_joined == qS('.userName').value)
+                        paksaMulaiDisable = true
+                }
             })
-            urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
+            urutanGiliran.innerText = `${otherPlayers.length} player waiting..\n${forceCounter} player memaksa..`
             // paksa mulai button enabled
-            qS('.paksaMulai').disabled = false
+            qS('.paksaMulai').disabled = paksaMulaiDisable
             qS('.paksaMulai').onclick = (ev) => {
                 ev.target.disabled = true
                 const theOtherPlayer = otherPlayers.map(v => {return v.player_joined}).indexOf(qS('.userName').value)
                 forceStartGame(otherPlayers[theOtherPlayer])
             }
+            // prepare the game
             break
         case 5:
-            // start the game
+            // prepare the game
             break
     }
 }

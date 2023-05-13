@@ -1,4 +1,3 @@
-const supabase = require('../helpers/database')
 const { newPromise } = require('../helpers/promise')
 const { newResponse } = require('../helpers/response')
 const { selectAll, 
@@ -19,11 +18,12 @@ const pubnub = new PubNub({
 
 class Monopoli {
     getModsData(req, res) {
+        // TABLE = mods
         const queryObject = {
             table: 'mods',
             selectColumn: 'board_shape, money_start, money_lose, curse_min, curse_max, branch',
-            chooseColumn: 'id',
-            columnValue: 1
+            whereColumn: 'id',
+            whereValue: 1
         }
         newPromise(selectOne(req, res, queryObject))
         .then(result => {
@@ -33,8 +33,7 @@ class Monopoli {
     }
 
     playerJoined(req, res) {
-        if(supabase == null)
-            return res.send('cannot connect to database')
+        // TABLE = prepare
         const {randNumber, username} = req.body
         const queryObject = {}
         Object.defineProperties(queryObject, {
@@ -51,7 +50,7 @@ class Monopoli {
             }}
         })
         // insert player data who joined the game
-        insertDataRow(req, res, queryObject)
+        newPromise(insertDataRow(req, res, queryObject))
         .then(() => {
             // get all player data who joined the game
             newPromise(selectAll(req, res, queryObject))
@@ -62,7 +61,7 @@ class Monopoli {
                     message: {type: 'playerJoined', data: result}
                 }, function (status, response) {
                     // send response after realtime data sent
-                    newResponse(200, res, result)
+                    newResponse(200, res, `${result.player_joined} joining the game`)
                 })
             })
             .catch(err => newResponse(500, res, err))
@@ -71,20 +70,33 @@ class Monopoli {
     }
 
     forceStart(req, res) {
-        if(supabase == null)
-            return res.send('cannot connect to database')
-        const table = 'prepare'
-        const playerForcing = async () => {
-            const { username } = req.body
-            const {data, error} = await supabase.from(table).update({ player_forcing: true }).eq('player_joined', username)
-            if(error) {
-                newResponse(500, res, error)
-            }
-            return {data: data, error: error}
-        }
-        newPromise(playerForcing)
-        .then(result => {
-            newResponse(200, res, 'updated')
+        // TABLE = prepare
+        const { username } = req.body
+        const queryObject = {}
+        Object.defineProperties(queryObject, {
+            table: {enumerable: true, value: 'prepare'},
+            whereColumn: {enumerable: true, value: 'player_joined'},
+            whereValue: {enumerable: true, value: username},
+            updateColumn: {enumerable: true, get: function() {
+                return {
+                    player_forcing: true
+                } 
+            }}
+        })
+        newPromise(updateData(req, res, queryObject))
+        .then(() => {
+            newPromise(selectAll(req, res, queryObject))
+            .then(result => {
+                // send realtime data
+                pubnub.publish({
+                    channel: 'monopoli_v2',
+                    message: {type: 'playerForcing', data: result}
+                }, function (status, response) {
+                    // send response after realtime data sent
+                    newResponse(200, res, 'updated')
+                })
+            })
+            .catch(err => newResponse(500, res, err))
         })
         .catch(err => newResponse(500, res, err))
     }

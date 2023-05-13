@@ -10,6 +10,11 @@ pubnub.addListener({
         const getMessage = m.message
         switch(getMessage.type) {
             case 'playerJoined':
+                console.log('playerJoined');
+                waitingOtherPlayers(getMessage.data)
+                break
+            case 'playerForcing':
+                console.log('playerForcing');
                 waitingOtherPlayers(getMessage.data)
                 break
         }
