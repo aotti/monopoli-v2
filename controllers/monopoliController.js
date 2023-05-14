@@ -19,6 +19,7 @@ const pubnub = new PubNub({
 class Monopoli {
     getModsData(req, res) {
         // TABLE = mods
+        // required data for query
         const queryObject = {
             table: 'mods',
             selectColumn: 'board_shape, money_start, money_lose, curse_min, curse_max, branch',
@@ -36,6 +37,7 @@ class Monopoli {
         // TABLE = prepare
         const {randNumber, username} = req.body
         const queryObject = {}
+        // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'prepare'},
             reqRandNumber: {enumerable: true, value: randNumber},
@@ -73,6 +75,7 @@ class Monopoli {
         // TABLE = prepare
         const { username } = req.body
         const queryObject = {}
+        // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'prepare'},
             whereColumn: {enumerable: true, value: 'player_joined'},
@@ -100,21 +103,7 @@ class Monopoli {
         })
         .catch(err => newResponse(500, res, err))
     }
-
-    realtimeTrigger(req, res) {
-        pubnub.publish({
-            channel: 'test_channel',
-            message: "hello world"
-        }, function (status, response) {
-            // console.log(status);
-            // console.log(response);
-            return res.status(200).json({
-                status: status.statusCode,
-                message: status.error == false ? `success` : `failed`,
-                response: response.timetoken
-            })
-        })
-    }
+    
 }
 
 module.exports = Monopoli

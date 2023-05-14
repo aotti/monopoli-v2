@@ -1,18 +1,18 @@
 function confirmDialog() {
     // create dialog box
-    const dialogBox = cE('div')
+    const dialogConfirmBox = cE('div')
     const textBox = cE('div')
     const buttonAgree = cE('input')
     const buttonDisagree = cE('input')
     const textBoxInnerText = 'Apakah anda mau beli tanah di kota Jakarta dengan harga Rp 50.000, atau langsung beli rumah dengan harga Rp 100.000?'
     // create and append dialog
     appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        false,
+        // allow append to board, 2nd container
+        true, false, 
         // element types
         ['div', 'div', 'button', 'button'],
         // elements (the first element must be a container)
-        [dialogBox, textBox, buttonAgree, buttonDisagree],
+        [dialogConfirmBox, textBox, buttonAgree, buttonDisagree],
         // attribute types
         ['class', 'none', 'id', 'id'],
         // attribute values
@@ -32,7 +32,7 @@ function gameButtons() {
     putaranBuff.dataset.buff = `[Bonus Uang Kalo Lewat Start] putaran > 6 = uang +40% putaran > 14 = uang +80%`;
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
-        true,
+        true, true, 
         // element types
         ['div', 'span', 'span'],
         // elements (1st element must be a container, 2nd optional)
@@ -50,7 +50,7 @@ function gameButtons() {
     const paksaMulaiButton = cE('input')
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
-        true,
+        true, true, 
         // element types
         ['div', 'span', 'button'],
         // elements (1st element must be a container, 2nd optional)
@@ -68,7 +68,7 @@ function gameButtons() {
     const userName = cE('input')
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
-        true,
+        true, true, 
         // element types
         ['div', 'span', 'text'],
         // elements (1st element must be a container, 2nd optional)
@@ -87,7 +87,7 @@ function gameButtons() {
     const tombolMulaiButton = cE('input')
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
-        true,
+        true, true, 
         // element types
         ['div', 'span', 'button'],
         // elements (1st element must be a container, 2nd optional)
@@ -106,7 +106,7 @@ function gameButtons() {
     const acakDaduTeks = cE('div')
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
-        true,
+        true, true, 
         // element types
         ['div', 'span', 'button', 'div', 'div'],
         // elements (1st element must be a container, 2nd optional)
@@ -124,7 +124,7 @@ function gameButtons() {
     const acakGiliranTeks = cE('div')
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
-        true,
+        true, true, 
         // element types
         ['div', 'span', 'button', 'div'],
         // elements (1st element must be a container, 2nd optional)
@@ -140,7 +140,7 @@ function gameButtons() {
     const urutanGiliran = cE('span')
     appendGameDialogBoxesOrButtonsToBoard(
         // 2nd container
-        true,
+        true, true, 
         // element types
         ['div', 'span'],
         // elements (1st element must be a container, 2nd optional)
@@ -154,13 +154,152 @@ function gameButtons() {
     )
 }
 
+function modsDialogChild(mainDialog, container, classContainer, spanTitle, spanValue, textTitle, textValue) {
+    appendGameDialogBoxesOrButtonsToBoard(
+        false, true,
+        ['div', 'div', 'span', 'span'],
+        [mainDialog, container, spanTitle, spanValue],
+        [null, 'class', 'none', 'none'],
+        [null, classContainer, null, null],
+        [null, null, textTitle, textValue]
+    )
+}
+
 function infoButtons() {
     qS('#cekPlayer').onclick = ()=>{
-        alert('player')
+        if(qS('.dialog_info')) return
+        const papanGame = qS('#papan_game')
+        // create wrapper and dialog container
+        const dialogWrapper = cE('div')
+        const dialogInfo = cE('div')
+        dialogWrapper.classList.add('dialog_wrapper')
+        dialogInfo.classList.add('dialog_info')
+        // append wrapper and dialog container
+        dialogWrapper.appendChild(dialogInfo)
+        papanGame.appendChild(dialogWrapper)
+        // create title dialog
+        const titleModsDiv = cE('div')
+        const titleModsSpan = cE('h3')
+        appendGameDialogBoxesOrButtonsToBoard(
+            false, true,
+            ['div', 'div', 'span'],
+            [dialogInfo, titleModsDiv, titleModsSpan],
+            [null, 'class', 'none'],
+            [null, 'dialogTitle', null],
+            [null, null, 'Player Ingfo']
+        )
+        // div max player
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'maxPlayer',
+            cE('span'), cE('span'),
+            'Max Player', '5 Player'
+        )
+        // div joined player
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'joinedPlayer',
+            cE('span'), cE('span'),
+            'Joined Player', 'username1, username2'
+        )
+        // div bentuk player
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'bentukPlayer',
+            cE('span'), cE('span'),
+            'Bentuk Player', `Player 1 = O - Player 2 = \u{25A2} - Player 3 = \u{25B3} - Player 4 = \u{25C7} - Player 5 = pokoknya tabung`
+        )
+        // create close button
+        const closePlayerDiv = cE('div')
+        const closePlayerButton = cE('input')
+        appendGameDialogBoxesOrButtonsToBoard(
+            false, true,
+            ['div', 'div', 'button'],
+            [dialogInfo, closePlayerDiv, closePlayerButton],
+            [null, 'class', 'id'],
+            [null, 'closePlayer', 'closePlayerButton'],
+            [null, null, 'Tutup']
+        )
+        // close dialog
+        qS('#closePlayerButton').onclick = () => {
+            dialogInfo.remove()
+            dialogWrapper.style.display = 'none'
+        }
     }
     
     qS('#cekMods').onclick = ()=>{
-        alert('mods')
+        if(qS('.dialog_info')) return
+        const papanGame = qS('#papan_game')
+        // create wrapper and dialog container
+        const dialogWrapper = cE('div')
+        const dialogInfo = cE('div')
+        dialogWrapper.classList.add('dialog_wrapper')
+        dialogInfo.classList.add('dialog_info')
+        // append wrapper and dialog container
+        dialogWrapper.appendChild(dialogInfo)
+        papanGame.appendChild(dialogWrapper)
+        // create title dialog
+        const titleModsDiv = cE('div')
+        const titleModsSpan = cE('h3')
+        appendGameDialogBoxesOrButtonsToBoard(
+            false, true,
+            ['div', 'div', 'span'],
+            [dialogInfo, titleModsDiv, titleModsSpan],
+            [null, 'class', 'none'],
+            [null, 'dialogTitle', null],
+            [null, null, 'Mods Ingfo']
+        )
+        // div bentuk papan
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'bentukPapan',
+            cE('span'), cE('span'),
+            'Bentuk Papan', 'PersegiPanjangV1'
+        )
+        // div uang start
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'uangStart',
+            cE('span'), cE('span'),
+            'Uang Start', 'Rp 75.000'
+        )
+        // div uang kalah
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'uangKalah',
+            cE('span'), cE('span'),
+            'Uang Kalah', '- Rp 50.000'
+        )
+        // div rand kutukan
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'randKutukan',
+            cE('span'), cE('span'),
+            'Rand Kutukan', '5 ~ 10%'
+        )
+        // div cabang
+        modsDialogChild(
+            dialogInfo,
+            cE('div'), 'cabang',
+            cE('span'), cE('span'),
+            'Cabang', '40%'
+        )
+        // create close button
+        const closeModsDiv = cE('div')
+        const closeModsButton = cE('input')
+        appendGameDialogBoxesOrButtonsToBoard(
+            false, true,
+            ['div', 'div', 'button'],
+            [dialogInfo, closeModsDiv, closeModsButton],
+            [null, 'class', 'id'],
+            [null, 'closeMods', 'closeModsButton'],
+            [null, null, 'Tutup']
+        )
+        // close dialog
+        qS('#closeModsButton').onclick = () => {
+            dialogInfo.remove()
+            dialogWrapper.style.display = 'none'
+        }
     }
 }
 
@@ -220,19 +359,21 @@ function dadu3D(divGame, divCont, divDice) {
 }
 
 /**
- * @param {Boolean} secondContainer - secondary container existence (boolean)
+ * @param {Boolean} allowAppendToBoard - the container will append to board, put 'false' if you dont need (boolean)
+ * @param {Boolean} secondContainer - second container existence (boolean)
  * @param {Array<HTMLElement>} elements - html elements (array)
  * @param {Array<string>} elTypes - element types: div/span/button (array)
  * @param {Array<string>} attrTypes - attribute types: class/id/text (array)
  * @param {Array<string>} attrs - attribute values (array)
  * @param {Array<string>} textValues - html text (array)
  */
-function appendGameDialogBoxesOrButtonsToBoard(secondContainer, elTypes, elements, attrTypes, attrs, textValues) {
+function appendGameDialogBoxesOrButtonsToBoard(allowAppendToBoard, secondContainer, elTypes, elements, attrTypes, attrs, textValues) {
     const papanGame = qS('#papan_game')
     // run gameDialogBoxesAndButtons
     gameDialogBoxesAndButtons(secondContainer, elTypes, elements, attrTypes, attrs, textValues)
     // append dialog to  papangame
-    papanGame.appendChild(elements[0])
+    if(allowAppendToBoard)
+        papanGame.appendChild(elements[0])
 }
 
 function insertAttributeAndValue(element, attrType, attr, textValue) {
@@ -276,15 +417,15 @@ function gameDialogBoxesAndButtons(secondContainer, elTypes, elements, attrTypes
                 insertAttributeAndValue(elements[i], attrTypes[i], attrs[i], textValues[i])
                 break
         }
-        // append elements to container
-        // elements[0] must be container
-        if(i > 0) {
-            elements[0].appendChild(elements[i])
-        }
         // append elements to 2nd container
         // elements[1] must be container
         if(secondContainer && i > 1) {
             elements[1].appendChild(elements[i])
+        }
+        // append elements to container
+        // elements[0] must be container
+        else if(i > 0) {
+            elements[0].appendChild(elements[i])
         }
     }
 }

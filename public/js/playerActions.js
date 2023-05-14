@@ -16,7 +16,6 @@ function decidePlayersTurn() {
             .then(data => data.json())
             .then(result => {
                 // if response status != 200, then display it to the screen
-                // console.log(result.status);
                 if(result.status != 200) {
                     qS('.feedback_box').style.opacity = 1;
                     qS('.feedback_box').children[0].innerText = "an error occured\n";
@@ -62,6 +61,9 @@ function waitingOtherPlayers(otherPlayers) {
                 forceStartGame(otherPlayers[theOtherPlayer])
             }
             // prepare the game
+            if(otherPlayers.length == forceCounter) {
+                createPlayers(otherPlayers)
+            }
             break
         case 5:
             // prepare the game
@@ -82,8 +84,29 @@ function forceStartGame(theOtherPlayer) {
     .catch(err => console.log(err))
 }
 
-function createPlayers() {
+function createPlayerShape(playerDiv, playerDivClass, username, playerShape, imgSource, imgClass) {
+    const getLands = qSA('[class^=petak]');
+    playerShape.src = imgSource;
+    playerShape.classList.add(imgClass);
+    playerDiv.id = username;
+    playerDiv.classList.add(playerDivClass);
+    playerDiv.appendChild(playerShape);
+    (mods[0] == 'persegiPanjangV2' ? 
+        getLands[18].appendChild(playerDiv) 
+        : 
+        (getLands[33] != null ? 
+            getLands[33].appendChild(playerDiv) 
+            : 
+            getLands[27].appendChild(playerDiv))
+    );
+}
 
+function createPlayers(otherPlayers) {
+    createPlayerShape(cE('div'), 'pdiv', otherPlayers[0].player_joined, cE('img'), 'img/bulet.png', 'stick1')
+    createPlayerShape(cE('div'), 'pdiv', otherPlayers[1].player_joined, cE('img'), 'img/kotak.png', 'stick2')
+    otherPlayers[2] == null ? null : createPlayerShape(cE('div'), 'pdiv', otherPlayers[2].player_joined, cE('img'), 'img/segitiga.png', 'stick3')
+    otherPlayers[3] == null ? null : createPlayerShape(cE('div'), 'pdiv', otherPlayers[3].player_joined, cE('img'), 'img/diamond.png', 'stick4')
+    otherPlayers[4] == null ? null : createPlayerShape(cE('div'), 'pdiv', otherPlayers[4].player_joined, cE('img'), 'img/tabung.png', 'stick5')
 }
 
 function playerMoves() {

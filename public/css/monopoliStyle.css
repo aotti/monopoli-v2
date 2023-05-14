@@ -341,6 +341,56 @@
   margin-right: 14px;
 }
 
+.dialog_wrapper {
+  background: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 50px;
+  z-index: 999;
+  width: 76%;
+  height: 92%;
+}
+
+.dialog_info {
+  position: absolute;
+  top: 20%;
+  left: 35%;
+  z-index: 999;
+  background: MediumSeaGreen;
+  padding: 0 8px 8px;
+  border: 1px solid;
+  line-height: 20px;
+}
+
+.dialog_info > div {
+  display: grid;
+  grid-template-columns: 140px 150px;
+  gap: 8px;
+}
+
+.dialog_info > div.dialogTitle > h3 {
+  grid-column: 1 / 2 span;
+  text-align: center;
+  margin: 8px;
+}
+
+.dialog_info > div > span {
+  background-color: wheat;
+  padding: 4px;
+}
+
+.dialog_info > div.closeMods, div.closePlayer
+             > #closeModsButton, #closePlayerButton {
+  margin: 8px auto 0;
+  grid-column: 1 / 2 span;
+  height: 30px;
+  width: 50%;
+}
+
+.dialog_info > div > span:nth-child(2n+1):after {
+  content: ">";
+  float: right;
+}
+
 .setting_mods {
   display: none;
   position: absolute;
