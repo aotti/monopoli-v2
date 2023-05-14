@@ -37,10 +37,13 @@ function decidePlayersTurn() {
 
 function waitingOtherPlayers(otherPlayers) {
     const urutanGiliran = qS('.urutanGiliran')
+    let tempPlayerTurns = []
+    for(let v of otherPlayers)
+        tempPlayerTurns.push(v.player_rand)
     switch(otherPlayers.length) {
         case 1:
             // waiting more players 
-            urutanGiliran.innerText = `${otherPlayers.length} player(s) waiting..`
+            urutanGiliran.innerText = `${otherPlayers.length} player waiting..`
             break
         case 2: case 3: case 4:
             let forceCounter = 0
@@ -62,7 +65,13 @@ function waitingOtherPlayers(otherPlayers) {
             }
             // prepare the game
             if(otherPlayers.length == forceCounter) {
-                createPlayers(otherPlayers)
+                tempPlayerTurns.sort().reverse()
+                for(let v of tempPlayerTurns) {
+                    const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
+                    if(adjustPlayerTurn != -1)
+                        playerTurns.push(otherPlayers[adjustPlayerTurn].player_joined)
+                }
+                createPlayersAndGetReady(otherPlayers)
             }
             break
         case 5:
@@ -101,12 +110,22 @@ function createPlayerShape(playerDiv, playerDivClass, username, playerShape, img
     );
 }
 
-function createPlayers(otherPlayers) {
-    createPlayerShape(cE('div'), 'pdiv', otherPlayers[0].player_joined, cE('img'), 'img/bulet.png', 'stick1')
-    createPlayerShape(cE('div'), 'pdiv', otherPlayers[1].player_joined, cE('img'), 'img/kotak.png', 'stick2')
-    otherPlayers[2] == null ? null : createPlayerShape(cE('div'), 'pdiv', otherPlayers[2].player_joined, cE('img'), 'img/segitiga.png', 'stick3')
-    otherPlayers[3] == null ? null : createPlayerShape(cE('div'), 'pdiv', otherPlayers[3].player_joined, cE('img'), 'img/diamond.png', 'stick4')
-    otherPlayers[4] == null ? null : createPlayerShape(cE('div'), 'pdiv', otherPlayers[4].player_joined, cE('img'), 'img/tabung.png', 'stick5')
+function createPlayersAndGetReady() {
+    // create player characters
+    if(playerTurns.length == 0) return
+    createPlayerShape(cE('div'), 'pdiv', playerTurns[0], cE('img'), 'img/bulet.png', 'stick1')
+    createPlayerShape(cE('div'), 'pdiv', playerTurns[1], cE('img'), 'img/kotak.png', 'stick2')
+    playerTurns[2] == null ? null : createPlayerShape(cE('div'), 'pdiv', playerTurns[2], cE('img'), 'img/segitiga.png', 'stick3')
+    playerTurns[3] == null ? null : createPlayerShape(cE('div'), 'pdiv', playerTurns[3], cE('img'), 'img/diamond.png', 'stick4')
+    playerTurns[4] == null ? null : createPlayerShape(cE('div'), 'pdiv', playerTurns[4], cE('img'), 'img/tabung.png', 'stick5')
+    // set up the game
+    const urutanGiliran = qS('.urutanGiliran')
+    let urutanTeks = `Urutan Giliran`
+    for(let i in playerTurns) 
+        urutanTeks += `\n#${+i + 1} - ${playerTurns[i]}`
+    urutanGiliran.innerText = urutanTeks
+    let tombolMulaiDisable = false
+    qS('.tombolMulai').disabled = tombolMulaiDisable
 }
 
 function playerMoves() {
