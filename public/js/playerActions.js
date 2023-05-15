@@ -1,3 +1,5 @@
+// setInterval if player forcing to start < 5 player 
+let forceStartInterval = null
 // by clicking Kocok Giliran, player get random number
 // higher number = first turn
 function decidePlayersTurn() {
@@ -35,28 +37,33 @@ function decidePlayersTurn() {
     } 
 }
 
+// waiting other player to join
 function waitingOtherPlayers(otherPlayers) {
     const urutanGiliran = qS('.urutanGiliran')
     let tempPlayerTurns = []
     for(let v of otherPlayers)
         tempPlayerTurns.push(v.player_rand)
     switch(otherPlayers.length) {
+        // case 1 player joined
         case 1:
             // waiting more players 
             urutanGiliran.innerText = `${otherPlayers.length} player waiting..`
             break
+        // case 2 ~ 4 player joined
         case 2: case 3: case 4:
             let forceCounter = 0
             let paksaMulaiDisable = false
             otherPlayers.forEach((v, i, arr) => {
                 if(v.player_forcing == true) {
                     forceCounter += 1
+                    // if player clicked paksa mulai, the button gonna be disable again
                     if(v.player_joined == qS('.userName').value)
                         paksaMulaiDisable = true
                 }
             })
+            // showing how many player waiting and agree to force start
             urutanGiliran.innerText = `${otherPlayers.length} player waiting..\n${forceCounter} player memaksa..`
-            // paksa mulai button enabled
+            // paksa mulai button enabled if player havent click yet
             qS('.paksaMulai').disabled = paksaMulaiDisable
             qS('.paksaMulai').onclick = (ev) => {
                 ev.target.disabled = true
@@ -65,17 +72,37 @@ function waitingOtherPlayers(otherPlayers) {
             }
             // prepare the game
             if(otherPlayers.length == forceCounter) {
-                tempPlayerTurns.sort().reverse()
-                for(let v of tempPlayerTurns) {
-                    const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
-                    if(adjustPlayerTurn != -1)
-                        playerTurns.push(otherPlayers[adjustPlayerTurn].player_joined)
-                }
-                createPlayersAndGetReady(otherPlayers)
+                // stop force start interval
+                let timer = 5
+                forceStartInterval = setInterval(() => {
+                    urutanGiliran.innerText = `Game terpaksa dimulai dalam . . . ${timer}`
+                    timer -= 1
+                    if(timer == -1) {
+                        clearInterval(forceStartInterval)
+                        tempPlayerTurns.sort().reverse()
+                        for(let v of tempPlayerTurns) {
+                            const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
+                            if(adjustPlayerTurn != -1)
+                                playerTurns.push(otherPlayers[adjustPlayerTurn].player_joined)
+                        }
+                        createPlayersAndGetReady(otherPlayers)
+                    }
+                }, 1000);
             }
             break
+        // case 5 player joined
         case 5:
             // prepare the game
+            if(forceStartInterval != null)
+                clearInterval(forceStartInterval)
+            qS('.paksaMulai').disabled = true
+            tempPlayerTurns.sort().reverse()
+            for(let v of tempPlayerTurns) {
+                const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
+                if(adjustPlayerTurn != -1)
+                    playerTurns.push(otherPlayers[adjustPlayerTurn].player_joined)
+            }
+            createPlayersAndGetReady(otherPlayers)
             break
     }
 }
@@ -124,6 +151,7 @@ function createPlayersAndGetReady() {
     for(let i in playerTurns) 
         urutanTeks += `\n#${+i + 1} - ${playerTurns[i]}`
     urutanGiliran.innerText = urutanTeks
+    // disable tombolMulai after clicked
     let tombolMulaiDisable = false
     qS('.tombolMulai').disabled = tombolMulaiDisable
 }

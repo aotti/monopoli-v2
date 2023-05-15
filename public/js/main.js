@@ -1,7 +1,7 @@
 const url = window.location.origin
 let mods = []
 let playerTurns = []
-// create monopoli board
+// create monopoly board
 createBoard()
 // create game buttons
 gameButtons()
@@ -10,3 +10,4 @@ infoButtons()
 confirmDialog()
 // deciding the turn for each player and set up the game
 decidePlayersTurn()
+// step on lands

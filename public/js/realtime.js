@@ -11,11 +11,19 @@ pubnub.addListener({
         switch(getMessage.type) {
             case 'playerJoined':
                 console.log('playerJoined');
-                waitingOtherPlayers(getMessage.data)
+                // if the player username is in database, then run the function
+                getMessage.data.forEach(v => {
+                    if(v.player_joined == qS('.userName').value)
+                        waitingOtherPlayers(getMessage.data)
+                })
                 break
             case 'playerForcing':
                 console.log('playerForcing');
-                waitingOtherPlayers(getMessage.data)
+                // if the player username is in database, then run the function
+                getMessage.data.forEach(v => {
+                    if(v.player_joined == qS('.userName').value)
+                        waitingOtherPlayers(getMessage.data)
+                })
                 break
         }
     }

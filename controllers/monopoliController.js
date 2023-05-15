@@ -26,11 +26,12 @@ class Monopoli {
             whereColumn: 'id',
             whereValue: 1
         }
+        // get mods data for board 
         newPromise(selectOne(req, res, queryObject))
         .then(result => {
-            newResponse(200, res, result)
+            return newResponse(200, res, result)
         })
-        .catch(err => newResponse(500, res, err))
+        .catch(err => {return newResponse(500, res, err)})
     }
 
     playerJoined(req, res) {
@@ -63,12 +64,12 @@ class Monopoli {
                     message: {type: 'playerJoined', data: result}
                 }, function (status, response) {
                     // send response after realtime data sent
-                    newResponse(200, res, `${result.player_joined} joining the game`)
+                    return newResponse(200, res, `${result.player_joined} joining the game`)
                 })
             })
-            .catch(err => newResponse(500, res, err))
+            .catch(err => {return newResponse(500, res, err)})
         })
-        .catch(err => newResponse(500, res, err))
+        .catch(err => {return newResponse(500, res, err)})
     }
 
     forceStart(req, res) {
@@ -86,8 +87,10 @@ class Monopoli {
                 } 
             }}
         })
+        // update player_forcing value to true
         newPromise(updateData(req, res, queryObject))
         .then(() => {
+            // return all player data, so client-side know who did force start
             newPromise(selectAll(req, res, queryObject))
             .then(result => {
                 // send realtime data
@@ -96,12 +99,12 @@ class Monopoli {
                     message: {type: 'playerForcing', data: result}
                 }, function (status, response) {
                     // send response after realtime data sent
-                    newResponse(200, res, 'updated')
+                    return newResponse(200, res, 'updated')
                 })
             })
-            .catch(err => newResponse(500, res, err))
+            .catch(err => {return newResponse(500, res, err)})
         })
-        .catch(err => newResponse(500, res, err))
+        .catch(err => {return newResponse(500, res, err)})
     }
     
 }
