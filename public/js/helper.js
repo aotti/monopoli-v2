@@ -3,6 +3,8 @@ const qSA = el => {return document.querySelectorAll(el)}
 const cE = el => {return document.createElement(el)}
 const docFrag = document.createDocumentFragment()
 
+function setLocStorage(name, value) { return localStorage.setItem(name, value); }
+
 function getLocStorage(name) { return localStorage.getItem(name) }
 
 function feedbackTurnOff() {

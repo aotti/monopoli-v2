@@ -8,6 +8,7 @@ function decidePlayersTurn() {
     const userName = qS('.userName')
     acakGiliranButton.onclick = () => {
         if(userName.value.length >= 4 && userName.value.match(/^[a-zA-Z]+$/)) {
+            setLocStorage('username', userName.value)
             acakGiliranButton.disabled = true;
             userName.style.boxShadow = '';
             userName.disabled = true;
@@ -19,9 +20,19 @@ function decidePlayersTurn() {
             .then(result => {
                 // if response status != 200, then display it to the screen
                 if(result.status != 200) {
-                    qS('.feedback_box').style.opacity = 1;
-                    qS('.feedback_box').children[0].innerText = "an error occured\n";
-                    return console.log(result);
+                    // error saat player menggunakan username yang sama
+                    if(result.errorMessage.message.match(/duplicate.key.value/)) {
+                        qS('.feedback_box').style.opacity = 1;
+                        qS('.feedback_box').children[0].innerText = "username sudah dipakai\n";
+                        acakGiliranButton.disabled = false;
+                        userName.disabled = false;
+                        return
+                    }
+                    else {
+                        qS('.feedback_box').style.opacity = 1;
+                        qS('.feedback_box').children[0].innerText = "an error occured\n";
+                        return console.log(result);
+                    }
                 }
             })
             .catch(err => console.log(err))

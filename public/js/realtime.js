@@ -13,7 +13,7 @@ pubnub.addListener({
                 console.log('playerJoined');
                 // if the player username is in database, then run the function
                 getMessage.data.forEach(v => {
-                    if(v.player_joined == qS('.userName').value)
+                    if(v.player_joined == getLocStorage('username'))
                         waitingOtherPlayers(getMessage.data)
                 })
                 break
@@ -21,7 +21,7 @@ pubnub.addListener({
                 console.log('playerForcing');
                 // if the player username is in database, then run the function
                 getMessage.data.forEach(v => {
-                    if(v.player_joined == qS('.userName').value)
+                    if(v.player_joined == getLocStorage('username'))
                         waitingOtherPlayers(getMessage.data)
                 })
                 break

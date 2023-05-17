@@ -164,11 +164,11 @@ v1.5
 	+ kartu bebas penjara		>> 20% = 41 - 50 / 91 - 100
 				total	>> 100%
       > petak normal (dapat salah satu) 
-        + maju 1 langkah		>> 25% = 16-30 / 71-80
-        + maju 2 langkah		>> 15% = 31-40 / 66-70
-        + kartu nerf dadu gaming	>> 10% = 41-50
-        + kartu nerf parkir		>> 8%  = 51-58
-	+ pindah ke petak normal lain	>> 7%  = 59-65
+        + maju 1 langkah		>> 25% = 16 - 30 / 71 - 80
+        + maju 2 langkah		>> 15% = 31 - 40 / 66 - 70
+        + kartu nerf dadu gaming	>> 10% = 41 - 50
+        + kartu nerf parkir		>> 8%  = 51 - 58
+	+ pindah ke petak normal lain	>> 7%  = 59 - 65
 				total	>> 65%
   - ubah sistem transfer uang, lalu ganti biaya transfer (15k 35k 50k) **
     # cara transfer (submenu setting) **
