@@ -10,4 +10,5 @@ infoButtons()
 confirmDialog()
 // deciding the turn for each player and set up the game
 decidePlayersTurn()
-// step on lands
+// player moving
+playerMoves()

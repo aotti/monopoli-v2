@@ -48,6 +48,12 @@ function errorLogging(err) {
     errorLog.appendChild(errorContainer)
 }
 
+function errorCapsule(err, errorMessage) {
+    errorNotification(errorMessage)
+    errorLogging(err)
+    console.log(err);
+}
+
 /**
  * @param {String} apiUrl - base url + api endpoint (string)
  * @param {String} method - http method get/post/etc (string)

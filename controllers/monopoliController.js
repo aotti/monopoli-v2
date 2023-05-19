@@ -55,7 +55,19 @@ class Monopoli {
     }
     
     ready(req, res) {
-
+        // get all player data who ready to play
+        MonopoliRepo.readyRepo(req, res)
+        .then(result => {
+            // send realtime data
+            pubnub.publish({
+                channel: 'monopoli_v2',
+                message: {type: 'playerReady', data: result}
+            }, function (status, response) {
+                // send response after realtime data sent
+                return newResponse(200, res, 'ready')
+            })
+        })
+        .catch(err => {return newResponse(500, res, err)})
     }
 }
 

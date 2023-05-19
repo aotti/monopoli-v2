@@ -1,5 +1,5 @@
 // setInterval if player forcing to start < 5 player 
-let forceStartInterval = null
+let startInterval = null
 // by clicking Kocok Giliran, player get random number
 // higher number = first turn
 function decidePlayersTurn() {
@@ -21,8 +21,7 @@ function decidePlayersTurn() {
                 // if response status != 200, then display it to the screen
                 if(result.status != 200) {
                     if(typeof result.errorMessage === 'object') {
-                        errorNotification(`an error occured\n`)
-                        return errorLogging(result)
+                        return errorCapsule(err, `an error occured\n`)
                     }
                     // error when player using the same username
                     if(result.errorMessage.message?.match(/duplicate.key.value/)) {
@@ -38,16 +37,12 @@ function decidePlayersTurn() {
                         return
                     }
                     else {
-                        errorNotification(`an error occured\n`)
-                        errorLogging(result)
-                        return console.log(result);
+                        return errorCapsule(result, `an error occured\n`)
                     }
                 }
             })
             .catch(err => {
-                errorNotification(`an error occured\n`) 
-                errorLogging(err)
-                return console.log(err);
+                return errorCapsule(err, `an error occured\n`)
             })
         }
         else {
@@ -77,11 +72,11 @@ function waitingOtherPlayers(otherPlayers) {
         case 2: case 3: case 4:
             let forceCounter = 0
             let paksaMulaiDisable = false
-            otherPlayers.forEach((v, i, arr) => {
-                if(v.player_forcing == true) {
+            otherPlayers.forEach(v => {
+                if(v.player_forcing === true) {
                     forceCounter += 1
                     // if player clicked paksa mulai, the button gonna be disable again
-                    if(v.player_joined == qS('.userName').value)
+                    if(v.player_joined == getLocStorage('username'))
                         paksaMulaiDisable = true
                 }
             })
@@ -91,18 +86,18 @@ function waitingOtherPlayers(otherPlayers) {
             qS('.paksaMulai').disabled = paksaMulaiDisable
             qS('.paksaMulai').onclick = (ev) => {
                 ev.target.disabled = true
-                const theOtherPlayer = otherPlayers.map(v => {return v.player_joined}).indexOf(qS('.userName').value)
+                const theOtherPlayer = otherPlayers.map(v => {return v.player_joined}).indexOf(getLocStorage('username'))
                 forceStartGame(otherPlayers[theOtherPlayer])
             }
             // prepare the game
             if(otherPlayers.length == forceCounter) {
                 // stop force start interval
-                let timer = 5
-                forceStartInterval = setInterval(() => {
+                let timer = 6
+                startInterval = setInterval(() => {
                     urutanGiliran.innerText = `Game terpaksa dimulai dalam . . . ${timer}`
-                    timer -= 1
+                    timer--
                     if(timer == -1) {
-                        clearInterval(forceStartInterval)
+                        clearInterval(startInterval)
                         tempPlayerTurns.sort().reverse()
                         for(let v of tempPlayerTurns) {
                             const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
@@ -117,8 +112,8 @@ function waitingOtherPlayers(otherPlayers) {
         // case 5 player joined
         case 5:
             // prepare the game
-            if(forceStartInterval != null)
-                clearInterval(forceStartInterval)
+            if(startInterval != null)
+                clearInterval(startInterval)
             qS('.paksaMulai').disabled = true
             tempPlayerTurns.sort().reverse()
             for(let v of tempPlayerTurns) {
@@ -136,15 +131,11 @@ function forceStartGame(theOtherPlayer) {
     .then(data => data.json())
     .then(result => {
         if(result.status != 200) {
-            errorNotification(`an error occured\n`)
-            errorLogging(result)
-            return console.log(result);
+            return errorCapsule(result, `an error occured\n`)
         }
     })
     .catch(err => {
-        errorNotification(`an error occured\n`)
-        errorLogging(err)
-        return console.log(err);
+        return errorCapsule(err, `an error occured\n`)
     })
 }
 
@@ -181,8 +172,9 @@ function createPlayersAndGetReady() {
     urutanGiliran.innerText = urutanTeks
     // disable tombolMulai after clicked
     let tombolMulaiDisable = false
-    qS('.tombolMulai').disabled = tombolMulaiDisable
+    qS('.tombolMulai').disabled = false
     qS('.tombolMulai').onclick = () => {
+        qS('.tombolMulai').disabled = true
         const jsonData = {
             username: getLocStorage('username'),
             harta: +mods[1],
@@ -193,19 +185,44 @@ function createPlayersAndGetReady() {
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
-                errorNotification(`an error occured\n`)
-                errorLogging(result)
-                return console.log(result);
+                return errorCapsule(err, `an error occured\n`)
             }
         })
         .catch(err => {
-            errorNotification(`an error occured\n`)
-            errorLogging(err)
-            return console.log(err);
+            return errorCapsule(err, `an error occured\n`)
         })
+    }
+}
+
+function gettingReady(readyPlayers) {
+    // waiting other player to get ready
+    // console.log(readyPlayers);
+    const urutanGiliran = qS('.urutanGiliran')
+    let readyCounter = 0
+    readyPlayers.forEach(v => {
+        if(v.player_ready === true)
+            readyCounter += 1
+    })
+    let urutanTeks = `Urutan Giliran`
+    for(let i in playerTurns) 
+        urutanTeks += `\n#${+i + 1} - ${playerTurns[i]}`
+    urutanGiliran.innerText = `${urutanTeks}\n${readyCounter} player sudah siap..`
+    if(playerTurns.length == readyCounter) {
+        let timer = 4
+        startInterval = setInterval(() => {
+            urutanGiliran.innerText = `game dimulai dalam . . ${timer}`
+            timer--
+            if(timer == -1) {
+                clearInterval(startInterval)
+                qS('.acakDadu').disabled = false
+            }
+        }, 1000);
     }
 }
 
 function playerMoves() {
     // start moving player
+    qS('.acakDadu').onclick = () => {
+        console.log('player moving');
+    }
 }

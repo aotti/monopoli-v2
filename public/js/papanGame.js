@@ -32,9 +32,7 @@ function createBoard() {
         insertImagesToBoard()
     })
     .catch(err => {
-        errorNotification(`an error occured\n`)
-        errorLogging(err)
-        return console.log(err);
+        return errorCapsule(err, `an error occured\n`)
     })
 }
 

@@ -22,12 +22,12 @@ class MonopoliRepo {
     }
 
     playerJoinedRepo(req, res) {
-        // TABLE = prepare
+        // TABLE = prepares
         const {randNumber, username} = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
-            table: {enumerable: true, value: 'prepare'},
+            table: {enumerable: true, value: 'prepares'},
             insertColumn: {enumerable: true, get: function() {
                 return {
                     player_joined: username,
@@ -48,12 +48,12 @@ class MonopoliRepo {
     }
 
     forceStartRepo(req, res) {
-        // TABLE = prepare
+        // TABLE = prepares
         const { username } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
-            table: {enumerable: true, value: 'prepare'},
+            table: {enumerable: true, value: 'prepares'},
             whereColumn: {enumerable: true, value: 'player_joined'},
             whereValue: {enumerable: true, value: username},
             updateColumn: {enumerable: true, get: function() {
@@ -62,8 +62,10 @@ class MonopoliRepo {
                 } 
             }}
         })
+        // update player_forcing: true
         return newPromise(updateData(req, res, queryObject))
         .then(() => {
+            // get all player data
             return newPromise(selectAll(req, res, queryObject))
         })
         .catch(err => {
@@ -73,7 +75,52 @@ class MonopoliRepo {
     }
 
     readyRepo(req, res) {
-
+        // TABLE = prepares
+        const { username, harta, pos, kartu } = req.body
+        const queryObject1 = {}
+        // required data for query
+        Object.defineProperties(queryObject1, {
+            table: {enumerable: true, value: 'prepares'},
+            whereColumn: {enumerable: true, value: 'player_joined'},
+            whereValue: {enumerable: true, value: username},
+            updateColumn: {enumerable: true, get: function() {
+                return {
+                    player_ready: true
+                } 
+            }}
+        })
+        // TABLE = players
+        const queryObject2 = {}
+        // required data for query
+        Object.defineProperties(queryObject2, {
+            table: {enumerable: true, value: 'players'},
+            insertColumn: {enumerable: true, get: function() {
+                return {
+                    username: username,
+                    harta: harta,
+                    pos: pos,
+                    kartu: kartu
+                } 
+            }}
+        })
+        // update player_ready: true
+        return newPromise(updateData(req, res, queryObject1))
+        .then(() => {
+            // insert data to players table
+            return newPromise(insertDataRow(req, res, queryObject2))
+            .then(() => {
+                // get all player data
+                return newPromise(selectAll(req, res, queryObject1))
+            })
+            .catch(err => {
+                console.log('this.readyRepo');
+                return console.log(err);
+            })
+        })
+        .catch(err => {
+            console.log('this.readyRepo');
+            return console.log(err);
+        })
     }
 }
 

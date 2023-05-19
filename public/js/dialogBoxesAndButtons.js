@@ -121,6 +121,7 @@ function gameButtons() {
         // innerText
         [null, null, 'Kocok Dadu', null, null]
     )
+    acakDaduButton.disabled = true
     // acak giliran
     const acakGiliranSpan = cE('span')
     const acakGiliranButton = cE('input')
