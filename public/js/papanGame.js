@@ -1,12 +1,15 @@
 function createBoard() {
+    // get mods data from database
     fetcher(`${url}/api/mods`, 'get', null)
     .then(data => data.json())
     .then(result => {
+        // get empty board
         const papanGame = qS('#papan_game')
+        // set mods values
         mods = [result.data[0].board_shape, result.data[0].money_start, 
                 result.data[0].money_lose, result.data[0].curse_min, 
                 result.data[0].curse_max, result.data[0].branch]
-        
+        // set board shape
         if(mods[0] == 'persegiPanjangV1')
             persegiPanjangV1();
         else if(mods[0] == 'persegiPanjangV2')
@@ -23,11 +26,16 @@ function createBoard() {
             // qS('.feedback_box').style.right = '340px';
             bercabangDua();
         }
+        // append shape to empty board
         papanGame.appendChild(docFrag)
         // insert images to board
         insertImagesToBoard()
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+        errorNotification(`an error occured\n`)
+        errorLogging(err)
+        return console.log(err);
+    })
 }
 
 function insertImage(allLands, i, imgEl, src) {
@@ -40,11 +48,15 @@ function insertImage(allLands, i, imgEl, src) {
 }
 
 function insertImagesToBoard() {
+    // set random percent for price on kotaTerkutuk
     const randKutukan = Math.floor(Math.random() * ((+mods[4] + 1) - +mods[3])) + +mods[3]
+    // set the price for kotaTerkutuk
     const rumusKutukan1 = (4e3 * (getLocStorage('jpStorage') != null ? +getLocStorage('jpStorage') : 1) * (getLocStorage('putaran') != null ? +getLocStorage('putaran') : 1))
     const rumusKutukan2 = (1e4 * (getLocStorage('putaran') != null ? +getLocStorage('putaran') : 1) * (randKutukan / 100))
     const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2)
+    // set the price for kotaKhusus
     const hargaKhusus = (getLocStorage('putaran') != null && +getLocStorage('putaran') > 6 ? 12_000 : 0)
+    // land numbers
     const np = [
                 2, 5, 6,
                 11, 12, 13,
@@ -62,7 +74,7 @@ function insertImagesToBoard() {
                 mods[0] == 'bercabangDua' ? '1a' : null,
                 mods[0] == 'bercabangDua' ? '2a' : null
                 ]
-
+    // image for each land
     const landImages = [
                         {[np[0]]:'img/padang'}, {[np[1]]:'img/bengkulu'}, {[np[2]]:'img/pontianak'},
                         {[np[3]]:'img/jakarta'}, {[np[4]]:'img/bekasi'}, {[np[5]]:'img/bandung'},
@@ -74,7 +86,7 @@ function insertImagesToBoard() {
                         {[np[23]]:'img/terkutuk1'}, {[np[24]]:'img/terkutuk2'},
                         {[np[29]]:'img/kesempatan'}, {[np[30]]:'img/danaUmum'}, {[np[31]]:'img/kesempatan'}, {[np[32]]:'img/danaUmum'}
                         ]
-
+    // classList.add for each land
     const landClasses =[
                         {[np[0]]:'kota_padang_tanah_48000'}, {[np[1]]:'kota_bengkulu_tanah_50000'}, {[np[2]]:'kota_pontianak_tanah_62000'},
                         {[np[3]]:'kota_jakarta_tanah_69000'}, {[np[4]]:'kota_bekasi_tanah_71000'}, {[np[5]]:'kota_bandung_tanah_73500'},
@@ -101,14 +113,17 @@ function insertImagesToBoard() {
             }
         }
     }
-
+    // get all lands element
     const allLands = qSA('[class^=kota], [class^=kartu], [class^=area], [class^=lewat]')
+    // price for kotaKhusus
     const kotaKhususPrices = [
-                                (15000 + hargaKhusus).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
-                                (25000 + hargaKhusus).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
-                                (35000 + hargaKhusus).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                                ]
-    const kotaTerkutukPrices = hargaKutukan.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                                currencyComma(15000 + hargaKhusus),
+                                currencyComma(25000 + hargaKhusus),
+                                currencyComma(35000 + hargaKhusus)
+                             ]
+    // price for kotaTerkutuk
+    const kotaTerkutukPrices = currencyComma(hargaKutukan)
+    // name and price for each land
     const landNames = [
                         {[np[0]]:'Kota Padang Rp 48.000'}, {[np[1]]:'Kota Bengkulus Rp 50.000'}, {[np[2]]:'Kota Pontianac Rp 62.000'},
                         {[np[3]]:'Kota Jakarta Rp 69.000'}, {[np[4]]:'Kota Bekasih Rp 71.000'}, {[np[5]]:'Kota Bandung Rp 73.500'},

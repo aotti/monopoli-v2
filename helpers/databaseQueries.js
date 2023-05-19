@@ -1,5 +1,5 @@
 const supabase = require('./database')
-const { newResponse } = require('./response')
+const { newResponse } = require('./basic')
 
 async function selectAll(req, res, queryObject) {
     if(supabase == null)

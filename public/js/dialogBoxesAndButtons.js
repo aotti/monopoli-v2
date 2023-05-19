@@ -1,3 +1,5 @@
+// confirm dialog when player step on land to  
+// buy house || get cards || going to jail  || free parking
 function confirmDialog() {
     // create dialog box
     const dialogConfirmBox = cE('div')
@@ -22,6 +24,7 @@ function confirmDialog() {
     )
 }
 
+// the buttons in the middle of board
 function gameButtons() {
     // container
     const infoArea = cE('div')
@@ -154,17 +157,7 @@ function gameButtons() {
     )
 }
 
-function modsDialogChild(mainDialog, container, classContainer, spanTitle, spanValue, textTitle, textValue) {
-    appendGameDialogBoxesOrButtonsToBoard(
-        false, true,
-        ['div', 'div', 'span', 'span'],
-        [mainDialog, container, spanTitle, spanValue],
-        [null, 'class', 'none', 'none'],
-        [null, classContainer, null, null],
-        [null, null, textTitle, textValue]
-    )
-}
-
+// the buttons in the game title
 function infoButtons() {
     qS('#cekPlayer').onclick = ()=>{
         if(qS('.dialog_info')) return
@@ -189,21 +182,21 @@ function infoButtons() {
             [null, null, 'Player Ingfo']
         )
         // div max player
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'maxPlayer',
             cE('span'), cE('span'),
             'Max Player', '5 Player'
         )
         // div joined player
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'joinedPlayer',
             cE('span'), cE('span'),
-            'Joined Player', 'username1, username2'
+            'Joined Player', (playerTurns.length > 0 ? playerTurns.join(', ') : '~')
         )
         // div bentuk player
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'bentukPlayer',
             cE('span'), cE('span'),
@@ -250,39 +243,39 @@ function infoButtons() {
             [null, null, 'Mods Ingfo']
         )
         // div bentuk papan
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'bentukPapan',
             cE('span'), cE('span'),
-            'Bentuk Papan', 'PersegiPanjangV1'
+            'Bentuk Papan', mods[0]
         )
         // div uang start
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'uangStart',
             cE('span'), cE('span'),
-            'Uang Start', 'Rp 75.000'
+            'Uang Start', `Rp ${currencyComma(mods[1])}`
         )
         // div uang kalah
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'uangKalah',
             cE('span'), cE('span'),
-            'Uang Kalah', '- Rp 50.000'
+            'Uang Kalah', `- Rp ${currencyComma(mods[2])}`
         )
         // div rand kutukan
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'randKutukan',
             cE('span'), cE('span'),
-            'Rand Kutukan', '5 ~ 10%'
+            'Rand Kutukan', `${mods[3]} ~ ${mods[4]}%`
         )
         // div cabang
-        modsDialogChild(
+        headerDialogChild(
             dialogInfo,
             cE('div'), 'cabang',
             cE('span'), cE('span'),
-            'Cabang', '40%'
+            'Cabang', `${mods[5]}%`
         )
         // create close button
         const closeModsDiv = cE('div')
@@ -303,6 +296,7 @@ function infoButtons() {
     }
 }
 
+// 3d dice
 function dadu3D(divGame, divCont, divDice) {
     for(let i=0; i<6; i++) {
       let diceSide = cE('div')
@@ -428,4 +422,15 @@ function gameDialogBoxesAndButtons(secondContainer, elTypes, elements, attrTypes
             elements[0].appendChild(elements[i])
         }
     }
+}
+
+function headerDialogChild(mainDialog, container, classContainer, spanTitle, spanValue, textTitle, textValue) {
+    appendGameDialogBoxesOrButtonsToBoard(
+        false, true,
+        ['div', 'div', 'span', 'span'],
+        [mainDialog, container, spanTitle, spanValue],
+        [null, 'class', 'none', 'none'],
+        [null, classContainer, null, null],
+        [null, null, textTitle, textValue]
+    )
 }

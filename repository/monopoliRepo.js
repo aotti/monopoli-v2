@@ -1,11 +1,11 @@
-const { newPromise } = require('../helpers/promise')
+const { newPromise } = require('../helpers/basic')
 const { selectAll, 
-    selectOne, 
-    selectNewInsertedData, 
-    insertDataRow, 
-    insertDataCol,
-    updateData, 
-    deleteAll  } = require('../helpers/databaseQueries')
+        selectOne, 
+        selectNewInsertedData, 
+        insertDataRow, 
+        insertDataCol,
+        updateData, 
+        deleteAll } = require('../helpers/databaseQueries')
 
 class MonopoliRepo {
     getModsDataRepo(req, res) {
@@ -70,6 +70,10 @@ class MonopoliRepo {
             console.log('this.forceStartRepo');
             return console.log(err);
         })
+    }
+
+    readyRepo(req, res) {
+
     }
 }
 

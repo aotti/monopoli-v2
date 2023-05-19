@@ -34,6 +34,8 @@
 }
 
 .header_game {
+  display: flex;
+  justify-content: space-between;
   background: darkseagreen;
   box-shadow: 0 0 5px inset;
   text-align: center;
@@ -43,14 +45,15 @@
   margin-right: 10px;
 }
 
-#clearStorage, #hardRefresh {
-  float: right;
-  margin-left: 10px;
+.header_game > div > button {
+  font-size: 18px;
+  vertical-align: top;
 }
 
-#cekPlayer, #cekMods {
-  float: left;
-  margin-right: 10px;
+.header_game > div > button > span {
+  font-size: 12px;
+  display: inline-block;
+  width: 60px;
 }
 
 #papan_game {
@@ -77,27 +80,39 @@
 }
 
 .rules_game > div {
-  background: orange;
   padding: 3px;
   border: 2px solid;
 }
 
+.rules_game > ul {
+  background: orange;
+  min-height: 40px;
+  max-height: 135px;
+  width: 260px;
+  word-wrap: break-word;
+}
+
 .rules_game > ol {
   background: lightsalmon;
-  /* margin-left: -20px; */
+  height: 290px;
+  width: 260px;
+}
+
+.rules_game > ol, ul {
   margin-right: -5px;
   padding-right: 3px;
-  height: 350px;
   overflow-y: scroll;
   scrollbar-width: thin;
   box-shadow: 0 0 5px inset;
 }
 
-.rules_game > ol > details {
-  margin: 10px auto auto -10px;
+.rules_game > ol > details,
+.rules_game > ul > details {
+  margin: 8px auto auto -10px;
 }
 
-.rules_game > ol > details > summary {
+.rules_game > ol > details > summary, 
+.rules_game > ul > details > summary {
   font-weight: bold;
   cursor: pointer;
 }

@@ -20,22 +20,35 @@ function decidePlayersTurn() {
             .then(result => {
                 // if response status != 200, then display it to the screen
                 if(result.status != 200) {
-                    // error saat player menggunakan username yang sama
-                    if(result.errorMessage.message.match(/duplicate.key.value/)) {
-                        qS('.feedback_box').style.opacity = 1;
-                        qS('.feedback_box').children[0].innerText = "username sudah dipakai\n";
+                    if(typeof result.errorMessage === 'object') {
+                        errorNotification(`an error occured\n`)
+                        return errorLogging(result)
+                    }
+                    // error when player using the same username
+                    if(result.errorMessage.message?.match(/duplicate.key.value/)) {
+                        errorNotification(`username sudah dipakai\n`)
+                        acakGiliranButton.disabled = false;
+                        userName.disabled = false;
+                        return
+                    }
+                    else if(result.errorMessage.match(/cannot.be.null/)) {
+                        errorNotification(`randNumber/username null\n`)
                         acakGiliranButton.disabled = false;
                         userName.disabled = false;
                         return
                     }
                     else {
-                        qS('.feedback_box').style.opacity = 1;
-                        qS('.feedback_box').children[0].innerText = "an error occured\n";
+                        errorNotification(`an error occured\n`)
+                        errorLogging(result)
                         return console.log(result);
                     }
                 }
             })
-            .catch(err => console.log(err))
+            .catch(err => {
+                errorNotification(`an error occured\n`) 
+                errorLogging(err)
+                return console.log(err);
+            })
         }
         else {
             qS('.feedback_box').style.opacity = 1;
@@ -123,12 +136,16 @@ function forceStartGame(theOtherPlayer) {
     .then(data => data.json())
     .then(result => {
         if(result.status != 200) {
-            qS('.feedback_box').style.opacity = 1;
-            qS('.feedback_box').children[0].innerText = "an error occured\n";
+            errorNotification(`an error occured\n`)
+            errorLogging(result)
             return console.log(result);
         }
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+        errorNotification(`an error occured\n`)
+        errorLogging(err)
+        return console.log(err);
+    })
 }
 
 function createPlayerShape(playerDiv, playerDivClass, username, playerShape, imgSource, imgClass) {
@@ -165,8 +182,30 @@ function createPlayersAndGetReady() {
     // disable tombolMulai after clicked
     let tombolMulaiDisable = false
     qS('.tombolMulai').disabled = tombolMulaiDisable
+    qS('.tombolMulai').onclick = () => {
+        const jsonData = {
+            username: getLocStorage('username'),
+            harta: +mods[1],
+            pos: 1,
+            kartu: null
+        }
+        fetcher(`${url}/api/ready`, 'post', jsonData)
+        .then(data => data.json())
+        .then(result => {
+            if(result.status != 200) {
+                errorNotification(`an error occured\n`)
+                errorLogging(result)
+                return console.log(result);
+            }
+        })
+        .catch(err => {
+            errorNotification(`an error occured\n`)
+            errorLogging(err)
+            return console.log(err);
+        })
+    }
 }
 
 function playerMoves() {
-
+    // start moving player
 }

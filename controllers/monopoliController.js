@@ -1,4 +1,4 @@
-const { newResponse } = require('../helpers/response')
+const { newResponse } = require('../helpers/basic')
 const monopoliRepo = require('../repository/monopoliRepo')
 const MonopoliRepo = new monopoliRepo()
 require('dotenv').config()
@@ -54,6 +54,9 @@ class Monopoli {
         .catch(err => {return newResponse(500, res, err)})
     }
     
+    ready(req, res) {
+
+    }
 }
 
 module.exports = Monopoli

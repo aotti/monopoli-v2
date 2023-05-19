@@ -1,3 +1,13 @@
+function newPromise(data) {
+    return new Promise((resolve, reject) => {
+        data.then(result => {
+            if(result.error != null)
+                return reject(result.error)
+            return resolve(result.data)
+        })
+    })
+}
+
 function newResponse(type, res, data) {
     switch(type) {
         case 200:
@@ -24,4 +34,11 @@ function newResponse(type, res, data) {
     }
 }
 
-module.exports = {newResponse}
+function isStringOrNumber(data, type) {
+    if(typeof data === type)
+        return false
+    else if(typeof data !== type)
+        return true
+}
+
+module.exports = {newPromise, newResponse, isStringOrNumber}

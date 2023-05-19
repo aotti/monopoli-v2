@@ -7,5 +7,6 @@ router
     .get('/api/mods', validateUUIDv4, Monopoli.getModsData)
     .post('/api/prepare', validateUUIDv4, validatePlayerJoined, Monopoli.playerJoined)
     .post('/api/forcestart', validateUUIDv4, validatePlayerForcing, Monopoli.forceStart)
+    .post('/api/ready', validateUUIDv4, Monopoli.ready)
 
 module.exports = router
