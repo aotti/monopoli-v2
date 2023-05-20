@@ -1,6 +1,10 @@
 const url = window.location.origin
+// store mods data from database to array var
 let mods = []
-let playerTurns = []
+// player turns
+let playersTurn = []
+let giliranCounter = 0
+let myShape = null
 // create monopoly board
 createBoard()
 // create game buttons

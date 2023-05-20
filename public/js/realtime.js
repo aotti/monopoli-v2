@@ -33,6 +33,13 @@ pubnub.addListener({
                         gettingReady(getMessage.data)
                 })
                 break
+            case 'nextPlayer':
+                console.log('nextPlayer');
+                giliranCounter += 1
+                if(giliranCounter == playersTurn.length)
+                    giliranCounter = 0
+                kocokDaduTrigger()
+                break
         }
     }
 })

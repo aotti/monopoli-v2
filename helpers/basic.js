@@ -34,11 +34,11 @@ function newResponse(type, res, data) {
     }
 }
 
-function isStringOrNumber(data, type) {
+function isStringOrNumberOrBool(data, type) {
     if(typeof data === type)
         return false
     else if(typeof data !== type)
         return true
 }
 
-module.exports = {newPromise, newResponse, isStringOrNumber}
+module.exports = {newPromise, newResponse, isStringOrNumberOrBool}

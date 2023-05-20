@@ -1,26 +1,45 @@
-const { newResponse, isStringOrNumber } = require('../helpers/basic')
+const { newResponse, isStringOrNumberOrBool } = require('../helpers/basic')
 const stringType = 'string'
 const numberType = 'number'
+const booleanType = 'boolean'
 
 function validatePlayerJoined(req, res, next) {
     const { randNumber, username } = req.body
-    // if(randNumber == null || username == null) 
-    //     return newResponse(400, res, 'player joined cannot be null')
     // check var types
     switch(true) {
         case randNumber == null || username == null :
             return newResponse(400, res, 'randNumber/username cannot be null')
-        case isStringOrNumber(randNumber, numberType) :
-        case isStringOrNumber(username, stringType) :
-            return newResponse(400, res, 'randNumber/username is invalid')
+        case isStringOrNumberOrBool(randNumber, numberType) :
+        case isStringOrNumberOrBool(username, stringType) :
+            return newResponse(400, res, 'randNumber/username type is invalid')
     }
     next()
 }
 
 function validatePlayerForcing(req, res, next) {
     const { username } = req.body
-    if(username == null) 
-        return newResponse(400, res, 'player forcing cannot be null')
+    // check var types
+    switch(true) {
+        case username == null :
+            return newResponse(400, res, 'playerForcing cannot be null')
+        case isStringOrNumberOrBool(username, stringType) :
+            return newResponse(400, res, 'playerForcing type is invalid')
+    }
+    next()
+}
+
+function validatePlayerReady(req, res, next) {
+    const { username, harta, pos, kartu, giliran, penjara } = req.body
+    // check var types
+    switch(true) {
+        case isStringOrNumberOrBool(username, stringType) :
+        case isStringOrNumberOrBool(harta, numberType) :
+        case isStringOrNumberOrBool(pos, numberType) :
+        case isStringOrNumberOrBool(kartu, stringType) :
+        case isStringOrNumberOrBool(giliran, numberType) :
+        case isStringOrNumberOrBool(penjara, booleanType) :
+            return newResponse(400, res, 'playerReady type is invalid')
+    }
     next()
 }
 
@@ -33,4 +52,9 @@ function validateUUIDv4(req, res, next) {
         return newResponse(401, res, 'unauthorized')
 }
 
-module.exports = {validateUUIDv4, validatePlayerJoined, validatePlayerForcing}
+module.exports = {
+    validateUUIDv4, 
+    validatePlayerJoined, 
+    validatePlayerForcing, 
+    validatePlayerReady
+}

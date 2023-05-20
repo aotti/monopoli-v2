@@ -8,7 +8,6 @@ function decidePlayersTurn() {
     const userName = qS('.userName')
     acakGiliranButton.onclick = () => {
         if(userName.value.length >= 4 && userName.value.match(/^[a-zA-Z]+$/)) {
-            setLocStorage('username', userName.value)
             acakGiliranButton.disabled = true;
             userName.style.boxShadow = '';
             userName.disabled = true;
@@ -18,19 +17,22 @@ function decidePlayersTurn() {
             fetcher(`${url}/api/prepare`, 'post', jsonData)
             .then(data => data.json())
             .then(result => {
+                if(result.status == 200)
+                    setLocStorage('username', userName.value)
                 // if response status != 200, then display it to the screen
-                if(result.status != 200) {
+                else if(result.status != 200) {
                     if(typeof result.errorMessage === 'object') {
-                        return errorCapsule(err, `an error occured\n`)
+                        // error when player using the same username
+                        if(result.errorMessage.message?.match(/duplicate.key.value/)) {
+                            errorNotification(`username sudah dipakai\n`)
+                            acakGiliranButton.disabled = false;
+                            userName.disabled = false;
+                            return feedbackTurnOff()
+                        }
+                        else 
+                            return errorCapsule(result, `an error occured\n`)
                     }
-                    // error when player using the same username
-                    if(result.errorMessage.message?.match(/duplicate.key.value/)) {
-                        errorNotification(`username sudah dipakai\n`)
-                        acakGiliranButton.disabled = false;
-                        userName.disabled = false;
-                        return
-                    }
-                    else if(result.errorMessage.match(/cannot.be.null/)) {
+                    if(result.errorMessage.match(/cannot.be.null/)) {
                         errorNotification(`randNumber/username null\n`)
                         acakGiliranButton.disabled = false;
                         userName.disabled = false;
@@ -102,7 +104,7 @@ function waitingOtherPlayers(otherPlayers) {
                         for(let v of tempPlayerTurns) {
                             const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
                             if(adjustPlayerTurn != -1)
-                                playerTurns.push(otherPlayers[adjustPlayerTurn].player_joined)
+                                playersTurn.push(otherPlayers[adjustPlayerTurn].player_joined)
                         }
                         createPlayersAndGetReady(otherPlayers)
                     }
@@ -119,7 +121,7 @@ function waitingOtherPlayers(otherPlayers) {
             for(let v of tempPlayerTurns) {
                 const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
                 if(adjustPlayerTurn != -1)
-                    playerTurns.push(otherPlayers[adjustPlayerTurn].player_joined)
+                    playersTurn.push(otherPlayers[adjustPlayerTurn].player_joined)
             }
             createPlayersAndGetReady(otherPlayers)
             break
@@ -158,34 +160,40 @@ function createPlayerShape(playerDiv, playerDivClass, username, playerShape, img
 
 function createPlayersAndGetReady() {
     // create player characters
-    if(playerTurns.length == 0) return
-    createPlayerShape(cE('div'), 'pdiv', playerTurns[0], cE('img'), 'img/bulet.png', 'stick1')
-    createPlayerShape(cE('div'), 'pdiv', playerTurns[1], cE('img'), 'img/kotak.png', 'stick2')
-    playerTurns[2] == null ? null : createPlayerShape(cE('div'), 'pdiv', playerTurns[2], cE('img'), 'img/segitiga.png', 'stick3')
-    playerTurns[3] == null ? null : createPlayerShape(cE('div'), 'pdiv', playerTurns[3], cE('img'), 'img/diamond.png', 'stick4')
-    playerTurns[4] == null ? null : createPlayerShape(cE('div'), 'pdiv', playerTurns[4], cE('img'), 'img/tabung.png', 'stick5')
+    if(playersTurn.length == 0) return
+    createPlayerShape(cE('div'), 'pdiv', playersTurn[0], cE('img'), 'img/bulet.png', 'stick1')
+    createPlayerShape(cE('div'), 'pdiv', playersTurn[1], cE('img'), 'img/kotak.png', 'stick2')
+    playersTurn[2] == null ? null : createPlayerShape(cE('div'), 'pdiv', playersTurn[2], cE('img'), 'img/segitiga.png', 'stick3')
+    playersTurn[3] == null ? null : createPlayerShape(cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4')
+    playersTurn[4] == null ? null : createPlayerShape(cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5')
     // set up the game
     const urutanGiliran = qS('.urutanGiliran')
     let urutanTeks = `Urutan Giliran`
-    for(let i in playerTurns) 
-        urutanTeks += `\n#${+i + 1} - ${playerTurns[i]}`
+    for(let i in playersTurn) 
+        urutanTeks += `\n#${+i + 1} - ${playersTurn[i]}`
     urutanGiliran.innerText = urutanTeks
     // disable tombolMulai after clicked
-    let tombolMulaiDisable = false
     qS('.tombolMulai').disabled = false
     qS('.tombolMulai').onclick = () => {
         qS('.tombolMulai').disabled = true
+        let tempGiliran = null
+        for(let p in playersTurn) {
+            if(playersTurn[p] == getLocStorage('username'))
+                tempGiliran = +p
+        }
         const jsonData = {
             username: getLocStorage('username'),
             harta: +mods[1],
             pos: 1,
-            kartu: null
+            kartu: '',
+            giliran: tempGiliran,
+            penjara: false
         }
         fetcher(`${url}/api/ready`, 'post', jsonData)
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
-                return errorCapsule(err, `an error occured\n`)
+                return errorCapsule(result, `an error occured\n`)
             }
         })
         .catch(err => {
@@ -196,7 +204,6 @@ function createPlayersAndGetReady() {
 
 function gettingReady(readyPlayers) {
     // waiting other player to get ready
-    // console.log(readyPlayers);
     const urutanGiliran = qS('.urutanGiliran')
     let readyCounter = 0
     readyPlayers.forEach(v => {
@@ -204,25 +211,95 @@ function gettingReady(readyPlayers) {
             readyCounter += 1
     })
     let urutanTeks = `Urutan Giliran`
-    for(let i in playerTurns) 
-        urutanTeks += `\n#${+i + 1} - ${playerTurns[i]}`
+    for(let i in playersTurn) 
+        urutanTeks += `\n#${+i + 1} - ${playersTurn[i]}`
     urutanGiliran.innerText = `${urutanTeks}\n${readyCounter} player sudah siap..`
-    if(playerTurns.length == readyCounter) {
+    if(playersTurn.length == readyCounter) {
         let timer = 4
         startInterval = setInterval(() => {
             urutanGiliran.innerText = `game dimulai dalam . . ${timer}`
             timer--
             if(timer == -1) {
                 clearInterval(startInterval)
-                qS('.acakDadu').disabled = false
+                urutanGiliran.innerText = ``
+                // run this function after the timer is out 
+                // to trigger the first move because the getLocStorage('username') considered null
+                kocokDaduTrigger()
             }
         }, 1000);
+    }
+}
+
+function allPlayersLastPos() {
+    
+}
+
+function kocokDaduTrigger() {
+    if(getLocStorage('username') != null) {
+        // get shape element for each player
+        thisShapeIsMe()
+        // check whose turn is it now and enable the kocok dadu button
+        if(playersTurn[giliranCounter] == getLocStorage('username')) {
+            qS('.acakDadu').disabled = false
+            qS('.acakDaduTeks').innerText = 'Giliran Anda'
+        }
+        // else disable it
+        else {
+            qS('.acakDadu').disabled = true
+            qS('.acakDaduTeks').innerText = 'Belum Giliran'
+        }
+    }
+}
+
+function thisShapeIsMe() {
+    for(let player of qSA('.pdiv')) {
+        if(player.id == playersTurn[giliranCounter]) 
+            myShape = player
     }
 }
 
 function playerMoves() {
     // start moving player
     qS('.acakDadu').onclick = () => {
-        console.log('player moving');
+        // ### add tempMoveChance later for bercabangDua map ###
+        // my pos right now
+        const myPosNow = +myShape.parentElement.classList[0].match(/\d+/)
+        // dice animation
+        const daduAnimasi = null
+        // roll the dice
+        // const playerDadu = customDadu || Math.floor(Math.random() * 6) + 1
+        const playerDadu = Math.floor(Math.random() * 6) + 1
+        // my pos after roll dice
+        const playerMove = (myPosNow + playerDadu) % 28 == 0 ? 28 : ((myPosNow + playerDadu) % 28)
+        // steps counter
+        let steps = 0, stepsCounter = 0
+        // display dice roll number
+        qS('.acakDaduTeks').innerText = `Angka Dadu: ${playerDadu}`
+        // start moving the player
+        // ### try moving the player with realtime, so other player can see the movements ###
+        startInterval = setInterval(() => { playerMoving() }, 500)
+        function playerMoving() {
+            // stepsCounter + 1 because 
+            steps = myPosNow + (stepsCounter + 1)
+            for(let land of qSA('[class^=petak]')) {
+                if(land.title == (steps % 28 == 0 ? 28 : steps % 28))
+                    land.appendChild(myShape)
+            }
+            stepsCounter++
+            if(stepsCounter == playerDadu) {
+                console.log('moving done');
+                clearInterval(startInterval)
+            }
+        }
+        // player turn end
+        const jsonData = {
+            username: getLocStorage('username'),
+            harta: 0,
+            pos: 0,
+            kartu: '',
+            giliran: 0,
+            penjara: false
+        }
+        // fetcher(`${url}/api/endturn`, 'post', jsonData)
     }
 }

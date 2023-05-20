@@ -194,7 +194,7 @@ function infoButtons() {
             dialogInfo,
             cE('div'), 'joinedPlayer',
             cE('span'), cE('span'),
-            'Joined Player', (playerTurns.length > 0 ? playerTurns.join(', ') : '~')
+            'Joined Player', (playersTurn.length > 0 ? playersTurn.join(', ') : '~')
         )
         // div bentuk player
         headerDialogChild(
@@ -294,6 +294,10 @@ function infoButtons() {
             dialogInfo.remove()
             dialogWrapper.style.display = 'none'
         }
+    }
+
+    qS('#clearStorage').onclick = ()=>{
+        localStorage.clear()
     }
 }
 

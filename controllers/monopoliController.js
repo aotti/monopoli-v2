@@ -69,6 +69,10 @@ class Monopoli {
         })
         .catch(err => {return newResponse(500, res, err)})
     }
+
+    playerTurnEnd(req, res) {
+
+    }
 }
 
 module.exports = Monopoli

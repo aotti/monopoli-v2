@@ -76,7 +76,7 @@ class MonopoliRepo {
 
     readyRepo(req, res) {
         // TABLE = prepares
-        const { username, harta, pos, kartu } = req.body
+        const { username, harta, pos, kartu, giliran, penjara } = req.body
         const queryObject1 = {}
         // required data for query
         Object.defineProperties(queryObject1, {
@@ -99,7 +99,9 @@ class MonopoliRepo {
                     username: username,
                     harta: harta,
                     pos: pos,
-                    kartu: kartu
+                    kartu: kartu,
+                    giliran: giliran,
+                    penjara: penjara
                 } 
             }}
         })
