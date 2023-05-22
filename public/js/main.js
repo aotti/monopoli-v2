@@ -6,7 +6,16 @@ let gameStatus = null
 // setInterval  
 let startInterval = null
 // player turns
-const myGameData = {username: null, harta: null, kartu: null}
+const myGameData = {
+    username: null, 
+    pos: null, 
+    harta_uang: null, 
+    harta_kota: null, 
+    kartu: null, 
+    giliran: null,
+    jalan: null, 
+    penjara: null
+}
 let playersTurn = []
 let giliranCounter = 0
 let playersTurnShape = null
@@ -24,3 +33,5 @@ confirmDialog()
 decidePlayersTurn()
 // roll the dice
 kocokDaduTrigger()
+// resume the game if a player need to reload the page
+allPlayersLastPos()

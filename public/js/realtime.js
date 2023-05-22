@@ -16,6 +16,9 @@ pubnub.addListener({
             case 'playerJoined':
                 console.log('playerJoined');
                 myGameData.username = qS('.userName').value
+                // save username in localStorage, so the system can recognize
+                // the player when trying to resume the game after reload page
+                setLocStorage('username', myGameData.username)
                 getMessage.data.forEach(v => {
                     // if the player username is in database, then run the function
                     // ### ERROR: realtime data sent faster than fetch result
@@ -47,6 +50,10 @@ pubnub.addListener({
                 break
             case 'playerTurnEnd':
                 console.log('playerTurnEnd');
+                if(myGameData.username == getMessage.data[0].username) {
+                    myGameData.pos = getMessage.data[0].pos
+                    console.log(myGameData);
+                }
                 kocokDaduToggle()
                 break
         }

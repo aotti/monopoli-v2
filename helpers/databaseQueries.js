@@ -31,10 +31,6 @@ async function selectOne(req, res, queryObject) {
     return selectOneDataFromDB()
 }
 
-async function selectNewInsertedData(req, res) {
-
-}
-
 async function insertDataRow(req, res, queryObject) {
     if(supabase == null)
         return res.send('cannot connect to database')
@@ -47,10 +43,6 @@ async function insertDataRow(req, res, queryObject) {
         return {data: data, error: error}
     }
     return insertDataToDB()
-}
-
-async function insertDataCol(req, res) {
-
 }
 
 async function updateData(req, res, queryObject) {
@@ -73,9 +65,7 @@ async function deleteAll(req, res) {
 module.exports = { 
     selectAll, 
     selectOne, 
-    selectNewInsertedData, 
     insertDataRow, 
-    insertDataCol,
     updateData, 
     deleteAll 
 }

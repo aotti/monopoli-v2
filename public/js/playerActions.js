@@ -1,6 +1,16 @@
 // get all player last position
 function allPlayersLastPos() {
-    
+    startInterval = setInterval(() => {
+        // waiting gameStatus get value
+        if(gameStatus != null) {
+            clearInterval(startInterval)
+            // resume the game if still ongoing 
+            if(gameStatus == 'playing') {
+                // get all players data
+                fetcher()
+            }
+        }
+    }, 1000);
 }
 
 // get shape for the current player turn
@@ -32,6 +42,7 @@ function kocokDaduToggle() {
 // when player click the kocok dadu button
 function kocokDaduTrigger(customDadu = null) {
     qS('.acakDadu').onclick = () => {
+        qS('.acakDadu').disabled = true
         // anticipate if someone play on browser then changed the button disabled to false
         if(playersTurn[giliranCounter] != myGameData.username) {
             qS('.acakDadu').disabled = true
@@ -41,7 +52,7 @@ function kocokDaduTrigger(customDadu = null) {
         // run player moves with realtime
         // roll the dice
         const playerDadu = customDadu || Math.floor(Math.random() * 6) + 1
-        fetcher(`${url}/api/moveplayer`, 'POST', {playerDadu: playerDadu})
+        fetcher(`/api/moveplayer`, 'POST', {playerDadu: playerDadu})
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
@@ -86,20 +97,22 @@ function playerMoves(playerDadu) {
         if(stepsCounter == playerDadu) {
             console.log(`${playersTurn[giliranCounter]} moving done`);
             clearInterval(startInterval)
+            // player turn end
+            const jsonData = {
+                username: playersTurn[giliranCounter],
+                pos: playerDiceMove,
+                harta_uang: +mods[1],
+                harta_kota: '',
+                kartu: '',
+                giliran: giliranCounter,
+                jalan: false,
+                penjara: false
+            }
             // increment for next player
             giliranCounter += 1
             if(giliranCounter == playersTurn.length)
                 giliranCounter = 0
-            // player turn end
-            const jsonData = {
-                username: playersTurn[giliranCounter],
-                harta: +mods[1],
-                pos: playerDiceMove,
-                kartu: '',
-                giliran: giliranCounter,
-                penjara: false
-            }
-            fetcher(`${url}/api/turnend`, 'PATCH', jsonData)
+            fetcher(`/api/turnend`, 'PATCH', jsonData)
             .then(data => data.json())
             .then(result => {
                 if(result.status != 200) {

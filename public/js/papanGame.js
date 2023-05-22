@@ -1,6 +1,6 @@
 function createBoard() {
     // get mods data from database
-    fetcher(`${url}/api/mods`, 'GET', null)
+    fetcher(`/api/mods`, 'GET', null)
     .then(data => data.json())
     .then(result => {
         // get empty board

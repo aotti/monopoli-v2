@@ -16,7 +16,7 @@ function decidePlayersTurn() {
             const randNumber = Math.floor(Math.random() * (10001 - 1000)) + 1000;
             acakGiliranTeks.innerText = `Angka: ${randNumber}`
             const jsonData = { randNumber: randNumber, username: userName.value }
-            fetcher(`${url}/api/prepare`, 'POST', jsonData)
+            fetcher(`/api/prepare`, 'POST', jsonData)
             .then(data => data.json())
             .then(result => {
                 // if response status != 200, then display it to the screen
@@ -95,7 +95,8 @@ function waitingOtherPlayers(otherPlayers) {
                 // stop force start interval
                 let timer = 6
                 startInterval = setInterval(() => {
-                    fetcher(`${url}/api/gamestatus`, 'PATCH', {gameStatus: 'ready'})
+                    // update game status
+                    fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'ready'})
                     .then(data => data.json())
                     .then(result => {
                         if(result.status == 200) {
@@ -110,7 +111,7 @@ function waitingOtherPlayers(otherPlayers) {
                     })
                     urutanGiliran.innerText = `Game terpaksa dimulai dalam . . . ${timer}`
                     timer--
-                    if(timer == -1) {
+                    if(timer < 0) {
                         clearInterval(startInterval)
                         tempPlayerTurns.sort().reverse()
                         for(let v of tempPlayerTurns) {
@@ -142,7 +143,7 @@ function waitingOtherPlayers(otherPlayers) {
 
 // tell all player when someone is wanna force start 
 function forceStartGame(theOtherPlayer) {
-    fetcher(`${url}/api/forcestart`, 'PATCH', {username: theOtherPlayer.player_joined})
+    fetcher(`/api/forcestart`, 'PATCH', {username: theOtherPlayer.player_joined})
     .then(data => data.json())
     .then(result => {
         if(result.status != 200) {
@@ -191,6 +192,11 @@ function createPlayersAndGetReady() {
     qS('.tombolMulai').disabled = false
     qS('.tombolMulai').onclick = () => {
         qS('.tombolMulai').disabled = true
+        // anticipate if someone play on browser then changed the button disabled to false
+        if(gameStatus != 'ready') {
+            feedbackTurnOn('Orang curang kuburannya di meikarta')
+            return feedbackTurnOff()
+        }
         let tempGiliran = null
         for(let p in playersTurn) {
             if(playersTurn[p] == myGameData.username)
@@ -198,13 +204,15 @@ function createPlayersAndGetReady() {
         }
         const jsonData = {
             username: myGameData.username,
-            harta: +mods[1],
             pos: 1,
+            harta_uang: +mods[1],
+            harta_kota: '',
             kartu: '',
             giliran: tempGiliran,
+            jalan: (tempGiliran == 0 ? true : false),
             penjara: false
         }
-        fetcher(`${url}/api/ready`, 'PATCH', jsonData)
+        fetcher(`/api/ready`, 'POST', jsonData)
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
@@ -234,9 +242,23 @@ function gettingReady(readyPlayers) {
     if(playersTurn.length == readyCounter) {
         let timer = 4
         startInterval = setInterval(() => {
+            // update game status
+            fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'playing'})
+            .then(data => data.json())
+            .then(result => {
+                if(result.status == 200) {
+                    getGameStatus(false)
+                }
+                else if(result.status != 200) {
+                    return errorCapsule(result, `an error occured\n`)
+                }
+            })
+            .catch(err => {
+                return errorCapsule(err, `an error occured\n`)
+            })
             urutanGiliran.innerText = `game dimulai dalam . . ${timer}`
             timer--
-            if(timer == -1) {
+            if(timer < 0) {
                 clearInterval(startInterval)
                 urutanGiliran.innerText = ``
                 // run this function after the timer is out 

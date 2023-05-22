@@ -28,17 +28,19 @@ function validatePlayerForcing(req, res, next) {
     next()
 }
 
-function validatePlayerReady(req, res, next) {
-    const { username, harta, pos, kartu, giliran, penjara } = req.body
+function validatePlayerData(req, res, next) {
+    const { username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara } = req.body
     // check var types
     switch(true) {
         case isStringOrNumberOrBool(username, stringType) :
-        case isStringOrNumberOrBool(harta, numberType) :
         case isStringOrNumberOrBool(pos, numberType) :
+        case isStringOrNumberOrBool(harta_uang, numberType) :
+        case isStringOrNumberOrBool(harta_kota, stringType) :
         case isStringOrNumberOrBool(kartu, stringType) :
         case isStringOrNumberOrBool(giliran, numberType) :
+        case isStringOrNumberOrBool(jalan, booleanType) :
         case isStringOrNumberOrBool(penjara, booleanType) :
-            return newResponse(400, res, 'playerReady type is invalid')
+            return newResponse(400, res, 'player type is invalid')
     }
     next()
 }
@@ -56,5 +58,5 @@ module.exports = {
     validateUUIDv4, 
     validatePlayerJoined, 
     validatePlayerForcing, 
-    validatePlayerReady
+    validatePlayerData
 }

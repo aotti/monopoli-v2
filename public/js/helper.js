@@ -4,6 +4,16 @@ const cE = el => {return document.createElement(el)}
 const docFrag = document.createDocumentFragment()
 
 /**
+ * @param {String} name - set name for localStorage (string)
+ * @param {String|Number} value - set value (string or number)
+ */
+function setLocStorage(name, value) { return localStorage.setItem(name, value); }
+/**
+ * @param {String} name - get localStorage value by name (string)
+ */
+function getLocStorage(name) { return localStorage.getItem(name) }
+
+/**
  * @param {Number} money - add comma to currency for readability (number)
  */
 function currencyComma(money) { return money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
@@ -64,7 +74,7 @@ function errorCapsule(err, errorMessage) {
 function getGameStatus(fetching = true) {
     const gameStatusLamp = qS('#gameStatus')
     if(fetching) {
-        fetcher(`${url}/api/gamestatus`, 'GET')
+        fetcher(`/api/gamestatus`, 'GET')
         .then(data => data.json())
         .then(result => {
             if(result.status == 200) {
@@ -78,7 +88,7 @@ function getGameStatus(fetching = true) {
                         gameStatusLamp.style.background = 'yellow'
                         break
                     case 'playing':
-                        gameStatusLamp.style.background = 'green'
+                        gameStatusLamp.style.background = 'lawngreen'
                         break
                     case 'done':
                         gameStatusLamp.style.background = 'red'
@@ -102,7 +112,7 @@ function getGameStatus(fetching = true) {
             gameStatusLamp.style.background = 'yellow'
             break
         case 'playing':
-            gameStatusLamp.style.background = 'green'
+            gameStatusLamp.style.background = 'lawngreen'
             break
         case 'done':
             gameStatusLamp.style.background = 'red'
@@ -110,15 +120,31 @@ function getGameStatus(fetching = true) {
     }
 }
 
+function resetGameStatus() {
+    fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'unready'})
+    .then(data => data.json())
+    .then(result => {
+        if(result.status == 200) {
+            getGameStatus(false)
+        }
+        else if(result.status != 200) {
+            return errorCapsule(result, `an error occured\n`)
+        }
+    })
+    .catch(err => {
+        return errorCapsule(err, `an error occured\n`)
+    })
+}
+
 /**
- * @param {String} apiUrl - base url + api endpoint (string)
+ * @param {String} endpoint - api endpoint (string)
  * @param {String} method - http method get/post/etc (string)
  * @param {{key: string|number}|null} jsonData - payload data (object)
  */
-function fetcher(apiUrl, method, jsonData) {
+function fetcher(endpoint, method, jsonData) {
     switch(method) {
         case 'GET':
-            return fetch(`${apiUrl}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
+            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -126,7 +152,7 @@ function fetcher(apiUrl, method, jsonData) {
             })
         case 'POST':
         case 'PATCH':
-            return fetch(`${apiUrl}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
+            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
