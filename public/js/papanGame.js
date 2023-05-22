@@ -1,6 +1,6 @@
 function createBoard() {
     // get mods data from database
-    fetcher(`${url}/api/mods`, 'get', null)
+    fetcher(`${url}/api/mods`, 'GET', null)
     .then(data => data.json())
     .then(result => {
         // get empty board
@@ -29,7 +29,7 @@ function createBoard() {
         // append shape to empty board
         papanGame.appendChild(docFrag)
         // insert images to board
-        insertImagesToBoard()
+        insertLandsToBoard()
     })
     .catch(err => {
         return errorCapsule(err, `an error occured\n`)
@@ -45,15 +45,15 @@ function insertImage(allLands, i, imgEl, src) {
     allLands[i].parentElement.insertBefore(docFrag, allLands[i].parentElement.children[0]);
 }
 
-function insertImagesToBoard() {
+function insertLandsToBoard() {
     // set random percent for price on kotaTerkutuk
     const randKutukan = Math.floor(Math.random() * ((+mods[4] + 1) - +mods[3])) + +mods[3]
     // set the price for kotaTerkutuk
-    const rumusKutukan1 = (4e3 * (getLocStorage('jpStorage') != null ? +getLocStorage('jpStorage') : 1) * (getLocStorage('putaran') != null ? +getLocStorage('putaran') : 1))
-    const rumusKutukan2 = (1e4 * (getLocStorage('putaran') != null ? +getLocStorage('putaran') : 1) * (randKutukan / 100))
+    const rumusKutukan1 = (4e3 * (playersTurn != null ? playersTurn.length : 1) * (laps != null ? laps : 1))
+    const rumusKutukan2 = (1e4 * (laps != null ? laps : 1) * (randKutukan / 100))
     const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2)
     // set the price for kotaKhusus
-    const hargaKhusus = (getLocStorage('putaran') != null && +getLocStorage('putaran') > 6 ? 12_000 : 0)
+    const hargaKhusus = (laps != null && laps > 6 ? 12_000 : 0)
     // land numbers
     const np = [
                 2, 5, 6,

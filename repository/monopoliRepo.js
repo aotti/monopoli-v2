@@ -8,6 +8,46 @@ const { selectAll,
         deleteAll } = require('../helpers/databaseQueries')
 
 class MonopoliRepo {
+    getGameStatusRepo(req, res) {
+        // TABLE = games
+        // required data for query
+        const queryObject = {
+            table: 'games',
+            selectColumn: 'status',
+            whereColumn: 'id',
+            whereValue: 1
+        }
+        // get status data for the game state
+        return newPromise(selectOne(req, res, queryObject))
+    }
+
+    updateGameStatusRepo(req, res) {
+        // TABLE = games
+        const { gameStatus } = req.body
+        // required data for query
+        const queryObject = {}
+        Object.defineProperties(queryObject, {
+            table: {enumerable: true, value: 'games'},
+            whereColumn: {enumerable: true, value: 'id'},
+            whereValue: {enumerable: true, value: 1},
+            updateColumn: {enumerable: true, get: function() {
+                return {
+                    status: gameStatus
+                } 
+            }}
+        })
+        // get status data for the game state
+        return newPromise(updateData(req, res, queryObject))
+        .then(() => {
+            // get all player data
+            return newPromise(selectAll(req, res, queryObject))
+        })
+        .catch(err => {
+            console.log('this.updateGameStatusRepo');
+            return console.log(err);
+        })
+    }
+
     getModsDataRepo(req, res) {
         // TABLE = mods
         // required data for query
@@ -121,6 +161,37 @@ class MonopoliRepo {
         })
         .catch(err => {
             console.log('this.readyRepo');
+            return console.log(err);
+        })
+    }
+
+    playerTurnEndRepo(req, res) {
+        // TABLE = players
+        const { username, harta, pos, kartu, giliran, penjara } = req.body
+        const queryObject = {}
+        // required data for query
+        Object.defineProperties(queryObject, {
+            table: {enumerable: true, value: 'players'},
+            whereColumn: {enumerable: true, value: 'username'},
+            whereValue: {enumerable: true, value: username},
+            updateColumn: {enumerable: true, get: function() {
+                return {
+                    harta: harta,
+                    pos: pos,
+                    kartu: kartu,
+                    giliran: giliran,
+                    penjara: penjara
+                } 
+            }}
+        })
+        // update player_forcing: true
+        return newPromise(updateData(req, res, queryObject))
+        .then(() => {
+            // get all player data
+            return newPromise(selectAll(req, res, queryObject))
+        })
+        .catch(err => {
+            console.log('this.playerTurnEndRepo');
             return console.log(err);
         })
     }

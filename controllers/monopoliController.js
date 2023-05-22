@@ -11,6 +11,31 @@ const pubnub = new PubNub({
 })
 
 class Monopoli {
+    getGameStatus(req, res) {
+        // get mods data 
+        MonopoliRepo.getGameStatusRepo(req, res)
+        .then(result => {
+            return newResponse(200, res, result)
+        })
+        .catch(err => {return newResponse(500, res, err)})
+    }
+
+    updateGameStatus(req, res) {
+        // get mods data 
+        MonopoliRepo.updateGameStatusRepo(req, res)
+        .then(result => {
+            // send realtime data
+            pubnub.publish({
+                channel: 'monopoli_v2',
+                message: {type: 'gameStatus', data: result}
+            }, function (status, response) {
+                // send response after realtime data sent
+                return newResponse(200, res, result)
+            })
+        })
+        .catch(err => {return newResponse(500, res, err)})
+    }
+
     getModsData(req, res) {
         // get mods data 
         MonopoliRepo.getModsDataRepo(req, res)
@@ -70,8 +95,32 @@ class Monopoli {
         .catch(err => {return newResponse(500, res, err)})
     }
 
-    playerTurnEnd(req, res) {
+    playerMoving(req, res) {
+        const { playerDadu } = req.body
+        // send realtime data
+        return pubnub.publish({
+            channel: 'monopoli_v2',
+            message: {type: 'playerMoving', data: playerDadu}
+        }, function (status, response) {
+            // send response after realtime data sent
+            return newResponse(200, res, 'player moving')
+        })
+    }
 
+    playerTurnEnd(req, res) {
+        // get all player data who ready to play
+        MonopoliRepo.playerTurnEndRepo(req, res)
+        .then(result => {
+            // send realtime data
+            pubnub.publish({
+                channel: 'monopoli_v2',
+                message: {type: 'playerTurnEnd', data: result}
+            }, function (status, response) {
+                // send response after realtime data sent
+                return newResponse(200, res, 'turn end')
+            })
+        })
+        .catch(err => {return newResponse(500, res, err)})
     }
 }
 

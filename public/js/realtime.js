@@ -9,11 +9,17 @@ pubnub.addListener({
     message: function(m) {
         const getMessage = m.message
         switch(getMessage.type) {
+            case 'gameStatus': 
+                gameStatus = getMessage.data[0].status
+                getGameStatus(false)
+                break
             case 'playerJoined':
                 console.log('playerJoined');
+                myGameData.username = qS('.userName').value
                 getMessage.data.forEach(v => {
                     // if the player username is in database, then run the function
-                    if(v.player_joined == getLocStorage('username'))
+                    // ### ERROR: realtime data sent faster than fetch result
+                    if(v.player_joined == myGameData.username)
                         waitingOtherPlayers(getMessage.data)
                 })
                 break
@@ -21,7 +27,7 @@ pubnub.addListener({
                 console.log('playerForcing');
                 getMessage.data.forEach(v => {
                     // if the player username is in database, then run the function
-                    if(v.player_joined == getLocStorage('username'))
+                    if(v.player_joined == myGameData.username)
                         waitingOtherPlayers(getMessage.data)
                 })
                 break
@@ -29,16 +35,19 @@ pubnub.addListener({
                 console.log('playerReady');
                 getMessage.data.forEach(v => {
                     // if the player username is in database, then run the function
-                    if(v.player_joined == getLocStorage('username'))
+                    if(v.player_joined == myGameData.username)
                         gettingReady(getMessage.data)
                 })
                 break
-            case 'nextPlayer':
-                console.log('nextPlayer');
-                giliranCounter += 1
-                if(giliranCounter == playersTurn.length)
-                    giliranCounter = 0
-                kocokDaduTrigger()
+            case 'playerMoving':
+                console.log('playerMoving');
+                // player moving
+                // getMessage.data = playerDadu
+                playerMoves(getMessage.data)
+                break
+            case 'playerTurnEnd':
+                console.log('playerTurnEnd');
+                kocokDaduToggle()
                 break
         }
     }

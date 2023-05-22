@@ -295,10 +295,6 @@ function infoButtons() {
             dialogWrapper.style.display = 'none'
         }
     }
-
-    qS('#clearStorage').onclick = ()=>{
-        localStorage.clear()
-    }
 }
 
 // 3d dice

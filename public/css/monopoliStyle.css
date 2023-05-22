@@ -56,6 +56,13 @@
   width: 60px;
 }
 
+#gameStatus {
+  display: inline-block;
+  border-radius: 50px;
+  border: 2px solid;
+  padding: 10px;
+}
+
 #papan_game {
   /* display: table-cell; */
   width: 615px;
@@ -446,7 +453,7 @@
   grid-gap: 8px;
   position: absolute;
   z-index: 99;
-  top: 50%;
+  top: 45%;
   left: 29.8%;
   width: 240px;
   text-align: center;
@@ -500,7 +507,7 @@
   background: mediumaquamarine;
   top: 270px;
   right: 440px;
-  /* padding: 3px; */
+  padding: 3px;
   text-align: center;
   opacity: .3;
 }
