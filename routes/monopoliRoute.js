@@ -10,6 +10,7 @@ const {
 router
     .get('/api/gamestatus', validateUUIDv4, Monopoli.getGameStatus)
     .patch('/api/gamestatus', validateUUIDv4, Monopoli.updateGameStatus)
+    .get('/api/deleteplayers', validateUUIDv4, Monopoli.deletePlayerRows)
     .get('/api/mods', validateUUIDv4, Monopoli.getModsData)
     .post('/api/prepare', validateUUIDv4, validatePlayerJoined, Monopoli.playerJoined)
     .patch('/api/forcestart', validateUUIDv4, validatePlayerForcing, Monopoli.forceStart)

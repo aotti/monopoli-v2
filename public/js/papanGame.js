@@ -15,14 +15,14 @@ function createBoard() {
         else if(mods[0] == 'persegiPanjangV2')
             persegiPanjangV2();
         else if(mods[0] == 'anggapSegitiga') {
-            qS('.feedback_box').style.top = '60px';
-            qS('.feedback_box').style.right = '345px';
+            qS('.feedback_box').style.top = '63px';
+            qS('.feedback_box').style.right = '340px';
             qS('.feedback_box').style.height = '200px';
             qS('.feedback_box').style.width = '300px';
             anggapSegitiga();
         }
         else {
-            qS('.feedback_box').style.top = '165px';
+            qS('.feedback_box').style.top = '170px';
             // qS('.feedback_box').style.right = '340px';
             bercabangDua();
         }

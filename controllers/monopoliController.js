@@ -1,14 +1,11 @@
+// response manage
 const { newResponse } = require('../helpers/basic')
+// database manage
 const monopoliRepo = require('../repository/monopoliRepo')
 const MonopoliRepo = new monopoliRepo()
-require('dotenv').config()
-// pubnub config
-const PubNub = require('pubnub')
-const pubnub = new PubNub({
-    subscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY,
-    publishKey: process.env.PUBNUB_PUBLISH_KEY,
-    userId: PubNub.generateUUID()
-})
+// realtime helper
+const { pubnubPublish } = require('../helpers/pubnubRealtime')
+const { ablyPublish } = require('../helpers/ablyRealtime')
 
 class Monopoli {
     getGameStatus(req, res) {
@@ -25,13 +22,18 @@ class Monopoli {
         MonopoliRepo.updateGameStatusRepo(req, res)
         .then(result => {
             // send realtime data
-            pubnub.publish({
-                channel: 'monopoli_v2',
-                message: {type: 'gameStatus', data: result}
-            }, function (status, response) {
-                // send response after realtime data sent
-                return newResponse(200, res, result)
-            })
+            // pubnub 
+            // pubnubPublish('gameStatus', result, newResponse(200, res, result)) 
+            // ably
+            ablyPublish('gameStatus', result, newResponse(200, res, result))
+        })
+        .catch(err => {return newResponse(500, res, err)})
+    }
+
+    deletePlayerRows(req, res) {
+        MonopoliRepo.deletePlayerRowsRepo(req, res)
+        .then(result => {
+            return newResponse(200, res, result)
         })
         .catch(err => {return newResponse(500, res, err)})
     }
@@ -49,16 +51,11 @@ class Monopoli {
         // get all player data who joined the game 
         MonopoliRepo.playerJoinedRepo(req, res)
         .then(result => {
-            if(result != null) {
-                // send realtime data
-                pubnub.publish({
-                    channel: 'monopoli_v2',
-                    message: {type: 'playerJoined', data: result}
-                }, function (status, response) {
-                    // send response after realtime data sent
-                    return newResponse(200, res, `${result.player_joined} joining the game`)
-                })
-            }
+            // send realtime data
+            // pubnub 
+            // pubnubPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
+            // ably
+            ablyPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
@@ -68,13 +65,10 @@ class Monopoli {
         MonopoliRepo.forceStartRepo(req, res)
         .then(result => {
             // send realtime data
-            pubnub.publish({
-                channel: 'monopoli_v2',
-                message: {type: 'playerForcing', data: result}
-            }, function (status, response) {
-                // send response after realtime data sent
-                return newResponse(200, res, 'updated')
-            })
+            // pubnub 
+            // pubnubPublish('playerForcing', result, newResponse(200, res, 'updated'))
+            // ably
+            ablyPublish('playerForcing', result, newResponse(200, res, `updated`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
@@ -84,27 +78,21 @@ class Monopoli {
         MonopoliRepo.readyRepo(req, res)
         .then(result => {
             // send realtime data
-            pubnub.publish({
-                channel: 'monopoli_v2',
-                message: {type: 'playerReady', data: result}
-            }, function (status, response) {
-                // send response after realtime data sent
-                return newResponse(200, res, 'ready')
-            })
+            // pubnub 
+            // pubnubPublish('playerReady', result, newResponse(200, res, 'ready'))
+            // ably
+            ablyPublish('playerReady', result, newResponse(200, res, `ready`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
 
     playerMoving(req, res) {
-        const { playerDadu } = req.body
+        const { playerDadu, username, branch } = req.body
         // send realtime data
-        return pubnub.publish({
-            channel: 'monopoli_v2',
-            message: {type: 'playerMoving', data: playerDadu}
-        }, function (status, response) {
-            // send response after realtime data sent
-            return newResponse(200, res, 'player moving')
-        })
+        // pubnub 
+        // pubnubPublish('playerMoving', playerDadu, newResponse(200, res, 'player moving'))
+        // ably
+        ablyPublish('playerMoving', {playerDadu: playerDadu, username: username, branch: branch}, newResponse(200, res, `player moving`))
     }
 
     playerTurnEnd(req, res) {
@@ -112,16 +100,14 @@ class Monopoli {
         MonopoliRepo.playerTurnEndRepo(req, res)
         .then(result => {
             // send realtime data
-            pubnub.publish({
-                channel: 'monopoli_v2',
-                message: {type: 'playerTurnEnd', data: result}
-            }, function (status, response) {
-                // send response after realtime data sent
-                return newResponse(200, res, 'turn end')
-            })
+            // // pubnub 
+            // pubnubPublish('playerTurnEnd', result, newResponse(200, res, 'turn end')) 
+            // ably
+            ablyPublish('playerTurnEnd', result, newResponse(200, res, `turn end`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
+    
 }
 
 module.exports = Monopoli

@@ -3,8 +3,6 @@ const url = window.location.origin
 let mods = []
 // state of the game, used to manage player join / spectator
 let gameStatus = null
-// setInterval  
-let startInterval = null
 // player turns
 const myGameData = {
     username: null, 
@@ -16,10 +14,18 @@ const myGameData = {
     jalan: null, 
     penjara: null
 }
+// 
 let playersTurn = []
+let playersTurnObj = []
 let giliranCounter = 0
-let playersTurnShape = null
-let laps = null
+let turnEndStatus = false
+let branchChance = 100
+const myBranchChance = {
+    username: null,
+    chance: null,
+    firstTime: true
+}
+let laps = 1
 // get game status
 getGameStatus()
 // create monopoly board

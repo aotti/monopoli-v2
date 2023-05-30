@@ -29,11 +29,15 @@ function validatePlayerForcing(req, res, next) {
 }
 
 function validatePlayerData(req, res, next) {
-    const { username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara } = req.body
+    const { username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, next_player } = req.body
     // check var types
+    if(next_player != null) {
+        if(isStringOrNumberOrBool(next_player, stringType) == true)
+            return newResponse(400, res, 'player type is invalid')
+    }
     switch(true) {
         case isStringOrNumberOrBool(username, stringType) :
-        case isStringOrNumberOrBool(pos, numberType) :
+        case isStringOrNumberOrBool(pos, stringType) :
         case isStringOrNumberOrBool(harta_uang, numberType) :
         case isStringOrNumberOrBool(harta_kota, stringType) :
         case isStringOrNumberOrBool(kartu, stringType) :

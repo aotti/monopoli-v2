@@ -61,6 +61,7 @@ function decidePlayersTurn() {
 function waitingOtherPlayers(otherPlayers) {
     const urutanGiliran = qS('.urutanGiliran')
     let tempPlayerTurns = []
+    let startInterval = null
     for(let v of otherPlayers)
         tempPlayerTurns.push(v.player_rand)
     switch(otherPlayers.length) {
@@ -92,25 +93,28 @@ function waitingOtherPlayers(otherPlayers) {
             }
             // prepare the game
             if(otherPlayers.length == forceCounter) {
-                // stop force start interval
                 let timer = 6
                 startInterval = setInterval(() => {
-                    // update game status
-                    fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'ready'})
-                    .then(data => data.json())
-                    .then(result => {
-                        if(result.status == 200) {
-                            getGameStatus(false)
-                        }
-                        else if(result.status != 200) {
-                            return errorCapsule(result, `an error occured\n`)
-                        }
-                    })
-                    .catch(err => {
-                        return errorCapsule(err, `an error occured\n`)
-                    })
+                    // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
+                    if(timer == 6) {
+                        // update game status
+                        fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'ready'})
+                        .then(data => data.json())
+                        .then(result => {
+                            if(result.status == 200) {
+                                getGameStatus(false)
+                            }
+                            else if(result.status != 200) {
+                                return errorCapsule(result, `an error occured\n`)
+                            }
+                        })
+                        .catch(err => {
+                            return errorCapsule(err, `an error occured\n`)
+                        })
+                    }
                     urutanGiliran.innerText = `Game terpaksa dimulai dalam . . . ${timer}`
                     timer--
+                    // stop force start interval
                     if(timer < 0) {
                         clearInterval(startInterval)
                         tempPlayerTurns.sort().reverse()
@@ -204,7 +208,7 @@ function createPlayersAndGetReady() {
         }
         const jsonData = {
             username: myGameData.username,
-            pos: 1,
+            pos: '1',
             harta_uang: +mods[1],
             harta_kota: '',
             kartu: '',
@@ -229,33 +233,36 @@ function createPlayersAndGetReady() {
 function gettingReady(readyPlayers) {
     // waiting other player to get ready
     const urutanGiliran = qS('.urutanGiliran')
-    let readyCounter = 0
-    readyPlayers.forEach(v => {
-        if(v.player_ready === true)
-            readyCounter += 1
-    })
+    // let readyCounter = 0
+    // readyPlayers.forEach(v => {
+    //     if(v.player_ready === true)
+    //         readyCounter += 1
+    // })
     let urutanTeks = `Urutan Giliran`
     for(let i in playersTurn) 
         urutanTeks += `\n#${+i + 1} - ${playersTurn[i]}`
-    urutanGiliran.innerText = `${urutanTeks}\n${readyCounter} player sudah siap..`
+    urutanGiliran.innerText = `${urutanTeks}\n${readyPlayers.length} player sudah siap..`
     // if all player is ready, start the game
-    if(playersTurn.length == readyCounter) {
+    if(playersTurn.length == readyPlayers.length) {
         let timer = 4
-        startInterval = setInterval(() => {
-            // update game status
-            fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'playing'})
-            .then(data => data.json())
-            .then(result => {
-                if(result.status == 200) {
-                    getGameStatus(false)
-                }
-                else if(result.status != 200) {
-                    return errorCapsule(result, `an error occured\n`)
-                }
-            })
-            .catch(err => {
-                return errorCapsule(err, `an error occured\n`)
-            })
+        const startInterval = setInterval(() => {
+            // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
+            if(timer == 4) {
+                // update game status
+                fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'playing'})
+                .then(data => data.json())
+                .then(result => {
+                    if(result.status == 200) {
+                        getGameStatus(false)
+                    }
+                    else if(result.status != 200) {
+                        return errorCapsule(result, `an error occured\n`)
+                    }
+                })
+                .catch(err => {
+                    return errorCapsule(err, `an error occured\n`)
+                })
+            }
             urutanGiliran.innerText = `game dimulai dalam . . ${timer}`
             timer--
             if(timer < 0) {

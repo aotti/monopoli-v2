@@ -46,6 +46,27 @@ class MonopoliRepo {
         })
     }
 
+    deletePlayerRowsRepo(req, res) {
+        // TABLE = players, prepares
+        // required data for query
+        const queryObject = {
+            table: 'players'
+        }
+        const  queryObject2 = {
+            table: 'prepares'
+        }
+        // delete all data from players
+        return newPromise(deleteAll(req, res, queryObject))
+        .then(() => {
+            // delete all data from prepares
+            return newPromise(deleteAll(req, res, queryObject2))
+        })
+        .catch(err => {
+            console.log('this.deletePlayerRowsRepo');
+            return console.log(err);
+        })
+    }
+
     getModsDataRepo(req, res) {
         // TABLE = mods
         // required data for query
@@ -117,9 +138,9 @@ class MonopoliRepo {
     readyRepo(req, res) {
         // TABLE = prepares
         const { username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara } = req.body
-        const queryObject1 = {}
+        const queryObject = {}
         // required data for query
-        Object.defineProperties(queryObject1, {
+        Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'prepares'},
             whereColumn: {enumerable: true, value: 'player_joined'},
             whereValue: {enumerable: true, value: username},
@@ -148,28 +169,28 @@ class MonopoliRepo {
             }}
         })
         // update player_ready: true
-        return newPromise(updateData(req, res, queryObject1))
+        return newPromise(updateData(req, res, queryObject))
         .then(() => {
             // insert data to players table
             return newPromise(insertDataRow(req, res, queryObject2))
             .then(() => {
-                // get all player data
-                return newPromise(selectAll(req, res, queryObject1))
+                // get all player data from players table
+                return newPromise(selectAll(req, res, queryObject2))
             })
             .catch(err => {
-                console.log('this.readyRepo');
+                console.log('this.readyRepo 2');
                 return console.log(err);
             })
         })
         .catch(err => {
-            console.log('this.readyRepo');
+            console.log('this.readyRepo 1');
             return console.log(err);
         })
     }
 
     playerTurnEndRepo(req, res) {
         // TABLE = players
-        const { username, pos, harta_uang, harta_kota, kartu, jalan, penjara } = req.body
+        const { username, pos, harta_uang, harta_kota, kartu, jalan, penjara, next_player } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
@@ -188,14 +209,34 @@ class MonopoliRepo {
                 } 
             }}
         })
-        // update some player data
+        const queryObject2 = {}
+        Object.defineProperties(queryObject2, {
+            table: {enumerable: true, value: 'players'},
+            selectColumn: {enumerable: true, value: 'username, pos, giliran, jalan'},
+            whereColumn: {enumerable: true, value: 'username'},
+            whereValue: {enumerable: true, value: next_player},
+            updateColumn: {enumerable: true, get: function() {
+                return {
+                    jalan: true
+                } 
+            }}
+        })
+        // update player data
         return newPromise(updateData(req, res, queryObject))
         .then(() => {
-            // get one player data
-            return newPromise(selectOne(req, res, queryObject))
+            // update next player jalan to TRUE
+            return newPromise(updateData(req, res, queryObject2))
+            .then(() => {
+                // get only next player data from players table
+                return newPromise(selectOne(req, res, queryObject2))
+            })
+            .catch(err => {
+                console.log('this.playerTurnEndRepo 2');
+                return console.log(err);
+            })
         })
         .catch(err => {
-            console.log('this.playerTurnEndRepo');
+            console.log('this.playerTurnEndRepo 1');
             return console.log(err);
         })
     }

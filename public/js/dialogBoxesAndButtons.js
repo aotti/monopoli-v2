@@ -46,7 +46,7 @@ function gameButtons() {
         [null, 'putaranTeks', 'putaranBuff'],
         // innerText
         // ### putaranTeks perlu localStorage
-        [null, 'Putaran ', '\u{2615}']
+        [null, `Putaran ${laps}`, '\u{2615}']
     )
     // paksa start
     const paksaMulaiSpan = cE('span')

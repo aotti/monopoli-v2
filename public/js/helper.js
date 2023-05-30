@@ -3,6 +3,12 @@ const qSA = el => {return document.querySelectorAll(el)}
 const cE = el => {return document.createElement(el)}
 const docFrag = document.createDocumentFragment()
 
+function uuidv4() {
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+}
+
 /**
  * @param {String} name - set name for localStorage (string)
  * @param {String|Number} value - set value (string or number)
@@ -120,20 +126,52 @@ function getGameStatus(fetching = true) {
     }
 }
 
-function resetGameStatus() {
-    fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'unready'})
-    .then(data => data.json())
-    .then(result => {
-        if(result.status == 200) {
-            getGameStatus(false)
-        }
-        else if(result.status != 200) {
-            return errorCapsule(result, `an error occured\n`)
-        }
-    })
-    .catch(err => {
-        return errorCapsule(err, `an error occured\n`)
-    })
+const resetter = {
+    get resetGameStatus() {
+        fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'unready'})
+        .then(data => data.json())
+        .then(result => {
+            if(result.status == 200) {
+                getGameStatus(false)
+            }
+            else if(result.status != 200) {
+                return errorCapsule(result, `an error occured\n`)
+            }
+        })
+        .catch(err => {
+            return errorCapsule(err, `an error occured\n`)
+        })
+    },
+    get resetPlayerTable() {
+        fetcher('/api/deleteplayers', 'GET')
+        .then(data => data.json())
+        .then(result => {
+            if(result.status != 200) {
+                return errorCapsule(result, `an error occured\n`)
+            }
+            console.log(result);
+        })
+        .catch(err => {
+            return errorCapsule(err, `an error occured\n`)
+        })
+    }
+}
+
+/**
+ * @param {Number} type - choose payload type
+ * 
+ */
+function payloads(type) {
+    switch(type) {
+        case 1:
+            return {
+
+            }
+        case 2:
+            return {
+                
+            }
+    }
 }
 
 /**
@@ -144,7 +182,7 @@ function resetGameStatus() {
 function fetcher(endpoint, method, jsonData) {
     switch(method) {
         case 'GET':
-            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
+            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -152,7 +190,7 @@ function fetcher(endpoint, method, jsonData) {
             })
         case 'POST':
         case 'PATCH':
-            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: pubnub.getUUID() }), {
+            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'

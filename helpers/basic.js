@@ -8,8 +8,8 @@ function newPromise(data) {
     })
 }
 
-function newResponse(type, res, data) {
-    switch(type) {
+function newResponse(status, res, data) {
+    switch(status) {
         case 200:
             return res.status(200).json({
                 status: 200,
