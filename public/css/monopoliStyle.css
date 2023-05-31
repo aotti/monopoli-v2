@@ -533,6 +533,7 @@
   z-index: 10;
   background: lightblue;
   padding: 2px;
+  border: 1px solid;
 }
 
 [class^='petak'] {

@@ -15,8 +15,11 @@ function allPlayersLastPos() {
 
 // get shape for the current player turn
 function thisShapeIsMe(username) {
+    // get all player shapes
     for(let player of qSA('.pdiv')) {
+        // find the shape id that have the same name as player username
         if(player.id == username) 
+            // get that shape
             return player
     }
 }
@@ -41,6 +44,7 @@ function kocokDaduToggle() {
 // when player click the kocok dadu button
 function kocokDaduTrigger(customDadu = null) {
     qS('.acakDadu').onclick = () => {
+        // disable after click
         qS('.acakDadu').disabled = true
         // anticipate if someone play on browser then changed the button disabled to false
         if(myGameData.jalan !== true) {
@@ -51,14 +55,18 @@ function kocokDaduTrigger(customDadu = null) {
         // run player moves with realtime
         // roll the dice
         const playerDadu = customDadu || Math.floor(Math.random() * 6) + 1
+        // roll the branch
         const mathBranch = Math.floor(Math.random() * 100)
-        if(myBranchChance.firstTime === false && mathBranch > mods[5])
+        // on 2nd time roll branch, create new value
+        if(myBranchChance.firstTime === false)
             myBranchChance.chance = mathBranch
+        // payload
         const jsonData = {
             playerDadu: playerDadu,
             username: playersTurn[giliranCounter],
             branch: myBranchChance.chance
         }
+        // send data to server
         fetcher(`/api/moveplayer`, 'POST', jsonData)
         .then(data => data.json())
         .then(result => {
@@ -72,17 +80,23 @@ function kocokDaduTrigger(customDadu = null) {
     }
 }
 
+// player steps
 function footsteps(footstep, branch = '') {
     return footstep % 28 == 0 ? 28 + branch : (footstep % 28) + branch;
 }
 
+// player pos after dice rolled
 function getDiceMove(playerPosNow, playerDadu, tempBranchChance) {
+    // get the pos after roll
     const tempDiceMove = footsteps(playerPosNow + playerDadu)
     let tempPlayerDice = null
+    // if we go inside branch, add letter 'a' to the dice value  
     if(mods[0] == 'bercabangDua' && tempBranchChance <= mods[5] && (tempDiceMove == 1 || tempDiceMove == 2 || tempDiceMove == 14 || tempDiceMove == 15 || tempDiceMove == 16 || tempDiceMove == 28))
         tempPlayerDice = tempDiceMove + 'a'
+    // if outside branch, nothing to add
     else
         tempPlayerDice = tempDiceMove
+    // return the dice value
     return tempPlayerDice
 }
 
@@ -90,22 +104,43 @@ function getDiceMove(playerPosNow, playerDadu, tempBranchChance) {
 function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
     // my pos right now
     const playerPosNow = +playersTurnShape.parentElement.classList[0].match(/\d+/)
-    // dice animation
-    const daduAnimasi = null
+    // ### ADD DICE ANIMATION ###
+    const daduAnimasi = qS('#dice1')
     // my pos after roll dice
     const playerDiceMove = getDiceMove(playerPosNow, playerDadu, tempBranchChance)
     // steps counter
     let steps = 0, stepsCounter = 0
-    // display dice roll number
-    qS('.acakDaduTeks').innerText = `Angka Dadu: ${playerDadu}`
+    // display dice roll number if the number is <= 6
+    if(playerDadu <= 6) {
+        // make the 3d dice visible
+        daduAnimasi.style.visibility = 'visible';
+        for(let i=1; i<=6; i++) {
+            // roll animation
+            daduAnimasi.classList.remove(`show-${i}`);
+            // when the 3d dice number == playerDadu, show the dice number
+            if(i == playerDadu) {
+                daduAnimasi.classList.add(`show-${i}`);
+                // reset 3d dice after few seconds
+                setTimeout(() => {
+                    daduAnimasi.style.visibility = 'hidden';
+                    daduAnimasi.classList.remove(`show-${i}`);
+                }, playerDadu <= 3 ? 4000 : 6000);
+            }
+        }
+    }
+    // if dice number > 6 only display text
+    else
+        qS('.acakDaduTeks').innerText = `Angka Dadu: ${playerDadu}`
     // display branch number
     qS('.acakGiliranTeks').innerText = `Cabang: ${tempBranchChance}`
     // start moving the player
-    const startInterval = setInterval(() => { playerMoving() }, 500)
+    let moveDelay = 0
+    const startInterval = setInterval(() => { moveDelay < 2 ? moveDelay++ : playerMoving() }, 500)
     function playerMoving() {
         // steps used to sync with the next land number
         // stepsCounter + 1 cuz the loop stops before we can get the last increment
         steps = playerPosNow + (stepsCounter + 1)
+        // for lands in branch
         let steps2 = null
         for(let land of qSA('[class^=petak]')) {
             if(mods[0] == 'bercabangDua') {
@@ -126,7 +161,8 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
             }
         }
         // when player walk past land no.1
-        if((steps % 28) + steps2 == 1 + steps2 && myGameData.username == playersTurn[giliranCounter]) {
+        // ### MASIH ADA BUG
+        if((steps % 28) + steps2 == 1 + steps2 && playersTurnShape.id == myGameData.username && playersTurn[giliranCounter] == myGameData.username) {
             laps += 1
             qS('.putaranTeks').innerText = `Putaran ${laps}`
         }
@@ -137,12 +173,14 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
             // player turn end
             clearInterval(startInterval)
             // ONLY PLAYER IN TURN THAT CAN FETCH
-            if(myGameData.username == playersTurn[giliranCounter]) {
+            if(playersTurnShape.id == myGameData.username && playersTurn[giliranCounter] == myGameData.username) {
+                console.log(`fetch player: ${playersTurn[giliranCounter]};${playersTurnShape.id};${myGameData.username}`);
                 // reset myBranchChance value outside branch lands
                 if(myBranchChance.username == playersTurn[giliranCounter] && (steps % 28 > 3 && steps % 28 < 13) || (steps % 28 > 17 && steps % 28 < 27))
                     myBranchChance.chance = 100
                 // choose next player
                 const nextPlayer = (myGameData.giliran + 1) % playersTurn.length
+                // console.log(`next player: ${playersTurn[nextPlayer]}`);
                 // payload
                 const jsonData = {
                     username: myGameData.username,
@@ -155,6 +193,7 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
                     penjara: false,
                     next_player: playersTurn[nextPlayer]
                 }
+                // send data to server
                 fetcher(`/api/turnend`, 'PATCH', jsonData)
                 .then(data => data.json())
                 .then(result => {

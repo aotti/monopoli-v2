@@ -2,12 +2,13 @@ const ably = new Ably.Realtime.Promise({
     key: 'zTjxzQ.mTI4pA:-x1-zfAutr9_107RAheM82rmo4XI45NX-SF_Y2rNUgU'
 })
 
+// @@@ realtime data sent faster than fetch result
 const ablyRealtime = async () => {
     await ably.connection.once('connected')
     console.log('Connected to Ably');
 
     const channel = ably.channels.get('monopoli_v2')
-    channel.subscribe('greeting', (message) => {
+    channel.subscribe('realtime_data', (message) => {
         const getMessage = message.data
         // console.log(message.data);
         switch(getMessage.type) {
@@ -23,7 +24,6 @@ const ablyRealtime = async () => {
                 setLocStorage('username', myGameData.username)
                 getMessage.payload.forEach(v => {
                     // if the player username is in database, then run the function
-                    // ### ERROR: realtime data sent faster than fetch result
                     if(v.player_joined == myGameData.username)
                         waitingOtherPlayers(getMessage.payload)
                 })
@@ -67,17 +67,19 @@ const ablyRealtime = async () => {
                 const { playerDadu, username, branch } = getMessage.payload
                 // get shape element for each player
                 const playersTurnShape = thisShapeIsMe(username)
-                // generate branch number
+                // change firstTime to false after the first dice roll
                 if(username == myBranchChance.username)
                     myBranchChance.firstTime = false
+                // set global branch value, so other player can see where other player gonna move
                 branchChance = branch
                 console.log(`${playersTurn[giliranCounter]}: ${branchChance}`);
                 // getMessage.payload is playerDadu
                 playerMoves(playerDadu, playersTurnShape, branchChance)
                 break
             case 'playerTurnEnd':
-                if(turnEndStatus === false) {
-                    turnEndStatus = true
+                // this will only run 1x per turn
+                if(realtimeStatus.turnEnd === false) {
+                    realtimeStatus.turnEnd = true
                     console.log('playerTurnEnd');
                     getMessage.payload.forEach((v, i) => {
                         // update myGameData 
@@ -86,9 +88,12 @@ const ablyRealtime = async () => {
                             myGameData.jalan = v.jalan
                         }
                     })
+                    // change the value for next player
                     giliranCounter = getMessage.payload[0].giliran
                     setTimeout(() => {
-                        turnEndStatus = false
+                        // set back to false for next turn
+                        realtimeStatus.turnEnd = false
+                        // enable kocok dadu button for next player
                         kocokDaduToggle()
                     }, 3000);
                 }

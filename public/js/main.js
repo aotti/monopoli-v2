@@ -3,7 +3,7 @@ const url = window.location.origin
 let mods = []
 // state of the game, used to manage player join / spectator
 let gameStatus = null
-// player turns
+// saving the user data
 const myGameData = {
     username: null, 
     pos: null, 
@@ -14,17 +14,25 @@ const myGameData = {
     jalan: null, 
     penjara: null
 }
-// 
-let playersTurn = []
+// for saving other player money/cards
 let playersTurnObj = []
+// player turns
+let playersTurn = []
 let giliranCounter = 0
-let turnEndStatus = false
+// to prevent realtime run 2x
+const realtimeStatus = {
+    turnEnd: false
+}
+// for branch map
+// global branch, to display the private branch chance to other player
 let branchChance = 100
+// private branch, one per player
 const myBranchChance = {
     username: null,
     chance: null,
     firstTime: true
 }
+// laps counter
 let laps = 1
 // get game status
 getGameStatus()

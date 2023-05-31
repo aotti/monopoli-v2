@@ -10,7 +10,7 @@ function ablyPublish(messageType, result, apiResponse) {
     console.log('API: new connection');
     const channel = ably.channels.get('monopoli_v2')
     // publish data to client
-    channel.publish('greeting', {type: messageType, payload: result})
+    channel.publish('realtime_data', {type: messageType, payload: result})
     .then(result => {
         console.log(messageType);
         // wait till receive all messages and then shut down
