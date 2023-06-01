@@ -30,7 +30,7 @@ let branchChance = 100
 const myBranchChance = {
     username: null,
     chance: null,
-    firstTime: true
+    status: true
 }
 // laps counter
 let laps = 1

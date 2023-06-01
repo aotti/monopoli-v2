@@ -69,7 +69,7 @@ const ablyRealtime = async () => {
                 const playersTurnShape = thisShapeIsMe(username)
                 // change firstTime to false after the first dice roll
                 if(username == myBranchChance.username)
-                    myBranchChance.firstTime = false
+                    myBranchChance.status = false
                 // set global branch value, so other player can see where other player gonna move
                 branchChance = branch
                 console.log(`${playersTurn[giliranCounter]}: ${branchChance}`);

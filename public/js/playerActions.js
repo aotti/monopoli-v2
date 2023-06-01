@@ -58,7 +58,7 @@ function kocokDaduTrigger(customDadu = null) {
         // roll the branch
         const mathBranch = Math.floor(Math.random() * 100)
         // on 2nd time roll branch, create new value
-        if(myBranchChance.firstTime === false)
+        if(myBranchChance.status === false)
             myBranchChance.chance = mathBranch
         // payload
         const jsonData = {
@@ -161,7 +161,6 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
             }
         }
         // when player walk past land no.1
-        // ### MASIH ADA BUG
         if((steps % 28) + steps2 == 1 + steps2 && playersTurnShape.id == myGameData.username && playersTurn[giliranCounter] == myGameData.username) {
             laps += 1
             qS('.putaranTeks').innerText = `Putaran ${laps}`
@@ -175,9 +174,16 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
             // ONLY PLAYER IN TURN THAT CAN FETCH
             if(playersTurnShape.id == myGameData.username && playersTurn[giliranCounter] == myGameData.username) {
                 console.log(`fetch player: ${playersTurn[giliranCounter]};${playersTurnShape.id};${myGameData.username}`);
-                // reset myBranchChance value outside branch lands
-                if(myBranchChance.username == playersTurn[giliranCounter] && (steps % 28 > 3 && steps % 28 < 13) || (steps % 28 > 17 && steps % 28 < 27))
-                    myBranchChance.chance = 100
+                // reset myBranchChance status inside branch lands, to prevent moving to different branch
+                if(myBranchChance.username == playersTurn[giliranCounter]) {
+                    switch(true) {
+                        // reset status on land numbers 14 15 16 and 28 1 2
+                        case steps%28 > 13 && steps%28 < 17:
+                        case steps%28 > 27 && steps%28 < 3:
+                            myBranchChance.status = true
+                            break
+                    }
+                }
                 // choose next player
                 const nextPlayer = (myGameData.giliran + 1) % playersTurn.length
                 // console.log(`next player: ${playersTurn[nextPlayer]}`);
