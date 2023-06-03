@@ -15,8 +15,6 @@ function decidePlayersTurn() {
             acakGiliranButton.disabled = true;
             // disable the username after click acakGiliranButton
             userName.style.boxShadow = '';
-            userName.disabled = true;
-            userName.readOnly = true
             // generate rand number
             const randNumber = Math.floor(Math.random() * (10001 - 1000)) + 1000;
             // display rand number after click acakGiliranButton
@@ -24,7 +22,7 @@ function decidePlayersTurn() {
             // payload
             const jsonData = { randNumber: randNumber, username: userName.value }
             // send data to server
-            fetcher(`/api/prepare`, 'POST', jsonData)
+            fetcher(`/prepare`, 'POST', jsonData)
             .then(data => data.json())
             .then(result => {
                 // if response status != 200, then display it to the screen
@@ -45,7 +43,6 @@ function decidePlayersTurn() {
                     if(result.errorMessage.match(/cannot.be.null/)) {
                         errorNotification(`randNumber/username null\n`)
                         acakGiliranButton.disabled = false;
-                        userName.disabled = false;
                         return
                     }
                     // other error
@@ -53,6 +50,7 @@ function decidePlayersTurn() {
                         return errorCapsule(result, `an error occured\n`)
                     }
                 }
+                return console.log(result);
             })
             .catch(err => {
                 return errorCapsule(err, `an error occured\n`)
@@ -119,7 +117,7 @@ function waitingOtherPlayers(otherPlayers) {
                     // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
                     if(timer == 6) {
                         // update game status to ready
-                        fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'ready'})
+                        fetcher(`/gamestatus`, 'PATCH', {gameStatus: 'ready'})
                         .then(data => data.json())
                         .then(result => {
                             if(result.status == 200) {
@@ -178,7 +176,7 @@ function waitingOtherPlayers(otherPlayers) {
 // tell all player when someone is wanna force start 
 function forceStartGame(theOtherPlayer) {
     // send data to server
-    fetcher(`/api/forcestart`, 'PATCH', {username: theOtherPlayer.player_joined})
+    fetcher(`/forcestart`, 'PATCH', {username: theOtherPlayer.player_joined})
     .then(data => data.json())
     .then(result => {
         if(result.status != 200) {
@@ -260,7 +258,7 @@ function createPlayersAndGetReady() {
             penjara: false
         }
         // send data to server
-        fetcher(`/api/ready`, 'POST', jsonData)
+        fetcher(`/ready`, 'POST', jsonData)
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
@@ -289,7 +287,7 @@ function gettingReady(readyPlayers) {
             // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
             if(timer == 4) {
                 // update game status
-                fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'playing'})
+                fetcher(`/gamestatus`, 'PATCH', {gameStatus: 'playing'})
                 .then(data => data.json())
                 .then(result => {
                     if(result.status == 200) {

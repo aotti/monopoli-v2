@@ -23,9 +23,9 @@ class Monopoli {
         .then(result => {
             // send realtime data
             // pubnub 
-            // pubnubPublish('gameStatus', result, newResponse(200, res, result)) 
+            pubnubPublish('gameStatus', result, newResponse(200, res, 'game status updated')) 
             // ably
-            ablyPublish('gameStatus', result, newResponse(200, res, result))
+            // ablyPublish('gameStatus', result, newResponse(200, res, 'game status updated'))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
@@ -53,9 +53,9 @@ class Monopoli {
         .then(result => {
             // send realtime data
             // pubnub 
-            // pubnubPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
+            pubnubPublish('playerJoined', result, res, `${result.player_joined} joining the game`)
             // ably
-            ablyPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
+            // ablyPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
@@ -66,9 +66,9 @@ class Monopoli {
         .then(result => {
             // send realtime data
             // pubnub 
-            // pubnubPublish('playerForcing', result, newResponse(200, res, 'updated'))
+            pubnubPublish('playerForcing', result, newResponse(200, res, 'updated'))
             // ably
-            ablyPublish('playerForcing', result, newResponse(200, res, `updated`))
+            // ablyPublish('playerForcing', result, newResponse(200, res, `updated`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
@@ -79,9 +79,9 @@ class Monopoli {
         .then(result => {
             // send realtime data
             // pubnub 
-            // pubnubPublish('playerReady', result, newResponse(200, res, 'ready'))
+            pubnubPublish('playerReady', result, newResponse(200, res, 'ready'))
             // ably
-            ablyPublish('playerReady', result, newResponse(200, res, `ready`))
+            // ablyPublish('playerReady', result, newResponse(200, res, `ready`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }
@@ -90,9 +90,9 @@ class Monopoli {
         const { playerDadu, username, branch } = req.body
         // send realtime data
         // pubnub 
-        // pubnubPublish('playerMoving', playerDadu, newResponse(200, res, 'player moving'))
+        pubnubPublish('playerMoving', {playerDadu: playerDadu, username: username, branch: branch}, newResponse(200, res, 'player moving'))
         // ably
-        ablyPublish('playerMoving', {playerDadu: playerDadu, username: username, branch: branch}, newResponse(200, res, `player moving`))
+        // ablyPublish('playerMoving', {playerDadu: playerDadu, username: username, branch: branch}, newResponse(200, res, `player moving`))
     }
 
     playerTurnEnd(req, res) {
@@ -101,9 +101,9 @@ class Monopoli {
         .then(result => {
             // send realtime data
             // // pubnub 
-            // pubnubPublish('playerTurnEnd', result, newResponse(200, res, 'turn end')) 
+            pubnubPublish('playerTurnEnd', result, newResponse(200, res, 'turn end')) 
             // ably
-            ablyPublish('playerTurnEnd', result, newResponse(200, res, `turn end`))
+            // ablyPublish('playerTurnEnd', result, newResponse(200, res, `turn end`))
         })
         .catch(err => {return newResponse(500, res, err)})
     }

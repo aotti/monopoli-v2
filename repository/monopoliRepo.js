@@ -12,6 +12,8 @@ class MonopoliRepo {
         const queryObject = {
             table: 'games',
             selectColumn: 'status',
+            // multiple where
+            multipleWhere: false,
             whereColumn: 'id',
             whereValue: 1
         }
@@ -73,6 +75,8 @@ class MonopoliRepo {
         const queryObject = {
             table: 'mods',
             selectColumn: 'board_shape, money_start, money_lose, curse_min, curse_max, branch',
+            // multiple where
+            multipleWhere: false,
             whereColumn: 'id',
             whereValue: 1
         }
@@ -213,6 +217,8 @@ class MonopoliRepo {
         Object.defineProperties(queryObject2, {
             table: {enumerable: true, value: 'players'},
             selectColumn: {enumerable: true, value: 'username, pos, giliran, jalan'},
+            // multiple where
+            multipleWhere: {enumerable: true, value: false},
             whereColumn: {enumerable: true, value: 'username'},
             whereValue: {enumerable: true, value: next_player},
             updateColumn: {enumerable: true, get: function() {

@@ -83,7 +83,7 @@ function errorCapsule(err, errorMessage) {
 function getGameStatus(fetching = true) {
     const gameStatusLamp = qS('#gameStatus')
     if(fetching) {
-        fetcher(`/api/gamestatus`, 'GET')
+        fetcher(`/gamestatus`, 'GET')
         .then(data => data.json())
         .then(result => {
             if(result.status == 200) {
@@ -131,7 +131,7 @@ function getGameStatus(fetching = true) {
 
 const resetter = {
     get resetGameStatus() {
-        fetcher(`/api/gamestatus`, 'PATCH', {gameStatus: 'unready'})
+        fetcher(`/gamestatus`, 'PATCH', {gameStatus: 'unready'})
         .then(data => data.json())
         .then(result => {
             if(result.status == 200) {
@@ -146,7 +146,7 @@ const resetter = {
         })
     },
     get resetPlayerTable() {
-        fetcher('/api/deleteplayers', 'GET')
+        fetcher('/deleteplayers', 'GET')
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
@@ -163,12 +163,12 @@ const resetter = {
 /**
  * @param {String} endpoint - api endpoint (string)
  * @param {String} method - http method get/post/etc (string)
- * @param {{key: string|number}|null} jsonData - payload data (object)
+ * @param {{key: string|number}} jsonData - payload data (object)
  */
 function fetcher(endpoint, method, jsonData) {
     switch(method) {
         case 'GET':
-            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
+            return fetch(`${url}/api${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -176,7 +176,7 @@ function fetcher(endpoint, method, jsonData) {
             })
         case 'POST':
         case 'PATCH':
-            return fetch(`${url}${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
+            return fetch(`${url}/api/${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -184,4 +184,8 @@ function fetcher(endpoint, method, jsonData) {
                 body: JSON.stringify(jsonData)
             })
     }
+}
+
+function fetcherResults() {
+    
 }

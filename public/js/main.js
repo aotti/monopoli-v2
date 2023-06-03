@@ -3,6 +3,7 @@ const url = window.location.origin
 let mods = []
 // state of the game, used to manage player join / spectator
 let gameStatus = null
+const myUUID = null
 // saving the user data
 const myGameData = {
     username: null, 

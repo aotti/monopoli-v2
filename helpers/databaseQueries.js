@@ -8,7 +8,7 @@ async function selectAll(req, res, queryObject) {
     const selectAllDataFromDB = async () => {
         const {data, error} = await supabase.from(queryObject.table).select().order('id', {ascending: true})
         if(error) {
-            newResponse(500, res, error)
+            return newResponse(500, res, error)
         }
         return {data: data, error: error}
     }
@@ -20,13 +20,27 @@ async function selectOne(req, res, queryObject) {
         return res.send('cannot connect to database')
     // get specific data from supabase
     const selectOneDataFromDB = async () => {
-        const {data, error} = await supabase.from(queryObject.table)
-                            .select(queryObject.selectColumn)
-                            .eq(queryObject.whereColumn, queryObject.whereValue)
-        if(error) {
-            newResponse(500, res, error)
+        // multiple where condition
+        if(queryObject.multipleWhere === true) {
+            const {data, error} = await supabase.from(queryObject.table)
+                                .select(queryObject.selectColumn)
+                                .eq(queryObject.whereColumnOne, queryObject.whereValueOne)
+                                .eq(queryObject.whereColumnTwo, queryObject.whereValueTwo)
+            if(error) {
+                return newResponse(500, res, error)
+            }
+            return {data: data, error: error}
         }
-        return {data: data, error: error}
+        // only one where condition
+        else if(queryObject.multipleWhere === false) {
+            const {data, error} = await supabase.from(queryObject.table)
+                                .select(queryObject.selectColumn)
+                                .eq(queryObject.whereColumn, queryObject.whereValue)
+            if(error) {
+                return newResponse(500, res, error)
+            }
+            return {data: data, error: error}
+        }
     }
     return selectOneDataFromDB()
 }
@@ -38,7 +52,7 @@ async function insertDataRow(req, res, queryObject) {
         // insert player data who joined the game
         const {data, error} = await supabase.from(queryObject.table).insert([queryObject.insertColumn])
         if(error) {
-            newResponse(500, res, error)
+            return newResponse(500, res, error)
         }
         return {data: data, error: error}
     }
@@ -51,7 +65,7 @@ async function updateData(req, res, queryObject) {
     const updateDataToDB = async () => {
         const {data, error} = await supabase.from(queryObject.table).update(queryObject.updateColumn).eq(queryObject.whereColumn, queryObject.whereValue)
         if(error) {
-            newResponse(500, res, error)
+            return newResponse(500, res, error)
         }
         return {data: data, error: error}
     }
@@ -64,7 +78,7 @@ async function deleteAll(req, res, queryObject) {
     const deleteDataFromDB = async () => {
         const {data, error} = await supabase.from(queryObject.table).delete().neq('id', 0)
         if(error) {
-            newResponse(500, res, error)
+            return newResponse(500, res, error)
         }
         return {data: data, error: error}
     }

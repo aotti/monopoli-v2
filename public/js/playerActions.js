@@ -67,7 +67,7 @@ function kocokDaduTrigger(customDadu = null) {
             branch: myBranchChance.chance
         }
         // send data to server
-        fetcher(`/api/moveplayer`, 'POST', jsonData)
+        fetcher(`/moveplayer`, 'POST', jsonData)
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
@@ -200,7 +200,7 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
                     next_player: playersTurn[nextPlayer]
                 }
                 // send data to server
-                fetcher(`/api/turnend`, 'PATCH', jsonData)
+                fetcher(`/turnend`, 'PATCH', jsonData)
                 .then(data => data.json())
                 .then(result => {
                     if(result.status != 200) {

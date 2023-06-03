@@ -97,6 +97,7 @@ const ablyRealtime = async () => {
                         kocokDaduToggle()
                     }, 3000);
                 }
+                break
         }
     })
 }

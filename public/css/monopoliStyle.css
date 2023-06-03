@@ -400,12 +400,20 @@
   padding: 4px;
 }
 
-.dialog_info > div.closeMods, div.closePlayer
-             > #closeModsButton, #closePlayerButton {
+#closeModsButton, #closePlayerButton, #closeProfilButton, #logoutProfilButton,
+#register, #login, #closeRegLogButton {
   margin: 8px auto 0;
+}
+
+#closeModsButton, #closePlayerButton {
   grid-column: 1 / 2 span;
   height: 30px;
   width: 50%;
+}
+
+#closeProfilButton, #logoutProfilButton, #register, #login, #closeRegLogButton {
+  height: 30px;
+  width: 100%;
 }
 
 .dialog_info > div > span:nth-child(2n+1):after {

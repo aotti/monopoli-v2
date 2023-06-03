@@ -1,5 +1,5 @@
 const pubnub = new PubNub({
-    subscribeKey: 'sub-c-8d86234e-6606-4b80-a3df-96ccbe749a01',
+    subscribeKey: 'sub-c-174b00df-14de-4efa-9214-cd97594b07e6',
     userId: PubNub.generateUUID()
 })
 pubnub.subscribe({
@@ -10,7 +10,7 @@ pubnub.addListener({
         const getMessage = m.message
         switch(getMessage.type) {
             case 'gameStatus': 
-                gameStatus = getMessage.data[0].status
+                gameStatus = getMessage.payload[0].status
                 getGameStatus(false)
                 break
             case 'playerJoined':
@@ -18,43 +18,82 @@ pubnub.addListener({
                 myGameData.username = qS('.userName').value
                 // save username in localStorage, so the system can recognize
                 // the player when trying to resume the game after reload page
-                setLocStorage('username', myGameData.username)
-                getMessage.data.forEach(v => {
+                setLocStorage('uuid', myGameData.username)
+                getMessage.payload.forEach(v => {
                     // if the player username is in database, then run the function
-                    // ### ERROR: realtime data sent faster than fetch result
                     if(v.player_joined == myGameData.username)
-                        waitingOtherPlayers(getMessage.data)
+                        waitingOtherPlayers(getMessage.payload)
                 })
                 break
             case 'playerForcing':
                 console.log('playerForcing');
-                getMessage.data.forEach(v => {
+                getMessage.payload.forEach(v => {
                     // if the player username is in database, then run the function
                     if(v.player_joined == myGameData.username)
-                        waitingOtherPlayers(getMessage.data)
+                        waitingOtherPlayers(getMessage.payload)
                 })
                 break
             case 'playerReady':
                 console.log('playerReady');
-                getMessage.data.forEach(v => {
+                getMessage.payload.forEach((v, i) => {
+                    // save all player data
+                    playersTurnObj[i] = {
+                        username: v.username,
+                        jalan: v.jalan
+                    }
                     // if the player username is in database, then run the function
-                    if(v.player_joined == myGameData.username)
-                        gettingReady(getMessage.data)
+                    if(v.username == myGameData.username) {
+                        // myGameData
+                        myGameData.pos = 0
+                        myGameData.harta_uang = v.harta_uang
+                        myGameData.harta_kota = v.harta_kota
+                        myGameData.kartu = v.kartu
+                        myGameData.giliran = v.giliran
+                        myGameData.jalan = v.jalan
+                        myGameData.penjara = v.penjara
+                        // branch data
+                        myBranchChance.username = v.username
+                        myBranchChance.chance = 100
+                        gettingReady(getMessage.payload)
+                    }
                 })
                 break
             case 'playerMoving':
                 console.log('playerMoving');
                 // player moving
-                // getMessage.data = playerDadu
-                playerMoves(getMessage.data)
+                const { playerDadu, username, branch } = getMessage.payload
+                // get shape element for each player
+                const playersTurnShape = thisShapeIsMe(username)
+                // change firstTime to false after the first dice roll
+                if(username == myBranchChance.username)
+                    myBranchChance.status = false
+                // set global branch value, so other player can see where other player gonna move
+                branchChance = branch
+                console.log(`${playersTurn[giliranCounter]}: ${branchChance}`);
+                // getMessage.payload is playerDadu
+                playerMoves(playerDadu, playersTurnShape, branchChance)
                 break
             case 'playerTurnEnd':
-                console.log('playerTurnEnd');
-                if(myGameData.username == getMessage.data[0].username) {
-                    myGameData.pos = getMessage.data[0].pos
-                    console.log(myGameData);
+                // this will only run 1x per turn
+                if(realtimeStatus.turnEnd === false) {
+                    realtimeStatus.turnEnd = true
+                    console.log('playerTurnEnd');
+                    getMessage.payload.forEach((v, i) => {
+                        // update myGameData 
+                        if(v.username == myGameData.username) {
+                            myGameData.pos = v.pos
+                            myGameData.jalan = v.jalan
+                        }
+                    })
+                    // change the value for next player
+                    giliranCounter = getMessage.payload[0].giliran
+                    setTimeout(() => {
+                        // set back to false for next turn
+                        realtimeStatus.turnEnd = false
+                        // enable kocok dadu button for next player
+                        kocokDaduToggle()
+                    }, 3000);
                 }
-                kocokDaduToggle()
                 break
         }
     }
