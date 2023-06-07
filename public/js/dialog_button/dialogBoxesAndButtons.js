@@ -374,8 +374,13 @@ function infoButtons() {
         }
     }
     else {
-        errorNotification('anda tidak sedang main \u{1F480}')
-        feedbackTurnOff()
+        window.onclick = (ev)=>{
+            const areYouPlaying = playersTurn.map(v => {return v}).indexOf(myGameData.username)
+            if(ev.target.classList == 'setting_button' && areYouPlaying == -1) {
+                errorNotification('Anda sedang tidak main')
+                return feedbackTurnOff()
+            }
+        }
     }
 
     qS('#clearStorage').onclick = ()=>{

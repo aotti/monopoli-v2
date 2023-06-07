@@ -20,11 +20,12 @@ const myGameData = {
 let playersTurnObj = []
 // player turns
 let playersTurn = []
-let playerTurnsId = []
+let playersTurnId = []
 let giliranCounter = 0
 // to prevent realtime run 2x
 const realtimeStatus = {
-    turnEnd: false
+    turnEnd: false,
+    playerList: false
 }
 // for branch map
 // global branch, to display the private branch chance to other player

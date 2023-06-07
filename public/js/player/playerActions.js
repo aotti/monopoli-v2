@@ -175,7 +175,7 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
                     }
                 }
                 // choose next player
-                const nextPlayer = (myGameData.giliran + 1) % playerTurnsId.length
+                const nextPlayer = (myGameData.giliran + 1) % playersTurnId.length
                 // payload
                 const jsonData = {
                     user_id: myGameData.id,
@@ -187,7 +187,7 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
                     giliran: myGameData.giliran,
                     jalan: false,
                     penjara: false,
-                    next_player: playerTurnsId[nextPlayer]
+                    next_player: playersTurnId[nextPlayer]
                 }
                 // send data to server
                 fetcher(`/turnend`, 'PATCH', jsonData)
