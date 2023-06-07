@@ -10,60 +10,27 @@ function decidePlayersTurn() {
             feedbackTurnOn('tidak bisa join, game sudah dimulai')
             return feedbackTurnOff()
         }
-        // if the username meet requirements
-        if(userName.value.length >= 4 && userName.value.match(/^[a-zA-Z]+$/)) {
-            acakGiliranButton.disabled = true;
-            // disable the username after click acakGiliranButton
-            userName.style.boxShadow = '';
-            // generate rand number
-            const randNumber = Math.floor(Math.random() * (10001 - 1000)) + 1000;
-            // display rand number after click acakGiliranButton
-            acakGiliranTeks.innerText = `Angka: ${randNumber}`
-            // payload
-            const jsonData = { randNumber: randNumber, username: userName.value }
-            // send data to server
-            fetcher(`/prepare`, 'POST', jsonData)
-            .then(data => data.json())
-            .then(result => {
-                // if response status != 200, then display it to the screen
-                if(result.status != 200) {
-                    if(typeof result.errorMessage === 'object') {
-                        // error when player using the same username
-                        if(result.errorMessage.message?.match(/duplicate.key.value/)) {
-                            errorNotification(`username sudah dipakai\n`)
-                            acakGiliranButton.disabled = false;
-                            userName.disabled = false;
-                            return feedbackTurnOff()
-                        }
-                        // other error
-                        else 
-                            return errorCapsule(result, `an error occured\n`)
-                    }
-                    // error when data type is wrong
-                    if(result.errorMessage.match(/cannot.be.null/)) {
-                        errorNotification(`randNumber/username null\n`)
-                        acakGiliranButton.disabled = false;
-                        return
-                    }
-                    // other error
-                    else {
-                        return errorCapsule(result, `an error occured\n`)
-                    }
-                }
-                return console.log(result);
-            })
-            .catch(err => {
-                return errorCapsule(err, `an error occured\n`)
-            })
+        else if(myGameData.uuid == null) {
+            feedbackTurnOn('anda belum login')
+            return feedbackTurnOff()
         }
-        // if dont meet reqs
-        else {
-            feedbackTurnOn('Harus 4-8 huruf dan tidak boleh ada spasi\n')
-            userName.value = '';
-            userName.placeholder = '4-8 Huruf!';
-            userName.style.boxShadow = '0 0 10px crimson';
-            feedbackTurnOff()
-        }
+        acakGiliranButton.disabled = true;
+        userName.style.boxShadow = '0 0 10px blue';
+        // generate rand number
+        const randNumber = Math.floor(Math.random() * (10001 - 1000)) + 1000;
+        // display rand number after click acakGiliranButton
+        acakGiliranTeks.innerText = `Angka: ${randNumber}`
+        // payload
+        const jsonData = { randNumber: randNumber, username: userName.value }
+        // send data to server
+        fetcher(`/prepare`, 'POST', jsonData)
+        .then(data => data.json())
+        .then(result => {
+            return fetcherResults(result)
+        })
+        .catch(err => {
+            return errorCapsule(err, anErrorOccured)
+        })
     } 
 }
 
@@ -120,15 +87,10 @@ function waitingOtherPlayers(otherPlayers) {
                         fetcher(`/gamestatus`, 'PATCH', {gameStatus: 'ready'})
                         .then(data => data.json())
                         .then(result => {
-                            if(result.status == 200) {
-                                getGameStatus(false)
-                            }
-                            else if(result.status != 200) {
-                                return errorCapsule(result, `an error occured\n`)
-                            }
+                            return fetcherResults(result, 'gameStatus')
                         })
                         .catch(err => {
-                            return errorCapsule(err, `an error occured\n`)
+                            return errorCapsule(err, anErrorOccured)
                         })
                     }
                     // display force start countdown
@@ -179,17 +141,15 @@ function forceStartGame(theOtherPlayer) {
     fetcher(`/forcestart`, 'PATCH', {username: theOtherPlayer.player_joined})
     .then(data => data.json())
     .then(result => {
-        if(result.status != 200) {
-            return errorCapsule(result, `an error occured\n`)
-        }
+        return fetcherResults(result)
     })
     .catch(err => {
-        return errorCapsule(err, `an error occured\n`)
+        return errorCapsule(err, anErrorOccured)
     })
 }
 
 // create the player characters
-function createPlayerShape(playerDiv, playerDivClass, username, playerShape, imgSource, imgClass) {
+function createPlayerShape(playerDiv, playerDivClass, username, playerShape, imgSource, imgClass, resumePos = null) {
     // get all lands
     const getLands = qSA('[class^=petak]');
     // set img attributes
@@ -201,6 +161,14 @@ function createPlayerShape(playerDiv, playerDivClass, username, playerShape, img
     // append img to player container
     playerDiv.appendChild(playerShape);
     // append player container to board
+    if(resumePos != null) {
+        for(let land of getLands) {
+            if(land.title == resumePos) {
+                // move our shape to the last pos
+                return land.appendChild(playerDiv)
+            }
+        }
+    }
     (mods[0] == 'persegiPanjangV2' ? 
         getLands[18].appendChild(playerDiv) 
         : 
@@ -248,6 +216,7 @@ function createPlayersAndGetReady() {
         }
         // payload
         const jsonData = {
+            user_id: myGameData.id,
             username: myGameData.username,
             pos: '1',
             harta_uang: +mods[1],
@@ -261,13 +230,48 @@ function createPlayersAndGetReady() {
         fetcher(`/ready`, 'POST', jsonData)
         .then(data => data.json())
         .then(result => {
-            if(result.status != 200) {
-                return errorCapsule(result, `an error occured\n`)
-            }
+            return fetcherResults(result)
         })
         .catch(err => {
-            return errorCapsule(err, `an error occured\n`)
+            return errorCapsule(err, anErrorOccured)
         })
+    }
+}
+
+// create player list
+function createPlayerList() {
+    const playerList = qS('.player_list')
+    for(let i in playersTurnObj) {
+        const listSpan_1 = cE('span')
+        const listSpan_2 = cE('span')
+        const listSpan_3 = cE('span')
+        const cardBox = cE('ul')
+        if(playersTurnObj[i].username == myGameData.username) {
+            listSpan_1.style.background = 'lightblue';
+            listSpan_2.style.background = 'lightblue';
+            listSpan_3.style.background = 'lightblue';
+            // daftarPlayer(i, listSpan_1, listSpan_2, getLocStorage('hartaAnda').match(/uang.\d*/)[0].split('uang')[1]);
+        }
+        else
+            // daftarPlayer(i, listSpan_1, listSpan_2, hartaMilik[i].split(',')[1].split('uang')[1]);
+        // player list username span
+        listSpan_1.id = playersTurnObj[i].username
+        listSpan_1.innerText = `${+i + 1}. ${playersTurnObj[i].username}`
+        // player list money span
+        listSpan_2.innerText = `Rp ${currencyComma(playersTurnObj[i].harta_uang)}`
+        // player list cards
+        listSpan_3.classList.add('kartuBuffDebuff')
+        cardBox.classList.add('kartuBuffDebuffList')
+        // listSpan_3.setAttribute('data-cards', playersTurnObj[i].kartu)
+        for(let card of playersTurnObj[i].kartu.split(';')) {
+            const li = cE('li')
+            li.innerText = card 
+            cardBox.appendChild(li)
+        }
+        listSpan_3.appendChild(cardBox)
+        playerList.appendChild(listSpan_1);
+        playerList.appendChild(listSpan_2);
+        playerList.appendChild(listSpan_3);
     }
 }
 
@@ -283,6 +287,8 @@ function gettingReady(readyPlayers) {
     // if all player is ready, start the game
     if(playersTurn.length == readyPlayers.length) {
         let timer = 4
+        // create player list
+        createPlayerList()
         const startInterval = setInterval(() => {
             // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
             if(timer == 4) {
@@ -292,13 +298,15 @@ function gettingReady(readyPlayers) {
                 .then(result => {
                     if(result.status == 200) {
                         getGameStatus(false)
+                        // run infoButton
+                        infoButtons()
                     }
                     else if(result.status != 200) {
-                        return errorCapsule(result, `an error occured\n`)
+                        return errorCapsule(result, anErrorOccured)
                     }
                 })
                 .catch(err => {
-                    return errorCapsule(err, `an error occured\n`)
+                    return errorCapsule(err, anErrorOccured)
                 })
             }
             // display game start countdown
@@ -306,6 +314,13 @@ function gettingReady(readyPlayers) {
             timer--
             if(timer < 0) {
                 clearInterval(startInterval)
+                for(let v of playersTurn) {
+                    const adjustPlayerTurnId = readyPlayers.map(v => {return v.user_id.username}).indexOf(v)
+                    if(adjustPlayerTurnId != -1) {
+                        playerTurnsId.push(readyPlayers[adjustPlayerTurnId].user_id.id)
+                    }
+                }
+                // empty urutan text
                 urutanGiliran.innerText = ``
                 // run this function after the timer is out 
                 // to trigger the first move cuz the myGameData.username is considered null
@@ -313,4 +328,62 @@ function gettingReady(readyPlayers) {
             }
         }, 1000);
     }
+}
+
+// get all player last position
+function allPlayersLastPos() {
+    startInterval = setInterval(() => {
+        // resume the game if still ongoing 
+        if(gameStatus == 'playing') {
+            qS('.acakGiliran').disabled = true
+            clearInterval(startInterval)
+            // get all players data
+            fetcher('/gameresume', 'GET')
+            .then(data => data.json())
+            .then(result => {
+                return fetcherResults(result, 'gameResume')
+            })
+            .catch(err => {
+                return errorCapsule(err, anErrorOccured)
+            })
+        }
+    }, 1000);
+}
+
+function gameResume(result) {
+    const playersPlaying = result.data
+    const tempPlayerTurns = []
+    const tempPlayerPos = []
+    // check if you are the one who is still playing
+    for(let i in playersPlaying)  {
+        if(playersPlaying[i].jalan === true)  
+            giliranCounter = playersPlaying[i].giliran
+        // get giliran to refill playersTurn
+        tempPlayerTurns.push(playersPlaying[i].giliran)
+        tempPlayerPos.push(playersPlaying[i].pos)
+        // refill playersTurnObj for playerlist
+        playersTurnObj[i] = {
+            username: playersPlaying[i].user_id.username,
+            pos: playersPlaying[i].pos,
+            harta_uang: playersPlaying[i].harta_uang,
+            kartu: playersPlaying[i].kartu
+        }
+    }
+    // sort player turns from lowest giliran -> highest
+    tempPlayerTurns.sort()
+    // refill playersTurn array value
+    for(let i in tempPlayerTurns)
+        playersTurn.push(playersPlaying[i].user_id.username)
+    // recreate player list
+    createPlayerList()
+    // if no player, then stop right here
+    if(playersTurn.length == 0) return
+    // create player characters
+    createPlayerShape(cE('div'), 'pdiv', playersTurn[0], cE('img'), 'img/bulet.png', 'stick1', tempPlayerPos[0])
+    createPlayerShape(cE('div'), 'pdiv', playersTurn[1], cE('img'), 'img/kotak.png', 'stick2', tempPlayerPos[1])
+    playersTurn[2] == null ? null : createPlayerShape(cE('div'), 'pdiv', playersTurn[2], cE('img'), 'img/segitiga.png', 'stick3', tempPlayerPos[2])
+    playersTurn[3] == null ? null : createPlayerShape(cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4', tempPlayerPos[3])
+    playersTurn[4] == null ? null : createPlayerShape(cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5', tempPlayerPos[4])
+    // enable kocok dadu for the current player
+    kocokDaduToggle()
 }

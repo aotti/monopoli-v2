@@ -8,27 +8,19 @@ function newPromise(data) {
     })
 }
 
-function newResponse(status, res, data) {
-    switch(status) {
+function newResponse(codeAndMessage, res, data) {
+    if(typeof codeAndMessage === 'number')
+        codeAndMessage = [codeAndMessage]
+    switch(codeAndMessage[0]) {
         case 200:
-            return res.status(200).json({
-                status: 200,
-                message: 'success',
+            return res.status(codeAndMessage[0]).json({
+                status: codeAndMessage[0],
+                message: codeAndMessage[1],
                 data: data
             })
-        case 400:
-            return res.status(400).json({
-                status: 400,
-                errorMessage: data
-            })
-        case 401:
-            return res.status(401).json({
-                status: 401,
-                errorMessage: data
-            })
-        case 500:
-            return res.status(500).json({
-                status: 500,
+        case 400: case 401: case 404: case 500:
+            return res.status(codeAndMessage[0]).json({
+                status: codeAndMessage[0],
                 errorMessage: data
             })
     }

@@ -2,6 +2,7 @@ const qS = el => {return document.querySelector(el)}
 const qSA = el => {return document.querySelectorAll(el)}
 const cE = el => {return document.createElement(el)}
 const docFrag = document.createDocumentFragment()
+const anErrorOccured = `an error occured\ncheck 'Error Log' for details` 
 
 /**
  * @returns random uuid version 4
@@ -46,10 +47,33 @@ function feedbackTurnOff() {
 }
 
 /**
+ * an error notification with exclamation mark
  * @param {String} errorMessage - error message (string)
  */
 function errorNotification(errorMessage) {
     feedbackTurnOn(`[\u{2755}] ${errorMessage}`)
+}
+
+function removeDialog(dialogWrapper, dialogContainer) {
+    dialogWrapper.remove()
+    dialogContainer.remove()
+}
+
+function inputFilter(inputValue, inputRegex) {
+    if(inputValue.length >= 4 && inputValue.match(inputRegex))
+        return true
+    return false
+}
+
+function inputFilterError(inputElement, inputPlaceholder) {
+    inputElement.value = '';
+    inputElement.placeholder = 'kelahi siko kaw gerot';
+    inputElement.style.border = '2px solid crimson';
+    setTimeout(() => {
+        inputElement.placeholder = inputPlaceholder;
+        inputElement.style.border = '1px solid grey';
+    }, 2000);
+    return 
 }
 
 /**
@@ -60,9 +84,9 @@ function errorLogging(err) {
     const errorContainer = cE('li')
     const errorMessage = (() => {
         let errMsg = null
-        if(err.errorMessage != null) {
+        if(err.errorMessage) {
             if(typeof err.errorMessage == 'object')
-                errMsg = `status: ${err.status}\n${JSON.stringify(err.errorMessage)}`
+                errMsg = `status: ${err.status}\n${err.errorMessage.message}`
             else
                 errMsg = `status: ${err.status}\n${err.errorMessage}`
         }
@@ -71,7 +95,7 @@ function errorLogging(err) {
         return errMsg
     })()
     errorContainer.innerText = errorMessage
-    errorLog.appendChild(errorContainer)
+    errorLog.insertBefore(errorContainer, errorLog.children[1])
 }
 
 function errorCapsule(err, errorMessage) {
@@ -105,11 +129,11 @@ function getGameStatus(fetching = true) {
                 }
             }
             else if(result.status != 200) {
-                return errorCapsule(result, `an error occured\n`)
+                return errorCapsule(result, anErrorOccured)
             }
         })
         .catch(err => {
-            return errorCapsule(err, `an error occured\n`)
+            return errorCapsule(err, anErrorOccured)
         })
     }
     // fetching == false, go straight here
@@ -134,15 +158,10 @@ const resetter = {
         fetcher(`/gamestatus`, 'PATCH', {gameStatus: 'unready'})
         .then(data => data.json())
         .then(result => {
-            if(result.status == 200) {
-                getGameStatus(false)
-            }
-            else if(result.status != 200) {
-                return errorCapsule(result, `an error occured\n`)
-            }
+            fetcherResults(result, 'gameStatus')
         })
         .catch(err => {
-            return errorCapsule(err, `an error occured\n`)
+            return errorCapsule(err, anErrorOccured)
         })
     },
     get resetPlayerTable() {
@@ -150,25 +169,27 @@ const resetter = {
         .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
-                return errorCapsule(result, `an error occured\n`)
+                return errorCapsule(result, anErrorOccured)
             }
             console.log(result);
         })
         .catch(err => {
-            return errorCapsule(err, `an error occured\n`)
+            return errorCapsule(err, anErrorOccured)
         })
     }
 }
 
 /**
  * @param {String} endpoint - api endpoint (string)
- * @param {String} method - http method get/post/etc (string)
+ * @param {String} method - http method GET/POST/PATCH/DELETE (string)
  * @param {{key: string|number}} jsonData - payload data (object)
  */
 function fetcher(endpoint, method, jsonData) {
+    // when user have uuid in localStorage, the user gonna run autoLogin to continue the game
+    const requireUUID = getLocStorage('uuid') == null ? null : new URLSearchParams({ uuid: getLocStorage('uuid') })
     switch(method) {
         case 'GET':
-            return fetch(`${url}/api${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
+            return fetch(`${url}/api${endpoint}?` + requireUUID, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -176,7 +197,7 @@ function fetcher(endpoint, method, jsonData) {
             })
         case 'POST':
         case 'PATCH':
-            return fetch(`${url}/api/${endpoint}?` + new URLSearchParams({ uuid: uuidv4() }), {
+            return fetch(`${url}/api/${endpoint}?` + requireUUID, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -186,6 +207,53 @@ function fetcher(endpoint, method, jsonData) {
     }
 }
 
-function fetcherResults() {
-    
+/**
+ * @param {{status:number,message:string,data:object}} result - payload from server (object)
+ */
+function fetcherResults(result, successResult = null) {
+    if(result.status == 200 && successResult != null) {
+        // check success result 
+        switch(successResult) {
+            case 'gameStatus':
+                getGameStatus(false)
+                break
+            case 'register':
+                registerHandler(result)
+                break
+            case 'login': 
+                loginHandler(result)
+                break
+            case 'autoLogin':
+                autoLoginHandler(result)
+                break
+            case 'gameResume':
+                gameResume(result)
+                break
+        }
+    }
+    // if response status != 200, then display it to the screen
+    else if(result.status != 200) {
+        if(typeof result.errorMessage === 'object') {
+            // error when player using the same username
+            if(result.errorMessage.message?.match(/duplicate.key.value/)) {
+                errorNotification(`username sudah dipakai\n`)
+                qS('.acakGiliran').disabled = false;
+                return feedbackTurnOff()
+            }
+            // other error
+            else 
+                return errorCapsule(result, anErrorOccured)
+        }
+        // error when data is null
+        if(result.errorMessage.match(/cannot.be.null/)) {
+            errorNotification(`randNumber/username null\n`)
+            qS('.acakGiliran').disabled = false;
+            return
+        }
+        // other error
+        else {
+            return errorCapsule(result, anErrorOccured)
+        }
+    }
+    return console.log(result);
 }

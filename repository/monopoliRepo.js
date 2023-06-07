@@ -1,4 +1,4 @@
-const { newPromise } = require('../helpers/basic')
+const { newPromise, newResponse } = require('../helpers/basic')
 const { selectAll, 
         selectOne, 
         insertDataRow, 
@@ -28,6 +28,7 @@ class MonopoliRepo {
         const queryObject = {}
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'games'},
+            selectColumn: {enumerable: true, value: 'status'},
             whereColumn: {enumerable: true, value: 'id'},
             whereValue: {enumerable: true, value: 1},
             updateColumn: {enumerable: true, get: function() {
@@ -44,7 +45,7 @@ class MonopoliRepo {
         })
         .catch(err => {
             console.log('this.updateGameStatusRepo');
-            return console.log(err);
+            return newResponse(500, res, err)
         })
     }
 
@@ -65,7 +66,7 @@ class MonopoliRepo {
         })
         .catch(err => {
             console.log('this.deletePlayerRowsRepo');
-            return console.log(err);
+            return newResponse(500, res, err)
         })
     }
 
@@ -91,6 +92,7 @@ class MonopoliRepo {
         // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'prepares'},
+            selectColumn: {enumerable: true, value: 'player_joined, player_forcing, player_ready, player_rand'},
             insertColumn: {enumerable: true, get: function() {
                 return {
                     player_joined: username,
@@ -108,7 +110,7 @@ class MonopoliRepo {
         })
         .catch(err => {
             console.log('this.playerJoinedRepo');
-            return console.log(err);
+            return newResponse(500, res, err)
         })
     }
 
@@ -119,6 +121,7 @@ class MonopoliRepo {
         // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'prepares'},
+            selectColumn: {enumerable: true, value: 'player_joined, player_forcing, player_ready, player_rand'},
             whereColumn: {enumerable: true, value: 'player_joined'},
             whereValue: {enumerable: true, value: username},
             updateColumn: {enumerable: true, get: function() {
@@ -135,13 +138,13 @@ class MonopoliRepo {
         })
         .catch(err => {
             console.log('this.forceStartRepo');
-            return console.log(err);
+            return newResponse(500, res, err)
         })
     }
 
     readyRepo(req, res) {
         // TABLE = prepares
-        const { username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara } = req.body
+        const { user_id, username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
@@ -159,9 +162,10 @@ class MonopoliRepo {
         // required data for query
         Object.defineProperties(queryObject2, {
             table: {enumerable: true, value: 'players'},
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara'},
             insertColumn: {enumerable: true, get: function() {
                 return {
-                    username: username,
+                    user_id: user_id,
                     pos: pos,
                     harta_uang: harta_uang,
                     harta_kota: harta_kota,
@@ -183,25 +187,25 @@ class MonopoliRepo {
             })
             .catch(err => {
                 console.log('this.readyRepo 2');
-                return console.log(err);
+                return newResponse(500, res, err)
             })
         })
         .catch(err => {
             console.log('this.readyRepo 1');
-            return console.log(err);
+            return newResponse(500, res, err)
         })
     }
 
     playerTurnEndRepo(req, res) {
         // TABLE = players
-        const { username, pos, harta_uang, harta_kota, kartu, jalan, penjara, next_player } = req.body
+        const { user_id, pos, harta_uang, harta_kota, kartu, jalan, penjara, next_player } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'players'},
-            selectColumn: {enumerable: true, value: 'username, pos, harta_uang, harta_kota, kartu, jalan, penjara'},
-            whereColumn: {enumerable: true, value: 'username'},
-            whereValue: {enumerable: true, value: username},
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara'},
+            whereColumn: {enumerable: true, value: 'user_id'},
+            whereValue: {enumerable: true, value: user_id},
             updateColumn: {enumerable: true, get: function() {
                 return {
                     pos: pos,
@@ -216,10 +220,10 @@ class MonopoliRepo {
         const queryObject2 = {}
         Object.defineProperties(queryObject2, {
             table: {enumerable: true, value: 'players'},
-            selectColumn: {enumerable: true, value: 'username, pos, giliran, jalan'},
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, giliran, jalan'},
             // multiple where
             multipleWhere: {enumerable: true, value: false},
-            whereColumn: {enumerable: true, value: 'username'},
+            whereColumn: {enumerable: true, value: 'user_id'},
             whereValue: {enumerable: true, value: next_player},
             updateColumn: {enumerable: true, get: function() {
                 return {
@@ -238,13 +242,26 @@ class MonopoliRepo {
             })
             .catch(err => {
                 console.log('this.playerTurnEndRepo 2');
-                return console.log(err);
+                return newResponse(500, res, err)
             })
         })
         .catch(err => {
             console.log('this.playerTurnEndRepo 1');
-            return console.log(err);
+            return newResponse(500, res, err)
         })
+    }
+
+    gameResumeRepo(req, res) {
+        // TABLE = players
+        const { user_id } = req.query
+        const queryObject = {}
+        // required data for query
+        Object.defineProperties(queryObject, {
+            table: {enumerable: true, value: 'players'},
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara'}
+        })
+        // get all players 
+        return newPromise(selectAll(req, res, queryObject))
     }
 }
 

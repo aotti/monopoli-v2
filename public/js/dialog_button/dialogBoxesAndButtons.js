@@ -1,197 +1,3 @@
-// confirm dialog when player step on land to  
-// buy house || get cards || going to jail  || free parking
-function confirmDialog() {
-    // create dialog box
-    const dialogConfirmBox = cE('div')
-    const textBox = cE('div')
-    const buttonAgree = cE('input')
-    const buttonDisagree = cE('input')
-    const textBoxInnerText = 'Apakah anda mau beli tanah di kota Jakarta dengan harga Rp 50.000, atau langsung beli rumah dengan harga Rp 100.000?'
-    // create and append dialog
-    appendGameDialogBoxesOrButtonsToBoard(
-        // allow append to board, 2nd container
-        true, false, 
-        // element types
-        ['div', 'div', 'button', 'button'],
-        // elements (the first element must be a container)
-        [dialogConfirmBox, textBox, buttonAgree, buttonDisagree],
-        // attribute types
-        ['class', 'none', 'id', 'id'],
-        // attribute values
-        ['confirm_box', null, 'buyAgree', 'buyDisagree'],
-        // innerText
-        [null, textBoxInnerText, 'Beli', 'Males']
-    )
-}
-
-// the buttons in the middle of board
-function gameButtons() {
-    // container
-    const infoArea = cE('div')
-    infoArea.classList.add('infoArea')
-    // register & login
-    const registerSpan = cE('span')
-    const registerButton = cE('input')
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'button'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, registerSpan, registerButton],
-        // attribute types
-        [null, 'class', 'class'],
-        // attribute values
-        [null, 'registerSpan', 'register'],
-        // innerText
-        [null, null, 'Register']
-    )
-    const loginSpan = cE('span')
-    const loginButton = cE('input')
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'button'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, loginSpan, loginButton],
-        // attribute types
-        [null, 'class', 'class', 'class', 'class'],
-        // attribute values
-        [null, 'loginSpan', 'login'],
-        // innerText
-        [null, null, 'Login']
-    )
-    // putaran 
-    const putaranTeks = cE('span')
-    const putaranBuff = cE('span')
-    putaranBuff.dataset.buff = `[Bonus Uang Kalo Lewat Start] putaran > 6 = uang +40% putaran > 14 = uang +80%`;
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'span'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, putaranTeks, putaranBuff],
-        // attribute types
-        [null, 'class', 'class'],
-        // attribute values
-        [null, 'putaranTeks', 'putaranBuff'],
-        // innerText
-        [null, `Putaran ${laps}`, '\u{2615}']
-    )
-    // paksa start
-    const paksaMulaiSpan = cE('span')
-    const paksaMulaiButton = cE('input')
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'button'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, paksaMulaiSpan, paksaMulaiButton],
-        // attribute types
-        [null, 'class', 'class'],
-        // attribute values
-        [null, 'paksaMulaiSpan', 'paksaMulai'],
-        // innerText
-        [null, null, 'Paksa Mulai']
-    )
-    paksaMulaiButton.disabled = true
-    // username
-    const userNameSpan = cE('span')
-    const userName = cE('input')
-    userName.disabled = true
-    userName.readOnly = true
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'text'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, userNameSpan, userName],
-        // attribute types
-        [null, 'class', 'class'],
-        // attribute values
-        [null, 'userNameSpan', 'userName'],
-        // innerText
-        [null, null, null]
-    )
-    userName.placeholder = 'Username';
-    userName.maxLength = '8';
-    // mulai button
-    const tombolMulaiSpan = cE('span')
-    const tombolMulaiButton = cE('input')
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'button'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, tombolMulaiSpan, tombolMulaiButton],
-        // attribute types
-        [null, 'class', 'class'],
-        // attribute values
-        [null, 'tombolMulaiSpan', 'tombolMulai'],
-        // innerText
-        [null, null, 'Mulai']
-    )
-    tombolMulaiButton.disabled = true
-    // acak dadu
-    const acakDaduSpan = cE('span')
-    const acakDaduButton = cE('input')
-    const acakDaduTeks = cE('div')
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'button', 'div', 'div'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, acakDaduSpan, acakDaduButton, acakDaduTeks, dadu3D(cE('div'), cE('div'), cE('div'))],
-        // attribute types
-        [null, 'class', 'class', 'class', null],
-        // attribute values
-        [null, 'acakDaduSpan', 'acakDadu', 'acakDaduTeks', null],
-        // innerText
-        [null, null, 'Kocok Dadu', null, null]
-    )
-    acakDaduButton.disabled = true
-    // acak giliran
-    const acakGiliranSpan = cE('span')
-    const acakGiliranButton = cE('input')
-    const acakGiliranTeks = cE('div')
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span', 'button', 'div'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, acakGiliranSpan, acakGiliranButton, acakGiliranTeks],
-        // attribute types
-        [null, 'class', 'class', 'class'],
-        // attribute values
-        [null, 'acakGiliranSpan', 'acakGiliran', 'acakGiliranTeks'],
-        // innerText
-        [null, null, 'Kocok Giliran', null]
-    )
-    // info giliran
-    const urutanGiliran = cE('span')
-    appendGameDialogBoxesOrButtonsToBoard(
-        // 2nd container
-        true, true, 
-        // element types
-        ['div', 'span'],
-        // elements (1st element must be a container, 2nd optional)
-        [infoArea, urutanGiliran],
-        // attribute types
-        [null, 'class'],
-        // attribute values
-        [null, 'urutanGiliran'],
-        // innerText
-        [null, 'urutan']
-    )
-}
-
 // the buttons in the game title
 function infoButtons() {
     // players dialog
@@ -251,8 +57,7 @@ function infoButtons() {
         )
         // close dialog
         closePlayerButton.onclick = () => {
-            dialogInfo.remove()
-            dialogWrapper.style.display = 'none'
+            removeDialog(dialogWrapper, dialogInfo)
         }
     }
     // mods dialog
@@ -326,8 +131,7 @@ function infoButtons() {
         )
         // close dialog
         closeModsButton.onclick = () => {
-            dialogInfo.remove()
-            dialogWrapper.style.display = 'none'
+            removeDialog(dialogWrapper, dialogInfo)
         }
     }
     // profil dialog
@@ -357,44 +161,46 @@ function infoButtons() {
             dialogInfo,
             cE('div'), 'uuid',
             cE('span'), cE('span'),
-            'UUID', 'uuid.split(-)[2]'
+            'UUID', myGameData.uuid == null ? 'none' : myGameData.uuid
         )
         // div username
         dialogBoxSpanChild(
             dialogInfo,
             cE('div'), 'username',
             cE('span'), cE('span'),
-            'Username', 'none'
+            'Username', myGameData.username == null ? 'none' : myGameData.username
         )
         // create close and logout button
         const profilButtonsDiv = cE('div')
         const closeProfilButton = cE('input')
         const logoutProfilButton = cE('input')
-        logoutProfilButton.disabled = true
+        logoutProfilButton.disabled = myGameData.uuid == null ? true : false
         appendGameDialogBoxesOrButtonsToBoard(
             false, true,
             ['div', 'div', 'button', 'button'],
-            [dialogInfo, profilButtonsDiv, closeProfilButton, logoutProfilButton],
+            [dialogInfo, profilButtonsDiv, logoutProfilButton, closeProfilButton],
             [null, 'class', 'id', 'id'],
-            [null, 'closeProfil', 'closeProfilButton', 'logoutProfilButton'],
-            [null, null, 'Tutup', 'Logout']
+            [null, 'closeProfil', 'logoutProfilButton', 'closeProfilButton'],
+            [null, null, 'Logout', 'Tutup']
         )
         // close dialog
         closeProfilButton.onclick = () => {
-            dialogInfo.remove()
-            dialogWrapper.style.display = 'none'
+            removeDialog(dialogWrapper, dialogInfo)
         }
         // logout account
-        if(1 == 2) {
-            qS('#logoutProfilButton').onclick = () => {
-                console.log('logout success');
+        qS('#logoutProfilButton').onclick = (ev) => {
+            if(getLocStorage('uuid') == null) {
+                removeDialog(dialogWrapper, dialogInfo)
+                return errorNotification('anda belum login')
             }
+            ev.target.disabled = true
+            playerLogout()
         }
     }
     // register & login dialog
     for(let reglog of qSA('.register, .login')) {
         reglog.onclick = (ev)=>{
-            if(qS('.dialog_info')) return
+            if(qS('.dialog_info') || getLocStorage('uuid')) return
             const papanGame = qS('#papan_game')
             // create wrapper and dialog container
             const dialogWrapper = cE('div')
@@ -411,6 +217,7 @@ function infoButtons() {
             const usernameRegLogDiv = cE('div')
             const usernameRegLogSpan = cE('span')
             const usernameRegLog = cE('input')
+            usernameRegLog.maxLength = 8
             // password input
             const passwordRegLogDiv = cE('div')
             const passwordRegLogSpan = cE('span')
@@ -441,18 +248,18 @@ function infoButtons() {
                     false, true,
                     ['div', 'div', 'span', 'text'],
                     [dialogInfo, usernameRegLogDiv, usernameRegLogSpan, usernameRegLog],
-                    [null, 'class', 'none', 'id'],
-                    [null, 'usernameRegDiv', null, 'usernameReg'],
+                    [null, 'class', 'class', 'id'],
+                    [null, 'usernameRegDiv', 'usernameRegSpan', 'usernameReg'],
                     [null, null, 'Username', null]
                 )
                 // password input
-                passwordRegLog.placeholder = 'amb hekel klk h3h3'
+                passwordRegLog.placeholder = 'password min. 4 huruf'
                 appendGameDialogBoxesOrButtonsToBoard(
                     false, true,
                     ['div', 'div', 'span', 'password'],
                     [dialogInfo, passwordRegLogDiv, passwordRegLogSpan, passwordRegLog],
-                    [null, 'class', 'none', 'id'],
-                    [null, 'passwordRegDiv', null, 'passwordReg'],
+                    [null, 'class', 'class', 'id'],
+                    [null, 'passwordRegDiv', 'passwordRegSpan', 'passwordReg'],
                     [null, null, 'Password', null]
                 )
                 // confirm password input
@@ -461,8 +268,8 @@ function infoButtons() {
                     false, true,
                     ['div', 'div', 'span', 'password'],
                     [dialogInfo, confirmPassRegLogDiv, confirmPassRegLogSpan, confirmPassRegLog],
-                    [null, 'class', 'none', 'id'],
-                    [null, 'confirmPassRegDiv', null, 'confirmPasswordReg'],
+                    [null, 'class', 'class', 'id'],
+                    [null, 'confirmPassRegDiv', 'confirmPassRegSpan', 'confirmPasswordReg'],
                     [null, null, 'Confirm Pass', null]
                 )
                 // register button
@@ -492,18 +299,18 @@ function infoButtons() {
                     false, true,
                     ['div', 'div', 'span', 'text'],
                     [dialogInfo, usernameRegLogDiv, usernameRegLogSpan, usernameRegLog],
-                    [null, 'class', 'none', 'id'],
-                    [null, 'usernameLogDiv', null, 'usernameLog'],
+                    [null, 'class', 'class', 'id'],
+                    [null, 'usernameLogDiv', 'usernameLogSpan', 'usernameLog'],
                     [null, null, 'Username', null]
                 )
                 // password input
-                passwordRegLog.placeholder = 'password anda'
+                passwordRegLog.placeholder = 'klk amb hekel'
                 appendGameDialogBoxesOrButtonsToBoard(
                     false, true,
                     ['div', 'div', 'span', 'password'],
                     [dialogInfo, passwordRegLogDiv, passwordRegLogSpan, passwordRegLog],
-                    [null, 'class', 'none', 'id'],
-                    [null, 'passwordLogDiv', null, 'passwordLog'],
+                    [null, 'class', 'class', 'id'],
+                    [null, 'passwordLogDiv', 'passwordLogSpan', 'passwordLog'],
                     [null, null, 'Password', null]
                 )
                 // login button
@@ -518,13 +325,61 @@ function infoButtons() {
             }
             // close dialog
             closeRegLogButton.onclick = () => {
-                dialogInfo.remove()
-                dialogWrapper.style.display = 'none'
+                removeDialog(dialogWrapper, dialogInfo)
+            }
+            // prevent register dialog not exists error
+            if(qS('#register')) {
+                // when user register
+                qS('#register').onclick = (ev)=>{
+                    ev.target.disabled = true
+                    playerRegisterOrLogin('register', ev.target)
+                } 
+            }
+            // prevent login dialog not exists error
+            else if(qS('#login')) {
+                // when user login
+                qS('#login').onclick = (ev)=>{
+                    ev.target.disabled = true
+                    playerRegisterOrLogin('login', ev.target)
+                }
             }
         }
     }
+
+    if(gameStatus == 'playing') {
+        // setting button
+        qS('.setting_button').onclick = ()=>{
+            if(qS('.setting_menu').style.display == 'none' || qS('.setting_menu').style.display == '') {
+                qS('.setting_menu').style.display = 'block';
+                qS('.setting_arrow').style.display = 'block';
+            }
+            else {
+                qS('.myCityBox').style.display = 'none';
+                qS('.setting_menu').style.display = 'none';
+                qS('.setting_arrow').style.display = 'none';
+                while(qS('.myCityBox').firstChild && qS('.myCityBox').firstChild.classList != null && qS('.myCityBox').firstChild.classList[0] != 'myCityButton')
+                    qS('.myCityBox').removeChild(qS('.myCityBox').firstChild);
+            }
+        }
+        // cards hover
+        for(let cardHover of qSA('.kartuBuffDebuff')) {
+            cardHover.onmouseover = (ev)=>{
+                if(ev.target.classList != 'kartuBuffDebuff') return
+                ev.target.firstChild.style.display = 'block'
+            }
+            cardHover.onmouseout = (ev)=>{
+                if(ev.target.classList != 'kartuBuffDebuff') return
+                ev.target.firstChild.style.display = 'none'
+            }
+        }
+    }
+    else {
+        errorNotification('anda tidak sedang main \u{1F480}')
+        feedbackTurnOff()
+    }
+
     qS('#clearStorage').onclick = ()=>{
-        localStorage.clear('username')
+        localStorage.clear()
     }
 }
 

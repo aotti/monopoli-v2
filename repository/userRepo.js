@@ -13,11 +13,6 @@ class UserRepo {
         const queryObject = {}
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'users'},
-            selectColumn: {enumerable: true, value: 'uuid, username'},
-            // multiple where
-            multipleWhere: {enumerable: true, value: false},
-            whereColumn: {enumerable: true, value: 'username'},
-            whereValue: {enumerable: true, value: username},
             insertColumn: {enumerable: true, get: function() {
                 return {
                     uuid: uuid,
@@ -40,11 +35,28 @@ class UserRepo {
             selectColumn: {enumerable: true, value: 'id, uuid, username'},
             multipleWhere: {enumerable: true, value: true},
             // where 1
-            whereColumnOne: {enumerable: true, value: 'username'},
-            whereValueOne: {enumerable: true, value: username},
+            whereColumn_One: {enumerable: true, value: 'username'},
+            whereValue_One: {enumerable: true, value: username},
             // where 2
-            whereColumnTwo: {enumerable: true, value: 'password'},
-            whereValueTwo: {enumerable: true, value: password}
+            whereColumn_Two: {enumerable: true, value: 'password'},
+            whereValue_Two: {enumerable: true, value: password}
+        })
+        // get user data by username and password
+        return newPromise(selectOne(req, res, queryObject))
+    }
+
+    autoLogin(req, res) {
+        // TABLE = users
+        const { uuid } = req.query
+        // required data for query
+        const queryObject = {}
+        Object.defineProperties(queryObject, {
+            table: {enumerable: true, value: 'users'},
+            selectColumn: {enumerable: true, value: 'id, uuid, username'},
+            // multiple where
+            multipleWhere: {enumerable: true, value: false},
+            whereColumn: {enumerable: true, value: 'uuid'},
+            whereValue: {enumerable: true, value: uuid}
         })
         // get user data by username and password
         return newPromise(selectOne(req, res, queryObject))

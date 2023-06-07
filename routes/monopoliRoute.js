@@ -1,21 +1,25 @@
 const router = require('express').Router()
 const monopoliController = require('../controllers/monopoliController')
 const Monopoli = new monopoliController()
-const { 
-    validateUUIDv4, 
-    validatePlayerJoined, 
-    validatePlayerForcing,
-    validatePlayerData } = require('../middlewares/validator')
-
+const { validateUUIDv4, 
+        validatePlayerJoined, 
+        validatePlayerForcing,
+        validatePlayerData } = require('../middlewares/validator')
+// get
 router
-    .get('/gamestatus', validateUUIDv4, Monopoli.getGameStatus)
-    .patch('/gamestatus', validateUUIDv4, Monopoli.updateGameStatus)
+    .get('/gamestatus', Monopoli.getGameStatus)
     .get('/deleteplayers', validateUUIDv4, Monopoli.deletePlayerRows)
-    .get('/mods', validateUUIDv4, Monopoli.getModsData)
+    .get('/mods', Monopoli.getModsData)
+    .get('/gameresume', validateUUIDv4, Monopoli.gameResume)
+// post
+router
     .post('/prepare', validateUUIDv4, validatePlayerJoined, Monopoli.playerJoined)
-    .patch('/forcestart', validateUUIDv4, validatePlayerForcing, Monopoli.forceStart)
     .post('/ready', validateUUIDv4, validatePlayerData, Monopoli.ready)
     .post('/moveplayer', validateUUIDv4, Monopoli.playerMoving)
+// patch
+router
+    .patch('/gamestatus', validateUUIDv4, Monopoli.updateGameStatus)
+    .patch('/forcestart', validateUUIDv4, validatePlayerForcing, Monopoli.forceStart)
     .patch('/turnend', validateUUIDv4, validatePlayerData, Monopoli.playerTurnEnd)
 
 module.exports = router

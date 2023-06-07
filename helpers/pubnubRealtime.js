@@ -9,7 +9,7 @@ const pubnub = new PubNub({
     userId: process.env.UUID_V4
 })
 
-function pubnubPublish(messageType, result, res, resData) {
+function pubnubPublish(messageType, result, res, resMessage) {
     // send realtime data
     pubnub.publish({
         channel: 'monopoli_v2',
@@ -17,7 +17,7 @@ function pubnubPublish(messageType, result, res, resData) {
     }, function (status, response) {
         // send response after realtime data sent
         // return apiResponse
-        return newResponse(200, res, resData)
+        return newResponse([200, resMessage], res, result)
     })
 }
 

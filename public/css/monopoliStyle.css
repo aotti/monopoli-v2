@@ -143,32 +143,30 @@
 }
 
 .player_info > .dropdown > .setting_button {
-  /* position: absolute; */
-  /* margin-left: 160px; */
   padding: 0 10px 0 10px;
   float: left;
-  /* border: 1px solid; */
   cursor: pointer;
+}
+
+.player_info > .dropdown > .setting_arrow {
+  display: none;
+  position: absolute;
+  bottom: 45%;
+  right: 20.8%;
+  content: '';
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent transparent transparent black;
 }
 
 .player_info > .dropdown > .setting_menu {
   display: none;
   position: absolute;
-  bottom: 230px;
-  right: 140px;
+  bottom: 26%;
+  right: 22.2%;
   background: bisque;
-/*   padding: 3px; */
   border: 2px solid;
-}
-
-.player_info > .dropdown > .setting_menu::before {
-  position: absolute;
-  bottom: -22px;
-  left: 0px;
-  content: '';
-  border-width: 10px;
-  border-style: solid;
-  border-color: black transparent transparent;
+  z-index: 10;
 }
 
 .player_info > .dropdown > .setting_menu > div {
@@ -279,31 +277,36 @@
 
 .player_list {
   display: grid;
-  grid-template-columns: 110px auto;
+  grid-template-columns: 110px auto 50px;
   margin-top: 3px;
   padding-top: 3px;
   border-top: 1px solid;
   cursor: pointer;
 }
 
-.player_list > .kartuBuffDebuff:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 29%;
-  right: 6%;
-  /* margin: -50px 0px 0px -60px; */
-  background: yellow;
-  padding: 3px;
-  width: 110px;
-  border: 1px solid;
-  border-radius: 4px;
+.player_list > .kartuBuffDebuff::before {
+  content: '\1F4D1';
+  display: flex;
+  justify-content: center;
+  border-left: 1px solid;
 }
 
-.player_list > .kartuBuffDebuff::before {
+.kartuBuffDebuffList {
+  display: none;
   position: absolute;
-  margin: -3px 95px;
-  content: '\1F4D1';
-/*   font-size: 18px; */
+  right: 5%;
+  margin-top: -1.5%;
+  padding: 2px 5px 2px 40px;
+  background: yellow;
+  border: 1px solid;
+  border-radius: 4px;
+  box-shadow: 0 0;
+  overflow: hidden;
+}
+
+.kartuBuffDebuffList > li {
+  margin-left: -18px;
+  margin-bottom: 0;
 }
 
 .player_list > span[id]:hover::after {
@@ -535,13 +538,24 @@
   position: relative;
 }
 
-.pdiv:hover::before {
+.pdiv::before, .pdiv.show::before {
   content: attr(id);
   position: absolute;
   z-index: 10;
   background: lightblue;
   padding: 2px;
   border: 1px solid;
+  margin-top: -10px;
+}
+
+.pdiv.hide:hover:before {
+  content: attr(id);
+  position: absolute;
+  z-index: 10;
+  background: lightblue;
+  padding: 2px;
+  border: 1px solid;
+  margin-top: -10px;
 }
 
 [class^='petak'] {

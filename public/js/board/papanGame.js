@@ -3,6 +3,8 @@ function createBoard() {
     fetcher(`/mods`, 'GET', null)
     .then(data => data.json())
     .then(result => {
+        if(result.status != 200)
+            return errorCapsule(result, anErrorOccured)
         // get empty board
         const papanGame = qS('#papan_game')
         // set mods values
@@ -32,7 +34,7 @@ function createBoard() {
         insertLandsToBoard()
     })
     .catch(err => {
-        return errorCapsule(err, `an error occured\n`)
+        return errorCapsule(err, anErrorOccured)
     })
 }
 

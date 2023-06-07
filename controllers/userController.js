@@ -8,9 +8,12 @@ class User {
     register(req, res) {
         UserRepo.registerRepo(req, res)
         .then(result => {
-            return newResponse(200, res, 'register complete')
+            return newResponse([200, 'success register'], res, result)
         })
-        .catch(err => {return newResponse(500, res, err)})
+        .catch(err => {
+            console.log('User.register');
+            return newResponse(500, res, err)
+        })
     }
 
     login(req, res) {
@@ -18,9 +21,25 @@ class User {
         .then(result => {
             if(result.length == 0)
                 return newResponse(400, res, `username/password salah`)
-            return newResponse(200, res, result)
+            return newResponse([200, 'success login'], res, result)
         })
-        .catch(err => {return newResponse(500, res, err)})
+        .catch(err => {
+            console.log('User.login');
+            return newResponse(500, res, err)
+        })
+    }
+
+    autoLogin(req, res) {
+        UserRepo.autoLogin(req, res)
+        .then(result => {
+            if(result.length == 0)
+                return newResponse(404, res, `user tidak ditemukan`)
+            return newResponse([200, 'success autoLogin'], res, result)
+        })
+        .catch(err => {
+            console.log('User.autoLogin');
+            return newResponse(500, res, err)
+        })
     }
 
     logout(req, res) {

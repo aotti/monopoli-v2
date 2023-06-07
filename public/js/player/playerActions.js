@@ -1,18 +1,3 @@
-// get all player last position
-function allPlayersLastPos() {
-    startInterval = setInterval(() => {
-        // waiting gameStatus get value
-        if(gameStatus != null) {
-            clearInterval(startInterval)
-            // resume the game if still ongoing 
-            if(gameStatus == 'playing') {
-                // get all players data
-                fetcher()
-            }
-        }
-    }, 1000);
-}
-
 // get shape for the current player turn
 function thisShapeIsMe(username) {
     // get all player shapes
@@ -70,12 +55,10 @@ function kocokDaduTrigger(customDadu = null) {
         fetcher(`/moveplayer`, 'POST', jsonData)
         .then(data => data.json())
         .then(result => {
-            if(result.status != 200) {
-                return errorCapsule(result, `an error occured\n`)
-            }
+            return fetcherResults(result)
         })
         .catch(err => {
-            return errorCapsule(err, `an error occured\n`)
+            return errorCapsule(err, anErrorOccured)
         })
     }
 }
@@ -83,6 +66,33 @@ function kocokDaduTrigger(customDadu = null) {
 // player steps
 function footsteps(footstep, branch = '') {
     return footstep % 28 == 0 ? 28 + branch : (footstep % 28) + branch;
+}
+
+// move player to other lands
+function movePlayerToOtherLand(tempBranchChance, steps, steps2, playersTurnShape) {
+    for(let land of qSA('[class^=petak]')) {
+        if(mods[0] == 'bercabangDua') {
+            // if the next land number == our next pos
+            if(tempBranchChance <= mods[5] && (steps%28 == 0 || steps%28 == 1 || steps%28 == 2 || steps%28 == 14 || steps%28 == 15 || steps%28 == 16))
+                steps2 = 'a'
+            if(land.title == footsteps(steps, steps2)) {
+                // move our shape to next land
+                land.appendChild(playersTurnShape)
+            }
+        }
+        else {
+            // if the next land number == our next pos
+            if(land.title == footsteps(steps)) {
+                // move our shape to next land
+                land.appendChild(playersTurnShape)
+            }
+        }
+    }
+    // when player walk past land no.1
+    if((steps % 28) + steps2 == 1 + steps2 && playersTurnShape.id == myGameData.username && playersTurn[giliranCounter] == myGameData.username) {
+        laps += 1
+        qS('.putaranTeks').innerText = `Putaran ${laps}`
+    }
 }
 
 // player pos after dice rolled
@@ -142,29 +152,8 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
         steps = playerPosNow + (stepsCounter + 1)
         // for lands in branch
         let steps2 = null
-        for(let land of qSA('[class^=petak]')) {
-            if(mods[0] == 'bercabangDua') {
-                // if the next land number == our next pos
-                if(tempBranchChance <= mods[5] && (steps%28 == 0 || steps%28 == 1 || steps%28 == 2 || steps%28 == 14 || steps%28 == 15 || steps%28 == 16))
-                    steps2 = 'a'
-                if(land.title == footsteps(steps, steps2)) {
-                    // move our shape to next land
-                    land.appendChild(playersTurnShape)
-                }
-            }
-            else {
-                // if the next land number == our next pos
-                if(land.title == footsteps(steps)) {
-                    // move our shape to next land
-                    land.appendChild(playersTurnShape)
-                }
-            }
-        }
-        // when player walk past land no.1
-        if((steps % 28) + steps2 == 1 + steps2 && playersTurnShape.id == myGameData.username && playersTurn[giliranCounter] == myGameData.username) {
-            laps += 1
-            qS('.putaranTeks').innerText = `Putaran ${laps}`
-        }
+        // move player to other lands
+        movePlayerToOtherLand(tempBranchChance, steps, steps2, playersTurnShape)
         // the stepsCounter value is 0
         stepsCounter++
         // loop stops and the stepsCounter value is 1
@@ -174,7 +163,8 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
             // ONLY PLAYER IN TURN THAT CAN FETCH
             if(playersTurnShape.id == myGameData.username && playersTurn[giliranCounter] == myGameData.username) {
                 console.log(`fetch player: ${playersTurn[giliranCounter]};${playersTurnShape.id};${myGameData.username}`);
-                // reset myBranchChance status inside branch lands, to prevent moving to different branch
+                // reset myBranchChance status back to TRUE inside branch lands
+                // to prevent moving to different branch
                 if(myBranchChance.username == playersTurn[giliranCounter]) {
                     switch(true) {
                         // reset status on land numbers 14 15 16 and 28 1 2
@@ -185,10 +175,10 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
                     }
                 }
                 // choose next player
-                const nextPlayer = (myGameData.giliran + 1) % playersTurn.length
-                // console.log(`next player: ${playersTurn[nextPlayer]}`);
+                const nextPlayer = (myGameData.giliran + 1) % playerTurnsId.length
                 // payload
                 const jsonData = {
+                    user_id: myGameData.id,
                     username: myGameData.username,
                     pos: `${playerDiceMove}`,
                     harta_uang: +mods[1],
@@ -197,18 +187,16 @@ function playerMoves(playerDadu, playersTurnShape, tempBranchChance) {
                     giliran: myGameData.giliran,
                     jalan: false,
                     penjara: false,
-                    next_player: playersTurn[nextPlayer]
+                    next_player: playerTurnsId[nextPlayer]
                 }
                 // send data to server
                 fetcher(`/turnend`, 'PATCH', jsonData)
                 .then(data => data.json())
                 .then(result => {
-                    if(result.status != 200) {
-                        return errorCapsule(result, `an error occured\n`)
-                    }
+                    return fetcherResults(result)
                 })
                 .catch(err => {
-                    return errorCapsule(err, `an error occured\n`)
+                    return errorCapsule(err, anErrorOccured)
                 })
             }
         }
