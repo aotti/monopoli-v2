@@ -1,16 +1,15 @@
 function createBoard() {
     // get mods data from database
     fetcher(`/mods`, 'GET', null)
-    .then(data => data.json())
     .then(result => {
         if(result.status != 200)
             return errorCapsule(result, anErrorOccured)
         // get empty board
         const papanGame = qS('#papan_game')
         // set mods values
-        mods = [result.data[0].board_shape, result.data[0].money_start, 
-                result.data[0].money_lose, result.data[0].curse_min, 
-                result.data[0].curse_max, result.data[0].branch]
+        const mods = [result.data[0].board_shape, result.data[0].branch,
+                    result.data[0].money_start, result.data[0].money_lose, 
+                    result.data[0].curse_min, result.data[0].curse_max]
         // set board shape
         if(mods[0] == 'persegiPanjangV1')
             persegiPanjangV1();
@@ -31,7 +30,7 @@ function createBoard() {
         // append shape to empty board
         papanGame.appendChild(docFrag)
         // insert images to board
-        insertLandsToBoard()
+        insertLandsToBoard(mods)
     })
     .catch(err => {
         return errorCapsule(err, anErrorOccured)
@@ -47,15 +46,15 @@ function insertImage(allLands, i, imgEl, src) {
     allLands[i].parentElement.insertBefore(docFrag, allLands[i].parentElement.children[0]);
 }
 
-function insertLandsToBoard() {
+function insertLandsToBoard(mods) {
     // set random percent for price on kotaTerkutuk
-    const randKutukan = Math.floor(Math.random() * ((+mods[4] + 1) - +mods[3])) + +mods[3]
+    const randKutukan = Math.floor(Math.random() * ((mods[5] + 1) - mods[4])) + mods[4]
     // set the price for kotaTerkutuk
-    const rumusKutukan1 = (4e3 * (playersTurn != null ? playersTurn.length : 1) * (laps != null ? laps : 1))
-    const rumusKutukan2 = (1e4 * (laps != null ? laps : 1) * (randKutukan / 100))
+    const rumusKutukan1 = 4e3 * 1 * 1
+    const rumusKutukan2 = 1e4 * 1 * (randKutukan / 100)
     const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2)
     // set the price for kotaKhusus
-    const hargaKhusus = (laps != null && laps > 6 ? 12_000 : 0)
+    const hargaKhusus = 0
     // land numbers
     const np = [
                 2, 5, 6,

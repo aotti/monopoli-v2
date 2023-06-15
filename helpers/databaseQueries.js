@@ -50,8 +50,21 @@ async function updateData(req, res, queryObject) {
     if(supabase == null)
         return res.send('cannot connect to database')
     const updateDataToDB = async () => {
-        const {data, error} = await supabase.from(queryObject.table).update(queryObject.updateColumn).eq(queryObject.whereColumn, queryObject.whereValue)
-        return {data: data, error: error}
+        // multiple where condition
+        if(queryObject.multipleWhere === true) {
+            const {data, error} = await supabase.from(queryObject.table)
+                                .update(queryObject.updateColumn)
+                                .eq(queryObject.whereColumn_One, queryObject.whereValue_One)
+                                .eq(queryObject.whereColumn_Two, queryObject.whereValue_Two)
+            return {data: data, error: error}
+        }
+        // only one where condition
+        else if(queryObject.multipleWhere === false) {
+            const {data, error} = await supabase.from(queryObject.table)
+                                .update(queryObject.updateColumn)
+                                .eq(queryObject.whereColumn, queryObject.whereValue)
+            return {data: data, error: error}
+        }
     }
     return updateDataToDB()
 }

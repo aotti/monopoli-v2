@@ -1,5 +1,5 @@
 // the buttons in the game title
-function infoButtons() {
+function interactWithButtons(gameStatus = null) {
     // players dialog
     qS('#cekPlayer').onclick = ()=>{
         if(qS('.dialog_info')) return
@@ -193,6 +193,7 @@ function infoButtons() {
                 removeDialog(dialogWrapper, dialogInfo)
                 return errorNotification('anda belum login')
             }
+            // ### HANYA BISA LOGOUT JIKA SUDAH SURRENDER / GAME STATUS != PLAYING
             ev.target.disabled = true
             playerLogout()
         }
@@ -217,7 +218,7 @@ function infoButtons() {
             const usernameRegLogDiv = cE('div')
             const usernameRegLogSpan = cE('span')
             const usernameRegLog = cE('input')
-            usernameRegLog.maxLength = 8
+            usernameRegLog.maxLength = 10
             // password input
             const passwordRegLogDiv = cE('div')
             const passwordRegLogSpan = cE('span')
@@ -243,7 +244,7 @@ function infoButtons() {
                     [null, null, 'Register']
                 )
                 // username input
-                usernameRegLog.placeholder = 'username 4 ~ 8 huruf'
+                usernameRegLog.placeholder = 'username 4 ~ 10 huruf'
                 appendGameDialogBoxesOrButtonsToBoard(
                     false, true,
                     ['div', 'div', 'span', 'text'],
@@ -364,18 +365,22 @@ function infoButtons() {
         // cards hover
         for(let cardHover of qSA('.kartuBuffDebuff')) {
             cardHover.onmouseover = (ev)=>{
-                if(ev.target.classList != 'kartuBuffDebuff') return
+                if(!ev.target.classList.toString().match(/kartuBuffDebuff/)) return
+                if(ev.target.classList.toString().match(/kartuBuffDebuffList/)) return
                 ev.target.firstChild.style.display = 'block'
             }
             cardHover.onmouseout = (ev)=>{
-                if(ev.target.classList != 'kartuBuffDebuff') return
+                if(!ev.target.classList.toString().match(/kartuBuffDebuff/)) return
+                if(ev.target.classList.toString().match(/kartuBuffDebuffList/)) return
                 ev.target.firstChild.style.display = 'none'
             }
         }
     }
     else {
         window.onclick = (ev)=>{
+            // check when you click on setting button
             const areYouPlaying = playersTurn.map(v => {return v}).indexOf(myGameData.username)
+            // if not playing then button wont work
             if(ev.target.classList == 'setting_button' && areYouPlaying == -1) {
                 errorNotification('Anda sedang tidak main')
                 return feedbackTurnOff()

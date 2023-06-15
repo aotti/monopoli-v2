@@ -52,7 +52,7 @@ function gameButtons() {
         // attribute values
         [null, 'putaranTeks', 'putaranBuff'],
         // innerText
-        [null, `Putaran ${laps}`, '\u{2615}']
+        [null, `Putaran #`, '\u{2615}']
     )
     // paksa start
     const paksaMulaiSpan = cE('span')

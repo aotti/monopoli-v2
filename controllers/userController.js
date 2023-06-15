@@ -8,42 +8,41 @@ class User {
     register(req, res) {
         UserRepo.registerRepo(req, res)
         .then(result => {
-            return newResponse([200, 'success register'], res, result)
-        })
-        .catch(err => {
-            console.log('User.register');
-            return newResponse(500, res, err)
+            // insert data
+            if(result.length > 0)
+                return newResponse([200, 'success register'], res, result)
+            if(result.statusCode != 200) return
         })
     }
 
     login(req, res) {
         UserRepo.loginRepo(req, res)
         .then(result => {
-            if(result.length == 0)
-                return newResponse(400, res, `username/password salah`)
-            return newResponse([200, 'success login'], res, result)
-        })
-        .catch(err => {
-            console.log('User.login');
-            return newResponse(500, res, err)
+            // update data
+            if(result.length > 0)
+                return newResponse([200, 'success login'], res, result)
+            if(result.statusCode != 200) return
         })
     }
 
     autoLogin(req, res) {
         UserRepo.autoLogin(req, res)
         .then(result => {
-            if(result.length == 0)
-                return newResponse(404, res, `user tidak ditemukan`)
-            return newResponse([200, 'success autoLogin'], res, result)
-        })
-        .catch(err => {
-            console.log('User.autoLogin');
-            return newResponse(500, res, err)
+            // select data
+            if(result.length > 0)
+                return newResponse([200, 'success autoLogin'], res, result)
+            if(result.statusCode != 200) return
         })
     }
 
     logout(req, res) {
-
+        UserRepo.logoutRepo(req, res)
+        .then(result => {
+            // update data
+            if(result.length > 0)
+                return newResponse([200, 'success logout'], res, result)
+            if(result.statusCode != 200) return
+        })
     }
 }
 

@@ -12,23 +12,26 @@ class Monopoli {
         // get mods data 
         MonopoliRepo.getGameStatusRepo(req, res)
         .then(result => {
-            return newResponse([200, 'success getGameStatus'], res, result)
+            if(result.length > 0) {
+                return newResponse([200, 'success getGameStatus'], res, result)
+            }
+            if(result.statusCode != 200) return
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
 
     updateGameStatus(req, res) {
         // get mods data 
         MonopoliRepo.updateGameStatusRepo(req, res)
         .then(result => {
-            if(result.statusCode == 500) return
-            // send realtime data
-            // pubnub 
-            return pubnubPublish('gameStatus', result, res, 'success updateGameStatus') 
-            // ably
-            // ablyPublish('gameStatus', result, newResponse(200, res, 'game status updated'))
+            if(result.length > 0) {
+                // send realtime data
+                // pubnub 
+                return pubnubPublish('gameStatus', result, res, 'success updateGameStatus') 
+                // ably
+                // ablyPublish('gameStatus', result, newResponse(200, res, 'game status updated'))
+            }
+            if(result.statusCode != 200) return
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
 
     deletePlayerRows(req, res) {
@@ -36,7 +39,6 @@ class Monopoli {
         .then(result => {
             return newResponse([200, 'success deletePlayerRows'], res, result)
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
 
     getModsData(req, res) {
@@ -45,85 +47,145 @@ class Monopoli {
         .then(result => {
             return newResponse([200, 'success getModsData'], res, result)
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
 
     playerJoined(req, res) {
         // get all player data who joined the game 
         MonopoliRepo.playerJoinedRepo(req, res)
-        .then(result => {
-            if(result.statusCode == 500) return
-            // send realtime data
-            // pubnub 
-            return pubnubPublish('playerJoined', result, res, `success playerJoined`)
-            // ably
-            // ablyPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
+        .then(resultJoined => {
+            if(resultJoined.length > 0) {
+                // get mods data 
+                MonopoliRepo.getModsDataRepo(req, res)
+                .then(resultMods => {
+                    if(resultMods.length > 0) {
+                        MonopoliRepo.getGameStatusRepo(req, res)
+                        .then(resultGameStatus => {
+                            const payload = {
+                                playerJoined: resultJoined,
+                                mods: resultMods,
+                                gameStatus: resultGameStatus
+                            }
+                            // send realtime data
+                            // pubnub 
+                            return pubnubPublish('playerJoined', payload, res, `success playerJoined`)
+                            // ably
+                            // ablyPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
+                        })
+                    }
+                    if(resultMods.statusCode != 200) return
+                })
+            }
+            if(resultJoined.statusCode != 200) return
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
 
     forceStart(req, res) {
         // get all player data who forced the game 
         MonopoliRepo.forceStartRepo(req, res)
-        .then(result => {
-            if(result.statusCode == 500) return
-            // send realtime data
-            // pubnub 
-            return pubnubPublish('playerForcing', result, res, 'success forceStart')
-            // ably
-            // ablyPublish('playerForcing', result, newResponse(200, res, `updated`))
+        .then(resultForcing => {
+            if(resultForcing.length > 0) {
+                // get mods data 
+                MonopoliRepo.getModsDataRepo(req, res)
+                .then(resultMods => {
+                    if(resultMods.length > 0) {
+                        MonopoliRepo.getGameStatusRepo(req, res)
+                        .then(resultGameStatus => {
+                            const payload = {
+                                playerForcing: resultForcing,
+                                mods: resultMods,
+                                gameStatus: resultGameStatus
+                            }
+                            // send realtime data
+                            // pubnub 
+                            return pubnubPublish('playerForcing', payload, res, 'success forceStart')
+                            // ably
+                            // ablyPublish('playerForcing', result, newResponse(200, res, `updated`))
+                        })
+                    }
+                    if(resultMods.statusCode != 200) return
+                })
+            }
+            if(resultForcing.statusCode != 200) return
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
     
     ready(req, res) {
         // get all player data who ready to play
         MonopoliRepo.readyRepo(req, res)
         .then(result => {
-            if(result.statusCode == 500) return
-            // send realtime data
-            // pubnub 
-            return pubnubPublish('playerReady', result, res, 'success ready')
-            // ably
-            // ablyPublish('playerReady', result, newResponse(200, res, `ready`))
+            if(result.length > 0) {
+                // send realtime data
+                // pubnub 
+                return pubnubPublish('playerReady', result, res, 'success ready')
+                // ably
+                // ablyPublish('playerReady', result, newResponse(200, res, `ready`))
+            }
+            if(result.statusCode != 200) return
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
 
     playerMoving(req, res) {
-        const { playerDadu, username, branch } = req.body
-        const jsonData = {
-            playerDadu: playerDadu, 
-            username: username, 
-            branch: branch
-        }
-        // send realtime data
-        // pubnub 
-        return pubnubPublish('playerMoving', jsonData, res, 'success playerMoving')
-        // ably
-        // ablyPublish('playerMoving', {playerDadu: playerDadu, username: username, branch: branch}, newResponse(200, res, `player moving`))
+        MonopoliRepo.playerMovingRepo(req, res)
+        .then(resultMoving => {
+            // get mods data 
+            MonopoliRepo.getModsDataRepo(req, res)
+            .then(resultMods => {
+                if(resultMods.length > 0) {
+                    const { playerDadu, username, branch } = req.body
+                    const jsonData = {
+                        username: username, 
+                        playerDadu: playerDadu, 
+                        branch: branch,
+                        putaran: resultMoving[0].putaran,
+                        giliran: resultMoving[0].giliran
+                    }
+                    const payload = {
+                        playerMoving: jsonData,
+                        mods: resultMods
+                    }
+                    // send realtime data
+                    // pubnub 
+                    return pubnubPublish('playerMoving', payload, res, 'success playerMoving')
+                    // ably
+                    // ablyPublish('playerMoving', jsonData, newResponse(200, res, `player moving`))
+                }
+                if(resultMods.statusCode != 200) return
+            })
+        })
     }
 
     playerTurnEnd(req, res) {
         // get all player data who ready to play
         MonopoliRepo.playerTurnEndRepo(req, res)
         .then(result => {
-            if(result.statusCode == 500) return
-            // send realtime data
-            // pubnub 
-            return pubnubPublish('playerTurnEnd', result, res, 'success playerTurnEnd') 
-            // ably
-            // ablyPublish('playerTurnEnd', result, newResponse(200, res, `turn end`))
+            if(result.length > 0) {
+                // return newResponse([200, 'success playerTurnEnd'], res, result)
+                // send realtime data
+                // pubnub 
+                return pubnubPublish('playerTurnEnd', result, res, 'success playerTurnEnd') 
+                // ably
+                // ablyPublish('playerTurnEnd', result, newResponse(200, res, `turn end`))
+            }
+            if(result.statusCode != 200) return
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
 
     gameResume(req, res) {
         MonopoliRepo.gameResumeRepo(req, res)
         .then(result => {
-            return newResponse([200, 'success gameResume'], res, result)
+            if(result.length > 0) {
+                // get mods data 
+                MonopoliRepo.getModsDataRepo(req, res)
+                .then(resultMods => {
+                    const payload = {
+                        resumePlayer: result,
+                        mods: resultMods
+                    }
+                    return newResponse([200, 'success gameResume'], res, payload)
+                })
+            }
+            if(result.statusCode != 200) return
         })
-        .catch(err => {return newResponse(500, res, err)})
     }
     
 }

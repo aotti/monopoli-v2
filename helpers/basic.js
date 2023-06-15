@@ -1,6 +1,8 @@
 function newPromise(data) {
     return new Promise((resolve, reject) => {
         data.then(result => {
+            // if cannot read properties of undefined (reading error) happen
+            // it means the result is undefined
             if(result.error != null)
                 return reject(result.error)
             return resolve(result.data)
@@ -9,6 +11,8 @@ function newPromise(data) {
 }
 
 function newResponse(codeAndMessage, res, data) {
+    // if the status code type is number, change 
+    // the codeAndMessage type to array to prevent error
     if(typeof codeAndMessage === 'number')
         codeAndMessage = [codeAndMessage]
     switch(codeAndMessage[0]) {
@@ -18,12 +22,31 @@ function newResponse(codeAndMessage, res, data) {
                 message: codeAndMessage[1],
                 data: data
             })
-        case 400: case 401: case 404: case 500:
+        case 400: case 401: case 403: case 404: case 500:
+            const errorMessage = (() => {
+                let errMsg = null
+                if(data.errorMessage) {
+                    if(typeof data.errorMessage == 'object')
+                        errMsg = `status: ${data.statusCode}\n${data.errorMessage.message}`
+                    else
+                        errMsg = `status: ${data.statusCode}\n${data.errorMessage}`
+                }
+                else if(data.message) 
+                    errMsg = data.message
+                else
+                    errMsg = data
+                return errMsg
+            })()
             return res.status(codeAndMessage[0]).json({
                 status: codeAndMessage[0],
-                errorMessage: data
+                errorMessage: errorMessage
             })
     }
+}
+
+function catchResponse(res, err, logMessage) {
+    console.log(logMessage);
+    return newResponse(500, res, err)
 }
 
 function isStringOrNumberOrBool(data, type) {
@@ -33,4 +56,17 @@ function isStringOrNumberOrBool(data, type) {
         return true
 }
 
-module.exports = {newPromise, newResponse, isStringOrNumberOrBool}
+function isTheLengthAppropriate(data) {
+    if(data.length < 4)
+        return true 
+    else if(data.length >= 4)
+        return false
+}
+
+module.exports = {
+    newPromise, 
+    newResponse, 
+    catchResponse,
+    isStringOrNumberOrBool, 
+    isTheLengthAppropriate
+}

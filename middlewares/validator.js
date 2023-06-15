@@ -1,4 +1,4 @@
-const { newResponse, isStringOrNumberOrBool } = require('../helpers/basic')
+const { newResponse, isStringOrNumberOrBool, isTheLengthAppropriate } = require('../helpers/basic')
 const stringType = 'string'
 const numberType = 'number'
 const booleanType = 'boolean'
@@ -32,16 +32,19 @@ function validatePlayerForcing(req, res, next) {
 function validatePlayerData(req, res, next) {
     const { user_id, username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, next_player } = req.body
     // check var types
+    // if next_player exist 
     if(next_player && isStringOrNumberOrBool(next_player, numberType) == true) 
+        return newResponse(400, res, 'player type is invalid')
+    if(giliran && isStringOrNumberOrBool(giliran, numberType) == true) 
+        return newResponse(400, res, 'player type is invalid')
+    if(username && isStringOrNumberOrBool(username, stringType) == true) 
         return newResponse(400, res, 'player type is invalid')
     switch(true) {
         case isStringOrNumberOrBool(user_id, numberType):
-        case isStringOrNumberOrBool(username, stringType):
         case isStringOrNumberOrBool(pos, stringType):
         case isStringOrNumberOrBool(harta_uang, numberType):
         case isStringOrNumberOrBool(harta_kota, stringType):
         case isStringOrNumberOrBool(kartu, stringType):
-        case isStringOrNumberOrBool(giliran, numberType):
         case isStringOrNumberOrBool(jalan, booleanType):
         case isStringOrNumberOrBool(penjara, booleanType):
             return newResponse(400, res, 'player type is invalid')
@@ -55,9 +58,14 @@ function validateRegisterLogin(req, res, next) {
     if(uuid != null) {
         action = 'registration'
         if(uuidv4Regex.test(uuid) === false)
-            return newResponse(400, res, 'Invalid registration data')
+            return newResponse(400, res, `Invalid ${action} data`)
     }
     switch(true) {
+        // check var length
+        case isTheLengthAppropriate(username):
+        case isTheLengthAppropriate(password):
+            return newResponse(400, res, `Invalid data length`)
+        // check var type
         case isStringOrNumberOrBool(username, stringType):
         case isStringOrNumberOrBool(password, stringType):
             return newResponse(400, res, `Invalid ${action} data`)

@@ -1,4 +1,4 @@
-const { newPromise, newResponse } = require('../helpers/basic')
+const { newPromise, newResponse, catchResponse } = require('../helpers/basic')
 const { selectAll, 
         selectOne, 
         insertDataRow, 
@@ -19,6 +19,7 @@ class MonopoliRepo {
         }
         // get status data for the game state
         return newPromise(selectOne(req, res, queryObject))
+        .catch(err => catchResponse(res, err, 'Monopoli.getGameStatusRepo'))
     }
 
     updateGameStatusRepo(req, res) {
@@ -29,6 +30,8 @@ class MonopoliRepo {
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'games'},
             selectColumn: {enumerable: true, value: 'status'},
+            // multiple where
+            multipleWhere: {enumerable: true, value: false},
             whereColumn: {enumerable: true, value: 'id'},
             whereValue: {enumerable: true, value: 1},
             updateColumn: {enumerable: true, get: function() {
@@ -41,12 +44,10 @@ class MonopoliRepo {
         return newPromise(updateData(req, res, queryObject))
         .then(() => {
             // get all player data
-            return newPromise(selectAll(req, res, queryObject))
+            return newPromise(selectOne(req, res, queryObject))
+            .catch(err => catchResponse(res, err, 'Monopoli.updateGameStatusRepo 2'))
         })
-        .catch(err => {
-            console.log('this.updateGameStatusRepo');
-            return newResponse(500, res, err)
-        })
+        .catch(err => catchResponse(res, err, 'Monopoli.updateGameStatusRepo 1'))
     }
 
     deletePlayerRowsRepo(req, res) {
@@ -63,11 +64,9 @@ class MonopoliRepo {
         .then(() => {
             // delete all data from prepares
             return newPromise(deleteAll(req, res, queryObject2))
+            .catch(err => catchResponse(res, err, 'Monopoli.deletePlayerRowsRepo 2'))
         })
-        .catch(err => {
-            console.log('this.deletePlayerRowsRepo');
-            return newResponse(500, res, err)
-        })
+        .catch(err => catchResponse(res, err, 'Monopoli.deletePlayerRowsRepo 1'))
     }
 
     getModsDataRepo(req, res) {
@@ -83,6 +82,7 @@ class MonopoliRepo {
         }
         // get mods data for board 
         return newPromise(selectOne(req, res, queryObject))
+        .catch(err => catchResponse(res, err, 'Monopoli.getModsDataRepo'))
     }
 
     playerJoinedRepo(req, res) {
@@ -107,11 +107,9 @@ class MonopoliRepo {
         .then(() => {
             // get all player data who joined
             return newPromise(selectAll(req, res, queryObject))
+            .catch(err => catchResponse(res, err, 'Monopoli.playerJoinedRepo 2'))
         })
-        .catch(err => {
-            console.log('this.playerJoinedRepo');
-            return newResponse(500, res, err)
-        })
+        .catch(err => catchResponse(res, err, 'Monopoli.playerJoinedRepo 1'))
     }
 
     forceStartRepo(req, res) {
@@ -122,6 +120,8 @@ class MonopoliRepo {
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'prepares'},
             selectColumn: {enumerable: true, value: 'player_joined, player_forcing, player_ready, player_rand'},
+            // multiple where
+            multipleWhere: {enumerable: true, value: false},
             whereColumn: {enumerable: true, value: 'player_joined'},
             whereValue: {enumerable: true, value: username},
             updateColumn: {enumerable: true, get: function() {
@@ -135,20 +135,20 @@ class MonopoliRepo {
         .then(() => {
             // get all player data
             return newPromise(selectAll(req, res, queryObject))
+            .catch(err => catchResponse(res, err, 'Monopoli.forceStartRepo 2'))
         })
-        .catch(err => {
-            console.log('this.forceStartRepo');
-            return newResponse(500, res, err)
-        })
+        .catch(err => catchResponse(res, err, 'Monopoli.forceStartRepo 1'))
     }
 
     readyRepo(req, res) {
         // TABLE = prepares
-        const { user_id, username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara } = req.body
+        const { user_id, username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, putaran } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'prepares'},
+            // multiple where
+            multipleWhere: {enumerable: true, value: false},
             whereColumn: {enumerable: true, value: 'player_joined'},
             whereValue: {enumerable: true, value: username},
             updateColumn: {enumerable: true, get: function() {
@@ -162,7 +162,7 @@ class MonopoliRepo {
         // required data for query
         Object.defineProperties(queryObject2, {
             table: {enumerable: true, value: 'players'},
-            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara'},
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, putaran'},
             insertColumn: {enumerable: true, get: function() {
                 return {
                     user_id: user_id,
@@ -172,7 +172,8 @@ class MonopoliRepo {
                     kartu: kartu,
                     giliran: giliran,
                     jalan: jalan,
-                    penjara: penjara
+                    penjara: penjara,
+                    putaran: putaran
                 } 
             }}
         })
@@ -184,26 +185,46 @@ class MonopoliRepo {
             .then(() => {
                 // get all player data from players table
                 return newPromise(selectAll(req, res, queryObject2))
+                .catch(err => catchResponse(res, err, 'Monopoli.readyRepo 3'))
             })
-            .catch(err => {
-                console.log('this.readyRepo 2');
-                return newResponse(500, res, err)
-            })
+            .catch(err => catchResponse(res, err, 'Monopoli.readyRepo 2'))
         })
-        .catch(err => {
-            console.log('this.readyRepo 1');
-            return newResponse(500, res, err)
-        })
+        .catch(err => catchResponse(res, err, 'Monopoli.readyRepo 1'))
     }
 
-    playerTurnEndRepo(req, res) {
-        // TABLE = players
-        const { user_id, pos, harta_uang, harta_kota, kartu, jalan, penjara, next_player } = req.body
+    playerMovingRepo(req, res) {
+        // TABLE = prepares
+        const { user_id } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'players'},
-            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara'},
+            selectColumn: {enumerable: true, value: 'user_id(username), giliran, putaran'},
+            // multiple where
+            multipleWhere: {enumerable: true, value: false},
+            whereColumn: {enumerable: true, value: 'user_id'},
+            whereValue: {enumerable: true, value: user_id}
+        })
+        // get player data that is moving
+        return newPromise(selectOne(req, res, queryObject))
+        .then(result => {
+            if(result.length == 0)
+                return newResponse(404, res, `player tidak ditemukan`)
+            return result
+        })
+        .catch(err => catchResponse(res, err, 'Monopoli.playerMovingRepo'))
+    }
+
+    playerTurnEndRepo(req, res) {
+        // TABLE = players
+        const { user_id, pos, harta_uang, harta_kota, kartu, jalan, penjara, putaran, next_player } = req.body
+        const queryObject = {}
+        // required data for query
+        Object.defineProperties(queryObject, {
+            table: {enumerable: true, value: 'players'},
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, putaran'},
+            // multiple where
+            multipleWhere: {enumerable: true, value: false},
             whereColumn: {enumerable: true, value: 'user_id'},
             whereValue: {enumerable: true, value: user_id},
             updateColumn: {enumerable: true, get: function() {
@@ -213,14 +234,15 @@ class MonopoliRepo {
                     harta_kota: harta_kota,
                     kartu: kartu,
                     jalan: jalan,
-                    penjara: penjara
+                    penjara: penjara,
+                    putaran: putaran
                 } 
             }}
         })
         const queryObject2 = {}
         Object.defineProperties(queryObject2, {
             table: {enumerable: true, value: 'players'},
-            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, giliran, jalan'},
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, giliran, harta_uang, kartu'},
             // multiple where
             multipleWhere: {enumerable: true, value: false},
             whereColumn: {enumerable: true, value: 'user_id'},
@@ -239,29 +261,36 @@ class MonopoliRepo {
             .then(() => {
                 // get only next player data from players table
                 return newPromise(selectOne(req, res, queryObject2))
+                .then(resultOne => {
+                    if(resultOne.length == 0)
+                        return  newResponse(404, res, 'user tidak ditemukan')
+                    // get other player data from players table
+                    return newPromise(selectAll(req, res, queryObject2))
+                    .then(resultAll => {
+                        if(resultAll.length == 0)
+                            return  newResponse(404, res, 'user tidak ditemukan')
+                        return [{ nextPlayerData: resultOne, otherPlayerData: resultAll }]
+                    })
+                    .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 4'))
+                })
+                .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 3'))
             })
-            .catch(err => {
-                console.log('this.playerTurnEndRepo 2');
-                return newResponse(500, res, err)
-            })
+            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 2'))
         })
-        .catch(err => {
-            console.log('this.playerTurnEndRepo 1');
-            return newResponse(500, res, err)
-        })
+        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 1'))
     }
 
     gameResumeRepo(req, res) {
         // TABLE = players
-        const { user_id } = req.query
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'players'},
-            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara'}
+            selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, putaran'}
         })
         // get all players 
         return newPromise(selectAll(req, res, queryObject))
+        .catch(err => catchResponse(res, err, 'Monopoli.gameResumeRepo'))
     }
 }
 

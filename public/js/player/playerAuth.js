@@ -77,7 +77,7 @@ function playerRegisterOrLogin(type, targetButton) {
         filterStatus.confirmPass = getFilterStatus[2]
     // display error if theres any
     if(filterStatus.username === true) {
-        inputFilterError(filterData.username, 'username 4 ~ 8 huruf')
+        inputFilterError(filterData.username, 'username 4 ~ 10 huruf')
         targetButton.disabled = false
     }
     if(filterStatus.password === true) {
@@ -95,11 +95,11 @@ function playerRegisterOrLogin(type, targetButton) {
             const jsonData = {
                 uuid: uuidv4(),
                 username: filterData.username.value,
-                password: filterData.password.value
+                password: filterData.password.value,
+                status: 'logout'
             }
             // send data to server
             return fetcher('/register', 'POST', jsonData)
-            .then(data => data.json())
             .then(result => {
                 return fetcherResults(result, 'register')
             })
@@ -113,11 +113,11 @@ function playerRegisterOrLogin(type, targetButton) {
             // payload
             const jsonData = {
                 username: filterData.username.value,
-                password: filterData.password.value
+                password: filterData.password.value,
+                status: 'login'
             }
             // send data to server
-            return fetcher('/login', 'POST', jsonData)
-            .then(data => data.json())
+            return fetcher('/login', 'PATCH', jsonData)
             .then(result => {
                 targetButton.disabled = false
                 if(result.status == 400) {
@@ -135,43 +135,9 @@ function playerRegisterOrLogin(type, targetButton) {
     }
 }
 
-function playerAutoLogin() {
-    // auto login if user still have uuid in localStorage
-    if(getLocStorage('uuid')) {
-        return fetcher('/autologin', 'GET')
-        .then(data => data.json())
-        .then(result => {
-            return fetcherResults(result, 'autoLogin')
-        })
-        .catch(err => {
-            return errorCapsule(err, anErrorOccured)
-        })
-    }
-}
-
-function playerLogout() {
-    if(getLocStorage('uuid')) {
-        // turn on notif
-        feedbackTurnOn(`${myGameData.username} berhasil logout`)
-        feedbackTurnOff()
-        // delete all user credentials
-        localStorage.removeItem('uuid')
-        myGameData.id = null
-        myGameData.uuid = null
-        myGameData.username = null
-        // close login dialog after logout
-        removeDialog(qS('.dialog_wrapper'), qS('.dialog_info'))
-        // set username to input value
-        qS('.userName').value = ''
-        // display grid register and login
-        qS('.registerSpan').style.display = 'inline'
-        qS('.loginSpan').style.display = 'inline'
-    }
-}
-
 function registerHandler(result) {
     removeDialog(qS('.dialog_wrapper'), qS('.dialog_info'))
-    feedbackTurnOn(result.message)
+    feedbackTurnOn(`[${result.data[0].username}] ${result.message}`)
     feedbackTurnOff()
 }
 
@@ -195,6 +161,19 @@ function loginHandler(result) {
     qS('.loginSpan').style.display = 'none'
 }
 
+function playerAutoLogin() {
+    // auto login if user still have uuid in localStorage
+    if(getLocStorage('uuid')) {
+        return fetcher('/autologin', 'GET')
+        .then(result => {
+            return fetcherResults(result, 'autoLogin')
+        })
+        .catch(err => {
+            return errorCapsule(err, anErrorOccured)
+        })
+    }
+}
+
 function autoLoginHandler(result) {
     // save uuid and username to myGameData
     myGameData.id = result.data[0].id
@@ -206,6 +185,45 @@ function autoLoginHandler(result) {
     qS('.registerSpan').style.display = 'none'
     qS('.loginSpan').style.display = 'none'
     // turn on notif
-    feedbackTurnOn(`${result.data[0].username} berhasil login`)
+    feedbackTurnOn(`[${result.data[0].username}] berhasil login`)
     feedbackTurnOff()
+}
+
+function playerLogout() {
+    // make sure only player who already logged in that can logout
+    if(getLocStorage('uuid')) {
+        return fetcher('/logout', 'PATCH', {status: 'logout'})
+        .then(result => {
+            return fetcherResults(result, 'logout')
+        })
+        .catch(err => {
+            return errorCapsule(err, anErrorOccured)
+        })
+    }
+    else {
+        errorNotification('Apapula belum login uda logout..')
+        return feedbackTurnOff()
+    }
+}
+
+function logoutHandler(result) {
+    const userLogout = result.data[0]
+    if(getLocStorage('uuid') && userLogout.username == myGameData.username) {
+        // turn on notif
+        feedbackTurnOn(`${myGameData.username} berhasil logout`)
+        feedbackTurnOff()
+        // delete all user credentials
+        localStorage.removeItem('uuid')
+        myGameData.id = null
+        myGameData.uuid = null
+        myGameData.username = null
+        // close login dialog after logout
+        removeDialog(qS('.dialog_wrapper'), qS('.dialog_info'))
+        // set username to input value
+        qS('.userName').value = ''
+        // display grid register and login
+        qS('.registerSpan').style.display = 'inline'
+        qS('.loginSpan').style.display = 'inline'
+        return 
+    }
 }

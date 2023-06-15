@@ -9,10 +9,10 @@ router
 // post
 router
     .post('/register', validateRegisterLogin, User.register)
-    .post('/login', validateRegisterLogin, User.login)
-    .post('/logout', (req, res) => {})
 // patch
 router
+    .patch('/login', validateRegisterLogin, User.login)
+    .patch('/logout', validateUUIDv4, User.logout)
     .patch('/changename', (req, res) => {})
 
 module.exports = router

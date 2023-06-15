@@ -33,7 +33,21 @@ function currencyComma(money) { return money.toString().replace(/\B(?=(\d{3})+(?
  */
 function feedbackTurnOn(text) {
     qS('.feedback_box').style.opacity = 1;
-    qS('.feedback_box').children[0].innerText = text;
+    qS('.feedback_box').children[0].innerText += text + '\n';
+    let timer = 10
+    const startInterval = setInterval(() => {
+        if(timer < 0) {
+            clearInterval(startInterval)
+            qS('.feedback_box').style.opacity = .3;
+            qS('.feedback_box').children[0].innerText = "";
+            return console.log('auto clean feedback on');
+        }
+        if(qS('.feedback_box').children[0].innerText == '') {
+            clearInterval(startInterval)
+            return console.log('auto clean feedback interrupted');
+        }
+        timer--
+    }, 1000);
 }
 
 /**
@@ -66,8 +80,10 @@ function inputFilter(inputValue, inputRegex) {
 }
 
 function inputFilterError(inputElement, inputPlaceholder) {
-    inputElement.value = '';
     inputElement.placeholder = 'kelahi siko kaw gerot';
+    if(inputElement.value.length <= 4)
+        inputElement.placeholder = 'min. 4 karakter';
+    inputElement.value = '';
     inputElement.style.border = '2px solid crimson';
     setTimeout(() => {
         inputElement.placeholder = inputPlaceholder;
@@ -104,16 +120,14 @@ function errorCapsule(err, errorMessage) {
     console.log(err);
 }
 
-function getGameStatus(fetching = true) {
+function getGameStatus(fetching = true, gameStatus = null) {
     const gameStatusLamp = qS('#gameStatus')
     if(fetching) {
         fetcher(`/gamestatus`, 'GET')
-        .then(data => data.json())
         .then(result => {
             if(result.status == 200) {
-                // console.log(result);
-                gameStatus = result.data[0].status
-                switch(gameStatus) {
+                // state of the game, used to manage player join / spectator
+                switch(result.data[0].status) {
                     case 'unready': 
                         gameStatusLamp.style.background = 'lightgrey'
                         break
@@ -138,7 +152,7 @@ function getGameStatus(fetching = true) {
     }
     // fetching == false, go straight here
     switch(gameStatus) {
-        case 'unready': 
+        case 'unready':
             gameStatusLamp.style.background = 'lightgrey'
             break
         case 'ready':
@@ -153,20 +167,23 @@ function getGameStatus(fetching = true) {
     }
 }
 
+function updateGameStatus(newGameStatus) {
+    // update game status 
+    fetcher(`/gamestatus`, 'PATCH', {gameStatus: newGameStatus})
+    .then(result => {
+        return fetcherResults(result, 'gameStatus')
+    })
+    .catch(err => {
+        return errorCapsule(err, anErrorOccured)
+    })
+}
+
 const resetter = {
     get resetGameStatus() {
-        fetcher(`/gamestatus`, 'PATCH', {gameStatus: 'unready'})
-        .then(data => data.json())
-        .then(result => {
-            fetcherResults(result, 'gameStatus')
-        })
-        .catch(err => {
-            return errorCapsule(err, anErrorOccured)
-        })
+        updateGameStatus('unready')
     },
     get resetPlayerTable() {
         fetcher('/deleteplayers', 'GET')
-        .then(data => data.json())
         .then(result => {
             if(result.status != 200) {
                 return errorCapsule(result, anErrorOccured)
@@ -194,7 +211,7 @@ function fetcher(endpoint, method, jsonData) {
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            })
+            }).then(data => {return data.json()})
         case 'POST':
         case 'PATCH':
             return fetch(`${url}/api/${endpoint}?` + requireUUID, {
@@ -203,7 +220,7 @@ function fetcher(endpoint, method, jsonData) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(jsonData)
-            })
+            }).then(data => {return data.json()})
     }
 }
 
@@ -225,6 +242,9 @@ function fetcherResults(result, successResult = null) {
                 break
             case 'autoLogin':
                 autoLoginHandler(result)
+                break
+            case 'logout':
+                logoutHandler(result)
                 break
             case 'gameResume':
                 gameResume(result)
