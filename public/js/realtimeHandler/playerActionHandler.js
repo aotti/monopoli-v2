@@ -21,8 +21,8 @@ function playerTurnEndHandler(payload) {
         // set to true to prevent this function run twice
         oneTimeStatus.turnEnd = true
         console.log('playerTurnEnd');
-        // ### DATA INI PUNYA NEXT PLAYER, HARUS AMBIL DATA UNTUK CURRENT PLAYER
-        const { nextPlayerData, otherPlayerData } = payload[0]
+        const { playerTurnEnd, mods } = payload
+        const { nextPlayerData, otherPlayerData } = playerTurnEnd[0]
         // next player data 
         const { giliran } = nextPlayerData[0]
         // update playersTurnObj 
@@ -43,7 +43,7 @@ function playerTurnEndHandler(payload) {
             // set back to false for next turn
             oneTimeStatus.turnEnd = false
             // enable kocok dadu button for next player
-            kocokDaduToggle(giliran)
+            kocokDaduToggle(giliran, mods)
         }, 3000);
     }
 }

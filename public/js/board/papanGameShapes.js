@@ -1,6 +1,5 @@
-function urutanPetak(baris, kolom, petak, i, j, u, huruf) {
+function urutanPetak(baris, kolom, petak, u, huruf) {
   petak.classList.add(`petak${u}`);
-  // petak.innerText = 'baris:'+i+' kolom:'+j+' urutan:'+u;
   petak.title = u + (huruf == null ? '' : huruf);
   kolom.appendChild(petak);
   baris.appendChild(kolom);
@@ -21,40 +20,36 @@ function persegiPanjangV1() {
         // BARIS 1
         if(i == 0) {
           u = 15 + j;
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 2
         else if(i == 1) {
           u = ((14 + j) == 23 ? 25 : 14 + j);
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 3
         else if(i == 2) {
           u = ((13 + j) == 22 ? 26 : 13 + j);
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 4
         else if(i == 3) {
           u = ((12 + j) == 21 ? 27 : 12 + j);
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 5
         else if(i == 4) {
           u = ((11 + j) == 20 ? 28 : 11 + j);
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 5
         else if(i == 5) {
           u = 10 - j;
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
       }
-      kolom = null;
-      petak = null;
     }
     docFrag.appendChild(baris);
-    baris = null;
-    u = null;
   }
 }
 
@@ -78,7 +73,7 @@ function persegiPanjangV2() {
             baris.appendChild(kolom);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 2
         else if(i == 1) {
@@ -89,20 +84,20 @@ function persegiPanjangV2() {
           }
           else if(u == 22) {
             u = 24;
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 3
         else if(i == 2) {
           u = ((13 + j) == 22 ? 26 : 13 + j);
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 4
         else if(i == 3) {
           u = ((12 + j) == 21 ? 27 : 12 + j);
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 5
         else if(i == 4) {
@@ -113,10 +108,10 @@ function persegiPanjangV2() {
           }
           else if(u == 12 || u == 19) {
             (u == 12 ? u = 10 : u = 1);
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 6
         else if(i == 5) {
@@ -126,15 +121,11 @@ function persegiPanjangV2() {
             baris.appendChild(kolom);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
       }
-      kolom = null;
-      petak = null;
     }
     docFrag.appendChild(baris);
-    baris = null;
-    u = null;
   }
 }
 
@@ -154,7 +145,7 @@ function anggapSegitiga() {
         if(i == 0) {
           u = 15 + j;
           if(u == 19 || u == 20)
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           else {
             kolom.appendChild(petak);
             baris.appendChild(kolom);
@@ -169,10 +160,10 @@ function anggapSegitiga() {
           }
           else if(u == 19 || u == 20) {
             (u == 19 ? u = 21 : u = 22);
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 3
         else if(i == 2) {
@@ -183,10 +174,10 @@ function anggapSegitiga() {
           }
           else if(u == 19 || u == 20) {
             (u == 19 ? u = 23 : u = 24);
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 4
         else if(i == 3) {
@@ -197,10 +188,10 @@ function anggapSegitiga() {
           }
           else if(u == 19 || u == 20) {
             (u == 19 ? u = 25 : u = 26);
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 5
         else if(i == 4) {
@@ -211,23 +202,19 @@ function anggapSegitiga() {
           }
           else if(u == 12 || u == 19) {
             (u == 12 ? u = 12 : u = 27);
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 6
         else if(i == 5) {
           u = 10 - j;
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
       }
-      kolom = null;
-      petak = null;
     }
     docFrag.appendChild(baris);
-    baris = null;
-    u = null;
   }
 }
 
@@ -246,7 +233,7 @@ function bercabangDua() {
         // BARIS 1
         if(i == 0) {
           u = 15 + j;
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 2
         else if(i == 1) {
@@ -256,9 +243,9 @@ function bercabangDua() {
             baris.appendChild(kolom);
           }
           else if(u == 14 || u == 25)
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           else
-            urutanPetak(baris, kolom, petak, i, j, u, 'a');
+            urutanPetak(baris, kolom, petak, u, 'a');
         }
         // BARIS 3
         else if(i == 2) {
@@ -268,9 +255,9 @@ function bercabangDua() {
             baris.appendChild(kolom);
           }
           else if(u == 13 || u == 26)
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
           else
-            urutanPetak(baris, kolom, petak, i, j, u, 'a');
+            urutanPetak(baris, kolom, petak, u, 'a');
         }
         // BARIS 4
         else if(i == 3) {
@@ -281,10 +268,10 @@ function bercabangDua() {
           }
           else if(u == 19 || u == 20) {
             (u == 19 ? u = 1 : u = 28);
-            urutanPetak(baris, kolom, petak, i, j, u, 'a');
+            urutanPetak(baris, kolom, petak, u, 'a');
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 5
         else if(i == 4) {
@@ -295,22 +282,18 @@ function bercabangDua() {
           }
           else if(u == 18) {
             (u == 18 ? u = 2 : null);
-            urutanPetak(baris, kolom, petak, i, j, u, 'a');
+            urutanPetak(baris, kolom, petak, u, 'a');
           }
           else
-            urutanPetak(baris, kolom, petak, i, j, u, null);
+            urutanPetak(baris, kolom, petak, u, null);
         }
         // BARIS 6
         else if(i == 5) {
           u = 10 - j;
-          urutanPetak(baris, kolom, petak, i, j, u, null);
+          urutanPetak(baris, kolom, petak, u, null);
         }
       }
-      kolom = null;
-      petak = null;
     }
     docFrag.appendChild(baris);
-    baris = null;
-    u = null;
   }
 }

@@ -5,8 +5,6 @@ const myGameData = {
     uuid: null,
     username: null
 }
-// get player joined
-const getPlayerJoined = []
 // for saving other player money/cards
 const playersTurnObj = []
 // player turns
@@ -32,10 +30,6 @@ getGameStatus()
 createBoard()
 // create game buttons
 gameButtons()
-// interact with buttons 
-interactWithButtons()
-// dialog box
-confirmDialog()
 // auto login if uuid still in localStorage
 playerAutoLogin()
 // check game status before deciding the turn 

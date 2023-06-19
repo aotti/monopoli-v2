@@ -23,7 +23,8 @@ function playerForcingHandler(payload) {
 
 // realtime handler for playerReady
 function playerReadyHandler(payload) {
-    payload.forEach((v, i) => {
+    const { playerReady, mods } = payload
+    playerReady.forEach((v, i) => {
         // save all player data
         playersTurnObj[i] = {
             username: v.user_id.username,
@@ -39,5 +40,5 @@ function playerReadyHandler(payload) {
         }
     })
     // check ready players
-    gettingReady(payload)
+    gettingReady(playerReady, mods)
 }

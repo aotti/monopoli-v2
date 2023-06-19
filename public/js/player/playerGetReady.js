@@ -283,7 +283,7 @@ function createPlayerList() {
 }
 
 // waiting other player to click Mulai button
-function gettingReady(readyPlayers) {
+function gettingReady(readyPlayers, mods) {
     // waiting other player to get ready
     const urutanGiliran = qS('.urutanGiliran')
     const putaranTeks = qS('.putaranTeks')
@@ -307,7 +307,7 @@ function gettingReady(readyPlayers) {
             if(timer < 0) {
                 clearInterval(startInterval)
                 // run infoButton
-                interactWithButtons('playing')
+                interactWithButtons(mods, 'playing')
                 // create player list
                 createPlayerList()
                 // set playersTurnId to select nextPlayer on playerTurnEnd
@@ -322,7 +322,7 @@ function gettingReady(readyPlayers) {
                 // set laps text
                 putaranTeks.childNodes[0].nodeValue = `Putaran 1`
                 // enable kocok dadu for the current player
-                kocokDaduToggle(0)
+                kocokDaduToggle(0, mods)
             }
         }, 1000);
     }

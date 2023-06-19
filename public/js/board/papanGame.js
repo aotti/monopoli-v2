@@ -10,6 +10,8 @@ function createBoard() {
         const mods = [result.data[0].board_shape, result.data[0].branch,
                     result.data[0].money_start, result.data[0].money_lose, 
                     result.data[0].curse_min, result.data[0].curse_max]
+        // interact with game buttons 
+        interactWithButtons(result.data)
         // set board shape
         if(mods[0] == 'persegiPanjangV1')
             persegiPanjangV1();
@@ -114,7 +116,7 @@ function insertLandsToBoard(mods) {
     }
     // get all lands element
     const allLands = qSA('[class^=kota], [class^=kartu], [class^=area], [class^=lewat]')
-    // price for kotaKhusus
+    // text price for kotaKhusus
     const kotaKhususPrices = [
                                 currencyComma(15000 + hargaKhusus),
                                 currencyComma(25000 + hargaKhusus),

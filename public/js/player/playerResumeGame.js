@@ -95,7 +95,10 @@ function gameResume(result) {
     playersTurn[3] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4', tempPlayerPos[3])
     playersTurn[4] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5', tempPlayerPos[4])
     // run infoButton
-    interactWithButtons('playing')
+    interactWithButtons(mods, 'playing')
+    // notif game resume
+    feedbackTurnOn('melanjutkan kembali game...')
+    feedbackTurnOff()
     // enable kocok dadu for the current player
-    kocokDaduToggle(giliranCounter)
+    kocokDaduToggle(giliranCounter, mods)
 }

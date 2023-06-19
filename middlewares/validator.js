@@ -35,8 +35,10 @@ function validatePlayerData(req, res, next) {
     // if next_player exist 
     if(next_player && isStringOrNumberOrBool(next_player, numberType) == true) 
         return newResponse(400, res, 'player type is invalid')
+    // if giliran exist 
     if(giliran && isStringOrNumberOrBool(giliran, numberType) == true) 
         return newResponse(400, res, 'player type is invalid')
+    // if username exist 
     if(username && isStringOrNumberOrBool(username, stringType) == true) 
         return newResponse(400, res, 'player type is invalid')
     switch(true) {

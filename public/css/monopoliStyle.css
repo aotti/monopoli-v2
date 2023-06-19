@@ -143,6 +143,8 @@
 }
 
 .player_info > .dropdown > .setting_button {
+  position: relative;
+  z-index: 10;
   padding: 0 10px 0 10px;
   float: left;
   cursor: pointer;
@@ -483,10 +485,9 @@
 }
 
 .confirm_box {
-  display: none;
   position: absolute;
   z-index: 100;
-  top: 45%;
+  top: 40%;
   left: 28%;
   padding: 3px;
   background: lightskyblue;

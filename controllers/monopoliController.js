@@ -112,15 +112,23 @@ class Monopoli {
     ready(req, res) {
         // get all player data who ready to play
         MonopoliRepo.readyRepo(req, res)
-        .then(result => {
-            if(result.length > 0) {
-                // send realtime data
-                // pubnub 
-                return pubnubPublish('playerReady', result, res, 'success ready')
-                // ably
-                // ablyPublish('playerReady', result, newResponse(200, res, `ready`))
+        .then(resultReady => {
+            if(resultReady.length > 0) {
+                // get mods data 
+                MonopoliRepo.getModsDataRepo(req, res)
+                .then(resultMods => {
+                    const payload = {
+                        playerReady: resultReady,
+                        mods: resultMods
+                    }
+                    // send realtime data
+                    // pubnub 
+                    return pubnubPublish('playerReady', payload, res, 'success ready')
+                    // ably
+                    // ablyPublish('playerReady', resultReady, newResponse(200, res, `ready`))
+                })
             }
-            if(result.statusCode != 200) return
+            if(resultReady.statusCode != 200) return
         })
     }
 
@@ -157,16 +165,24 @@ class Monopoli {
     playerTurnEnd(req, res) {
         // get all player data who ready to play
         MonopoliRepo.playerTurnEndRepo(req, res)
-        .then(result => {
-            if(result.length > 0) {
-                // return newResponse([200, 'success playerTurnEnd'], res, result)
-                // send realtime data
-                // pubnub 
-                return pubnubPublish('playerTurnEnd', result, res, 'success playerTurnEnd') 
-                // ably
-                // ablyPublish('playerTurnEnd', result, newResponse(200, res, `turn end`))
+        .then(resultTurnEnd => {
+            if(resultTurnEnd.length > 0) {
+                // get mods data 
+                MonopoliRepo.getModsDataRepo(req, res)
+                .then(resultMods => {
+                    const payload = {
+                        playerTurnEnd: resultTurnEnd,
+                        mods: resultMods
+                    }
+                    // return newResponse([200, 'success playerTurnEnd'], res, resultTurnEnd)
+                    // send realtime data
+                    // pubnub 
+                    return pubnubPublish('playerTurnEnd', payload, res, 'success playerTurnEnd') 
+                    // ably
+                    // ablyPublish('playerTurnEnd', resultTurnEnd, newResponse(200, res, `turn end`))
+                })
             }
-            if(result.statusCode != 200) return
+            if(resultTurnEnd.statusCode != 200) return
         })
     }
 

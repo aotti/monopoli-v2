@@ -33,7 +33,7 @@ function getDiceNumber() {
 }
 
 // toggle kocok dadu button, so the next player can moves
-function kocokDaduToggle(giliran) {
+function kocokDaduToggle(giliran, mods) {
     if(myGameData.username != null) {
         console.log(`giliranCounter: ${giliran}`);
         // check whose turn is it now and enable the kocok dadu button
@@ -41,7 +41,7 @@ function kocokDaduToggle(giliran) {
             qS('.acakDadu').disabled = false
             qS('.acakDaduTeks').innerText = 'Giliran Anda'
             // roll the dice
-            kocokDaduTrigger(giliran)
+            kocokDaduTrigger(giliran, mods)
         }
         // else disable it
         else {
@@ -52,7 +52,7 @@ function kocokDaduToggle(giliran) {
 }
 
 // when player click the kocok dadu button
-function kocokDaduTrigger(giliran, customDadu = null) {
+function kocokDaduTrigger(giliran, mods, customDadu = null) {
     qS('.acakDadu').onclick = () => {
         // disable after click
         qS('.acakDadu').disabled = true
@@ -65,6 +65,8 @@ function kocokDaduTrigger(giliran, customDadu = null) {
         // run player moves with realtime
         // roll the dice
         const playerDadu = customDadu || getDiceNumber()
+        // set prices for kota khusus and terkutuk
+        pricesForSpecialAndCursed(playerDadu, mods)
         // roll the branch
         const mathBranch = Math.floor(Math.random() * 100)
         // on 2nd time roll branch, create new value
@@ -213,31 +215,58 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerLaps) {
                 // player money if walkthrough start
                 if(oneTimeStatus.throughStart === true)
                     endTurnMoney = alterPlayerMoney(currentMoney, 25_000)
-                // choose next player
-                const nextPlayer = (giliran + 1) % playersTurnId.length
-                // payload
-                const jsonData = {
-                    user_id: myGameData.id,
-                    pos: `${playerDiceMove}`,
-                    harta_uang: endTurnMoney,
-                    harta_kota: '',
-                    kartu: '',
-                    jalan: false,
-                    penjara: false,
-                    putaran: (oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps),
-                    next_player: playersTurnId[nextPlayer]
-                }
-                // send data to server
-                fetcher(`/turnend`, 'PATCH', jsonData)
-                .then(result => {
-                    // set back value to false
-                    oneTimeStatus.throughStart = false
-                    return fetcherResults(result)
+                // ### CEK SEMUA PETAK 
+                const landsAction = new Promise((resolve, reject) => {
+                    const dataAfterLandEvent = steppedOnAnyLand(playersTurnShape, endTurnMoney, playerLaps)
+                    if(dataAfterLandEvent == null) 
+                        return playerTurnEnd(giliran, playerDiceMove, endTurnMoney, playerLaps)
+                    const { buttons, data } = dataAfterLandEvent
+                    for(let button of buttons) {
+                        button.onclick = (ev) => {
+                            qS('.confirm_box').remove()
+                            // save retrieved data
+                            let eventData = null
+                            data.selectedButton = ev.target.classList[0]
+                            switch(data.event) {
+                                case 'buyingCity':
+                                    eventData = buyingCityEvent(endTurnMoney, data)
+                                    break
+                            }
+                            return resolve(eventData)
+                        }
+                    }
                 })
-                .catch(err => {
-                    return errorCapsule(err, anErrorOccured)
+                landsAction.then(eventData => {
+                    playerTurnEnd(giliran, playerDiceMove, endTurnMoney, playerLaps, eventData)
                 })
             }
         }
     }
+}
+
+function playerTurnEnd(giliran, playerDiceMove, endTurnMoney, playerLaps, eventData) {
+    // choose next player
+    const nextPlayer = (giliran + 1) % playersTurnId.length
+    // payload
+    const jsonData = {
+        user_id: myGameData.id,
+        pos: `${playerDiceMove}`,
+        harta_uang: endTurnMoney,
+        harta_kota: '',
+        kartu: '',
+        jalan: false,
+        penjara: false,
+        putaran: (oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps),
+        next_player: playersTurnId[nextPlayer]
+    }
+    // send data to server
+    fetcher(`/turnend`, 'PATCH', jsonData)
+    .then(result => {
+        // set back value to false
+        oneTimeStatus.throughStart = false
+        return fetcherResults(result)
+    })
+    .catch(err => {
+        return errorCapsule(err, anErrorOccured)
+    })
 }

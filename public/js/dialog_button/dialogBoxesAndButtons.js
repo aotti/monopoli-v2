@@ -1,5 +1,5 @@
 // the buttons in the game title
-function interactWithButtons(gameStatus = null) {
+function interactWithButtons(mods, gameStatus = null) {
     // players dialog
     qS('#cekPlayer').onclick = ()=>{
         if(qS('.dialog_info')) return
@@ -88,35 +88,35 @@ function interactWithButtons(gameStatus = null) {
             dialogInfo,
             cE('div'), 'bentukPapan',
             cE('span'), cE('span'),
-            'Bentuk Papan', mods[0]
+            'Bentuk Papan', mods[0].board_shape
         )
         // div uang start
         dialogBoxSpanChild(
             dialogInfo,
             cE('div'), 'uangStart',
             cE('span'), cE('span'),
-            'Uang Start', `Rp ${currencyComma(mods[1])}`
+            'Uang Start', `Rp ${currencyComma(mods[0].money_start)}`
         )
         // div uang kalah
         dialogBoxSpanChild(
             dialogInfo,
             cE('div'), 'uangKalah',
             cE('span'), cE('span'),
-            'Uang Kalah', `- Rp ${currencyComma(mods[2])}`
+            'Uang Kalah', `- Rp ${currencyComma(mods[0].money_lose)}`
         )
         // div rand kutukan
         dialogBoxSpanChild(
             dialogInfo,
             cE('div'), 'randKutukan',
             cE('span'), cE('span'),
-            'Rand Kutukan', `${mods[3]} ~ ${mods[4]}%`
+            'Rand Kutukan', `${mods[0].curse_min} ~ ${mods[0].curse_max}%`
         )
         // div cabang
         dialogBoxSpanChild(
             dialogInfo,
             cE('div'), 'cabang',
             cE('span'), cE('span'),
-            'Cabang', `${mods[5]}%`
+            'Cabang', `${mods[0].branch}%`
         )
         // create close button
         const closeModsDiv = cE('div')
@@ -452,8 +452,8 @@ function dadu3D(divGame, divCont, divDice) {
 /**
  * @param {Boolean} allowAppendToBoard - the container will append to board, put 'false' if you dont need (boolean)
  * @param {Boolean} secondContainer - second container existence (boolean)
- * @param {Array<HTMLElement>} elements - html elements (array)
  * @param {Array<string>} elTypes - element types: div/span/button/text/pass (array)
+ * @param {Array<HTMLElement>} elements - html elements (array)
  * @param {Array<string>} attrTypes - attribute types: class/id/text/none (array)
  * @param {Array<string>} attrs - attribute values (array)
  * @param {Array<string>} textValues - html text (array)
