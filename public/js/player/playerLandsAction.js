@@ -118,33 +118,70 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     }
 }
 
-function buyingCityFilter() {
-
-}
-
 function buyingCityEvent(endTurnMoney, data) {
+    const buyingCityData = {}
+    // if player agree to buy city
     if(data.selectedButton == 'buyAgree') {
-        const buyingCityData = {}
+        // then have enough money
         if(endTurnMoney >= data.cityPrice) {
             feedbackTurnOn(`Berhasil membeli ${data.cityProp} di Kota ${data.cityName}`)
             feedbackTurnOff()
             // money left after bought a city
             buyingCityData.moneyLeft = endTurnMoney - data.cityPrice
             // ### BUAT FUNCTION UNTUK ISI harta_kota
-            buyingCityData.harta_kota = buyingCityFilter(data.cityName, data.cityProp)
+            buyingCityData.cities = buyingCityFilter(data.cityName, data.cityProp)
             return buyingCityData
         }
+        // dont have enough money
         else {
             feedbackTurnOn(`h3h3 kaw misqueen ya...`)
             feedbackTurnOff()
             // money left after bought a city
             buyingCityData.moneyLeft = endTurnMoney - data.cityPrice
             // ### BUAT FUNCTION UNTUK ISI harta_kota
-            buyingCityData.harta_kota = null
+            // keep the player harta_kota
+            buyingCityData.cities = null
             return buyingCityData
         }
     }
     else if(data.selectedButton == 'buyDisagree') {
-        console.log('mending jaga lilin bang');
+        feedbackTurnOn(`mending jaga lilin bang...`)
+        feedbackTurnOff()
+        // money left after bought a city
+        buyingCityData.moneyLeft = endTurnMoney
+        // keep the player harta_kota
+        buyingCityData.cities = null
+        return buyingCityData
+    }
+}
+
+function buyingCityFilter(cityName, cityProp) {
+    // kota-tanah,1rumah,2rumah,2rumah1hotel;kota2-tanah,1rumah,2rumah,2rumah1hotel
+    // find your data in playersTurnObj
+    const findYourCity = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
+    if(findYourCity !== -1) {
+        // get your harta_kota
+        const yourCity = playersTurnObj[findYourCity].harta_kota
+        switch(yourCity) {
+            // first time bought a city
+            case '':
+                return `${cityName}-${cityProp}`
+            // the next time bought a city
+            default:
+                // split data to per city
+                const splitPerCity = yourCity.split(';') 
+                splitPerCity.splice(splitPerCity.length-1, 1)
+                // find city that player is just bought 
+                const findPerCity = splitPerCity.map(v => {return v.includes(cityName)}).indexOf(true)
+                // if bought new city, push to array
+                if(findPerCity === -1) 
+                    splitPerCity.push(`${cityName}-${cityProp}`)
+                // if bought new city property, replace the old city
+                else if(findPerCity !== -1) {
+                    const newCityProp = `${splitPerCity[findPerCity]},${cityProp};`
+                    splitPerCity.splice(findPerCity, 0, newCityProp)
+                }
+                return splitPerCity.join(';')
+        }
     }
 }

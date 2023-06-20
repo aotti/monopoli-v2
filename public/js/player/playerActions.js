@@ -143,7 +143,7 @@ function getDiceMove(mods, playerPosNow, playerDadu) {
 }
 
 // player realtime moving
-function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerLaps) {
+function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, playerCities, playerLaps) {
     // my pos right now
     const playerPosNow = +playersTurnShape.parentElement.classList[0].match(/\d+/)
     // dice animation
@@ -208,57 +208,64 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerLaps) {
                             break
                     }
                 }
-                const currentPlayersTurnObj = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
                 // player money 
-                const currentMoney = playersTurnObj[currentPlayersTurnObj].harta_uang
-                let endTurnMoney = currentMoney
+                let endTurnMoney = playerMoney
                 // player money if walkthrough start
                 if(oneTimeStatus.throughStart === true)
-                    endTurnMoney = alterPlayerMoney(currentMoney, 25_000)
+                    endTurnMoney = alterPlayerMoney(playerMoney, 25_000)
                 // ### CEK SEMUA PETAK 
                 const landsAction = new Promise((resolve, reject) => {
-                    const dataAfterLandEvent = steppedOnAnyLand(playersTurnShape, endTurnMoney, playerLaps)
-                    if(dataAfterLandEvent == null) 
-                        return playerTurnEnd(giliran, playerDiceMove, endTurnMoney, playerLaps)
-                    const { buttons, data } = dataAfterLandEvent
+                    // save retrieved data
+                    let landEventData = {
+                        moneyLeft: endTurnMoney,
+                        cities: playerCities
+                    }
+                    const getDataAfterLandEvent = steppedOnAnyLand(playersTurnShape, playerLaps)
+                    // if player dont get any land event after stop moving
+                    if(getDataAfterLandEvent == null) 
+                        return playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData)
+                    // if the player get any land event
+                    const { buttons, data } = getDataAfterLandEvent
                     for(let button of buttons) {
                         button.onclick = (ev) => {
                             qS('.confirm_box').remove()
-                            // save retrieved data
-                            let eventData = null
                             data.selectedButton = ev.target.classList[0]
                             switch(data.event) {
                                 case 'buyingCity':
-                                    eventData = buyingCityEvent(endTurnMoney, data)
+                                    landEventData = buyingCityEvent(endTurnMoney, data)
                                     break
                             }
-                            return resolve(eventData)
+                            if(landEventData.cities == null)
+                                landEventData.cities = playerCities
+                            console.log(landEventData);
+                            return resolve(landEventData)
                         }
                     }
                 })
-                landsAction.then(eventData => {
-                    playerTurnEnd(giliran, playerDiceMove, endTurnMoney, playerLaps, eventData)
+                landsAction.then(landEventData => {
+                    playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData)
                 })
             }
         }
     }
 }
 
-function playerTurnEnd(giliran, playerDiceMove, endTurnMoney, playerLaps, eventData) {
+function playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData) {
     // choose next player
     const nextPlayer = (giliran + 1) % playersTurnId.length
     // payload
     const jsonData = {
         user_id: myGameData.id,
         pos: `${playerDiceMove}`,
-        harta_uang: endTurnMoney,
-        harta_kota: '',
+        harta_uang: landEventData.moneyLeft,
+        harta_kota: landEventData.cities,
         kartu: '',
         jalan: false,
         penjara: false,
         putaran: (oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps),
         next_player: playersTurnId[nextPlayer]
     }
+    console.log(jsonData);
     // send data to server
     fetcher(`/turnend`, 'PATCH', jsonData)
     .then(result => {

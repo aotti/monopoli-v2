@@ -70,6 +70,7 @@ function gameResume(result) {
             username: playersPlaying[i].user_id.username,
             pos: playersPlaying[i].pos,
             harta_uang: playersPlaying[i].harta_uang,
+            harta_kota: playersPlaying[i].harta_kota,
             kartu: playersPlaying[i].kartu
         }
     }

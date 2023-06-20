@@ -30,6 +30,7 @@ function playerReadyHandler(payload) {
             username: v.user_id.username,
             pos: v.pos,
             harta_uang: v.harta_uang,
+            harta_kota: v.harta_kota,
             kartu: v.kartu
         }
         // if the player username is in database, then run the function
