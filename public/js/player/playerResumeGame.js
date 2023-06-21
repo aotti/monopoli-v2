@@ -95,6 +95,8 @@ function gameResume(result) {
     playersTurn[2] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[2], cE('img'), 'img/segitiga.png', 'stick3', tempPlayerPos[2])
     playersTurn[3] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4', tempPlayerPos[3])
     playersTurn[4] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5', tempPlayerPos[4])
+    // create player home and hotels
+    placeHomeAndHotelOnCity(playersPlaying)
     // run infoButton
     interactWithButtons(mods, 'playing')
     // notif game resume

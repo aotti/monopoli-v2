@@ -57,12 +57,12 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         qS('#pMasukLokasi').play();
         // setting for buying text
         const land = stepOnCity[1]
-        const cityName = land.innerText.split(' ')[1]
+        const cityName = land.innerText.split(/\W/)[1]
         const landName = land.innerText.match(new RegExp(`Kota ${cityName}`))[0]
         const propertyType = land.classList[0].split('_')[2]
         const landPrice = +land.classList[0].split('_')[3]
         // text when player gonna buy city
-        const buyingText = `Apakah Anda ingin membeli ${propertyType} di ${landName} dengan harga Rp ${currencyComma(landPrice)}?`
+        const buyingText = `Apakah Anda ingin membeli ${propertyType == '2rumah1hotel' ? '1hotel' : propertyType} di ${landName} dengan harga Rp ${currencyComma(landPrice)}?`
         // confirm button
         const buyAgree = cE('input')
         const buyDisagree = cE('input')
@@ -170,7 +170,6 @@ function buyingCityFilter(cityName, cityProp) {
             default:
                 // split data to per city
                 const splitPerCity = yourCity.split(';') 
-                splitPerCity.splice(splitPerCity.length-1, 1)
                 // find city that player is just bought 
                 const findPerCity = splitPerCity.map(v => {return v.includes(cityName)}).indexOf(true)
                 // if bought new city, push to array
@@ -178,8 +177,8 @@ function buyingCityFilter(cityName, cityProp) {
                     splitPerCity.push(`${cityName}-${cityProp}`)
                 // if bought new city property, replace the old city
                 else if(findPerCity !== -1) {
-                    const newCityProp = `${splitPerCity[findPerCity]},${cityProp};`
-                    splitPerCity.splice(findPerCity, 0, newCityProp)
+                    const newCityProp = `${splitPerCity[findPerCity]},${cityProp}`
+                    splitPerCity.splice(findPerCity, 1, newCityProp)
                 }
                 return splitPerCity.join(';')
         }

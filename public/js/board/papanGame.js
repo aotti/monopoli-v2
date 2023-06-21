@@ -89,8 +89,8 @@ function insertLandsToBoard(mods) {
                         ]
     // classList.add for each land
     const landClasses =[
-                        {[np[0]]:'kota_padang_tanah_48000'}, {[np[1]]:'kota_bengkulu_tanah_50000'}, {[np[2]]:'kota_pontianak_tanah_62000'},
-                        {[np[3]]:'kota_jakarta_tanah_69000'}, {[np[4]]:'kota_bekasi_tanah_71000'}, {[np[5]]:'kota_bandung_tanah_73500'},
+                        {[np[0]]:'kota_padang_tanah_48000'}, {[np[1]]:'kota_bengkulus_tanah_50000'}, {[np[2]]:'kota_pontianac_tanah_62000'},
+                        {[np[3]]:'kota_jakarta_tanah_69000'}, {[np[4]]:'kota_bekasih_tanah_71000'}, {[np[5]]:'kota_bandung_tanah_73500'},
                         {[np[6]]:'kota_ciamis_tanah_76000'}, {[np[7]]:'kota_jokja_tanah_83000'}, {[np[8]]:'kota_semarang_tanah_87000'},
                         {[np[9]]:'kota_maumere_tanah_90000'}, {[np[10]]:'kota_merauke_tanah_94000'}, {[np[11]]:'lewat_start_25000'},
                         {[np[12]]:'area_penjara'}, {[np[13]]:'area_parkir'}, {[np[14]]:'kartu_danaUmum'}, {[np[15]]:'kartu_kesempatan'},
@@ -101,7 +101,7 @@ function insertLandsToBoard(mods) {
                         {[np[28]]:'area_buff'}, {[np[29]]:'kartu_kesempatan'}, {[np[30]]:'kartu_danaUmum'},
                         {[np[31]]:'kartu_kesempatan'}, {[np[32]]:'kartu_danaUmum'}, {[np[33]]:'area_buff'}
                         ]
-    // get all lands
+    // get all lands div
     const getLands = qSA('[class^=petak]');
     // insert class to each lands
     for(let i=0; i<landClasses.length; i++) {
@@ -114,7 +114,7 @@ function insertLandsToBoard(mods) {
             }
         }
     }
-    // get all lands element
+    // get all event lands
     const allLands = qSA('[class^=kota], [class^=kartu], [class^=area], [class^=lewat]')
     // text price for kotaKhusus
     const kotaKhususPrices = [

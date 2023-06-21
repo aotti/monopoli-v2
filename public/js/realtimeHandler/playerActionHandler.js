@@ -40,6 +40,8 @@ function playerTurnEndHandler(payload) {
                 moneyList[i].innerText = `Rp ${currencyComma(playersTurnObj[i].harta_uang)}`
             }
         }
+        // update player cities
+        placeHomeAndHotelOnCity(otherPlayerData)
         setTimeout(() => {
             // set back to false for next turn
             oneTimeStatus.turnEnd = false
