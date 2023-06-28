@@ -7,6 +7,7 @@ const myGameData = {
 }
 // for saving other player money/cards
 const playersTurnObj = []
+const playersPreMoney = []
 // player turns
 const playersTurn = []
 const playersTurnId = []

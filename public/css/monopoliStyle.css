@@ -231,7 +231,6 @@
 }
 
 .myCityButton > button, .transferButton > button {
-  /* float: right; */
   margin-top: 14px;
   padding: 5px 15px;
 }
@@ -250,7 +249,6 @@
   bottom: 0px;
   left: -10px;
   width: 280px;
-  /* height: 100px; */
   cursor: auto;
 }
 
@@ -272,10 +270,6 @@
 .transferTutup {
   float: right;
 }
-
-/* .transferItem > i, select, button {
-  background: wheat;
-} */
 
 .player_list {
   display: grid;
@@ -326,7 +320,6 @@
   position: absolute;
   background: lightblue;
   border: 1px solid;
-  /* padding: 3px; */
 }
 
 .transferSetting > div {
@@ -470,8 +463,6 @@
   left: 29.5%;
   width: 240px;
   text-align: center;
-  /* height: 100px; */
-  /* border: 1px solid; */
 }
 
 .userNameSpan > input {
@@ -481,7 +472,6 @@
 
 .urutanGiliran {
   grid-column-end: span 2;
-  /* border: 1px solid; */
 }
 
 .confirm_box {
@@ -671,6 +661,26 @@ br {
   text-align: center;
   cursor: pointer;
 }
+/********* UANG BERTAMBAH/KURANG ***********/
+.uangPlayer.plus {
+  animation-name: moneyPlus;
+  animation-duration: 3s;
+}
+
+.uangPlayer.minus {
+  animation-name: moneyMinus;
+  animation-duration: 3s;
+}
+
+@keyframes moneyPlus {
+  from {background: greenyellow;}
+  to {background: transparent;}
+}
+
+@keyframes moneyMinus {
+  from {background: salmon;}
+  to {background: transparent;}
+}
 
 /********* DADU ROLL ***********/
 .game {
@@ -681,8 +691,7 @@ br {
 
 .container {
   position: relative;
-  display: inline-block;
-  /* top: 200px; */
+  display: inline-block; 
 }
 
 .dice {
@@ -704,11 +713,8 @@ br {
 }
 
 .dice-one {
-  /* display: none; */
   visibility: hidden;
   margin: 30px 0 0 100px;
-  /* position: absolute; */
-  /* left: 150px; */
 }
 
 .side {

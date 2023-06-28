@@ -43,9 +43,47 @@ function pricesForSpecialAndCursed(playerDadu, mods) {
     }
 }
 
+function findOneRowCity(allPlayersCities) {
+    // regex to check if player cities are one row or not
+    const oneRowGroup = [
+        {count: 3, cities: new RegExp('Padang|Bengkulus|Pontianac', 'g')}, 
+        {count: 3, cities: new RegExp('Jakarta|Bekasih|Bandung', 'g')}, 
+        {count: 3, cities: new RegExp('Ciamis|Jokjakarta|Semarang', 'g')}, 
+        {count: 2, cities: new RegExp('Maumere|Merauke', 'g')}
+    ]
+    const citiesThatAreOneRow = (()=>{
+        // array to store city names
+        const tempcitiesThatAreOneRow = []
+        // loop all player cities to find out if someone have 1 row city
+        allPlayersCities.forEach(v => {
+            for(let group of oneRowGroup) {
+                // if the player have 1 row city
+                if(v.harta_kota.match(group.cities) && v.harta_kota.match(group.cities).length === group.count) {
+                    // push the city name to tempcitiesThatAreOneRow
+                    const tempCities = v.harta_kota.match(group.cities)
+                    for(let city of tempCities)
+                        tempcitiesThatAreOneRow.push(city)
+                }
+            }
+        })
+        return tempcitiesThatAreOneRow.filter(i=>i)
+    })()
+    return citiesThatAreOneRow
+}
+
 // run this ONLY on playerEndTurnHandler and gameResume
 function placeHomeAndHotelOnCity(allPlayersCities) { 
     const allLands = qSA('[class^=kota], [class*=special]')
+    // base prices for all cities
+    const baseCityPrices = [
+        {city: 'Padang', price: 48000}, {city: 'Bengkulus', price: 50000}, {city: 'Pontianac', price: 62000},
+        {city: 'Jakarta', price: 69000}, {city: 'Bekasih', price: 71000}, {city: 'Bandung', price: 73500},
+        {city: 'Ciamis', price: 76000}, {city: 'Jokjakarta', price: 83000}, {city: 'Semarang', price: 87000},
+        {city: 'Maumere', price: 90000}, {city: 'Merauke', price: 94000}
+    ]
+    // cities that are one row
+    const citiesWithOneRowTax = findOneRowCity(allPlayersCities)
+    // start loop allLands
     for(let land of allLands) {
         // land name that we lookin for 
         const landName = land.innerText.split(/\W/)[1]
@@ -58,12 +96,13 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                 if(splitCity.match(landName)) {
                     // place home or hotel on city
                     // add more price if the player have all the houses from the same row
-                    // ### PAJAK SEBARIS KERJAIN NANTI
-                    const oneRowTax = 0
-                    // prepare new classList for each land
+                    const oneRowTax = citiesWithOneRowTax.map(v => {return v == landName ? .25 : 0}).filter(i=>i)
+                    // get the lastest city property, ex: tanah,1rumah,2rumah => 2rumah is the lastest property
                     const propLength = splitCity.split('-')[1].split(',').length
                     const lastProp = splitCity.split('-')[1].split(',')[propLength-1]
+                    // set innerText on the city, if player have house, then fill this with house emoji
                     let propText = null
+                    // prepare new classList for each land
                     const nextClassList = (()=>{
                         switch(lastProp) {
                             // if player only buy the land
@@ -86,19 +125,21 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                     })()
                     // prepare new price for each land
                     const nextPropPrice = (()=>{
-                        const currentLandPrice = +land.classList[0].split('_')[3]
+                        // filter used to remove undefined values in array after map
+                        const baseLandPrice = baseCityPrices.map(v => { if(v.city == landName) return v.price }).filter(i=>i)[0]
+                        // set the price based on city property
                         switch(lastProp) {
                             case 'tanah':
-                                return (currentLandPrice + (currentLandPrice * .10) + (currentLandPrice * oneRowTax));
+                                return (baseLandPrice + (baseLandPrice * .10) + (baseLandPrice * oneRowTax));
                             // if player bought 1 house
                             case '1rumah':
-                                return (currentLandPrice + (currentLandPrice * .20) + (currentLandPrice * oneRowTax));
+                                return (baseLandPrice + (baseLandPrice * .20) + (baseLandPrice * oneRowTax));
                             // if player bought 2 house
                             case '2rumah':
-                                return (currentLandPrice + (currentLandPrice * .30) + (currentLandPrice * oneRowTax));
+                                return (baseLandPrice + (baseLandPrice * .30) + (baseLandPrice * oneRowTax));
                             // if player bought 2 house and 1 hotel
                             case '2rumah1hotel':
-                                return (currentLandPrice + (currentLandPrice * .40) + (currentLandPrice * oneRowTax));
+                                return (baseLandPrice + (baseLandPrice * .40) + (baseLandPrice * oneRowTax));
                         }
                     })()
                     // remove current classList and add the new one

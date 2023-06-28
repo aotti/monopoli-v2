@@ -73,6 +73,11 @@ function gameResume(result) {
             harta_kota: playersPlaying[i].harta_kota,
             kartu: playersPlaying[i].kartu
         }
+        // refill player pre money
+        playersPreMoney[i] = {
+            username: playersPlaying[i].user_id.username,
+            harta_uang: playersPlaying[i].harta_uang
+        }
     }
     // sort player turns from lowest giliran -> highest
     tempPlayerTurns.sort()
@@ -103,5 +108,5 @@ function gameResume(result) {
     feedbackTurnOn('melanjutkan kembali game...')
     feedbackTurnOff()
     // enable kocok dadu for the current player
-    kocokDaduToggle(giliranCounter, mods)
+    kocokDaduToggle(mods, giliranCounter)
 }

@@ -49,15 +49,21 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     // check which land is player on
     const stepOnCity = getTheLandElement(Object.values(prevSibObj), regexBuyCity)
     const stepOnParking = getTheLandElement(Object.values(prevSibObj), 'area_parkir')
+    const stepOnTax = getTheLandElement(Object.values(prevSibObj), regexTaxCity)
     // === start lands event ===
     // if stepOnCity has value AND stepOnCity[0] not null, 
     // it means the player is on the right land to buy city 
     if(stepOnCity && stepOnCity[0] && playerLaps > 1) {
+        // to remove freeParking confirm box after playerMoves done
+        if(qS('.confirm_box'))
+            qS('.confirm_box').remove()
         // step sound
         qS('#pMasukLokasi').play();
         // setting for buying text
         const land = stepOnCity[1]
+        // only city name, ex: Jakarta
         const cityName = land.innerText.split(/\W/)[1]
+        // full city name, ex: Kota Jakarta
         const landName = land.innerText.match(new RegExp(`Kota ${cityName}`))[0]
         const propertyType = land.classList[0].split('_')[2]
         const landPrice = +land.classList[0].split('_')[3]
@@ -89,6 +95,34 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         }
         return landData
     }
+    else if(stepOnTax && stepOnTax[0] && playerLaps > 1) {
+        // to remove freeParking confirm box after playerMoves done
+        if(qS('.confirm_box'))
+            qS('.confirm_box').remove()
+        const land = stepOnTax[1]
+        // city that player stepped on
+        const cityName = land.innerText.split(/\W/)[1]
+        // tax amount
+        const cityTaxAmount = +land.classList[0].split('_')[3]
+        // used to send the money to the right player
+        const cityOwner = land.classList[0].split('_')[4]
+        // text when player pay taxes
+        const taxText = `Anda terkena pajak di Kota ${cityName} sebesar Rp ${currencyComma(cityTaxAmount)} \u{1F640}`
+        // create buying city dialog
+        confirmDialog(taxText)
+        // set confirm box top position
+        qS('.confirm_box').style.top = '40%'
+        // return confirm button and required data
+        const landData = {
+            buttons: null,
+            data: {
+                event: 'taxCity',
+                cityOwner: cityOwner,
+                cityTaxAmount: cityTaxAmount
+            }
+        }
+        return landData
+    }
     else if(stepOnParking && stepOnParking[0] && playerLaps > 1) {
         function parkingButtonsAndNumbers(type) {
             let tempArray = []
@@ -115,9 +149,18 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         confirmDialog(parkingText, types, buttons, attributes, classes, text)
         // set confirm box top position
         qS('.confirm_box').style.top = '35%'
+        // return confirm button and required data
+        const landData = {
+            buttons: qSA('.parkingButtons'),
+            data: {
+                event: 'freeParking'
+            }
+        }
+        return landData
     }
 }
 
+// buying city event
 function buyingCityEvent(endTurnMoney, data) {
     const buyingCityData = {}
     // if player agree to buy city
@@ -128,7 +171,7 @@ function buyingCityEvent(endTurnMoney, data) {
             feedbackTurnOff()
             // money left after bought a city
             buyingCityData.moneyLeft = endTurnMoney - data.cityPrice
-            // ### BUAT FUNCTION UNTUK ISI harta_kota
+            // add new city/prop to player cities
             buyingCityData.cities = buyingCityFilter(data.cityName, data.cityProp)
             return buyingCityData
         }
@@ -136,10 +179,9 @@ function buyingCityEvent(endTurnMoney, data) {
         else {
             feedbackTurnOn(`h3h3 kaw misqueen ya...`)
             feedbackTurnOff()
-            // money left after bought a city
-            buyingCityData.moneyLeft = endTurnMoney - data.cityPrice
-            // ### BUAT FUNCTION UNTUK ISI harta_kota
-            // keep the player harta_kota
+            // money left if not buying a city
+            buyingCityData.moneyLeft = endTurnMoney
+            // no change in the player cities
             buyingCityData.cities = null
             return buyingCityData
         }
@@ -147,9 +189,9 @@ function buyingCityEvent(endTurnMoney, data) {
     else if(data.selectedButton == 'buyDisagree') {
         feedbackTurnOn(`mending jaga lilin bang...`)
         feedbackTurnOff()
-        // money left after bought a city
+        // money left if not buying a city
         buyingCityData.moneyLeft = endTurnMoney
-        // keep the player harta_kota
+        // no change in the player cities
         buyingCityData.cities = null
         return buyingCityData
     }
@@ -183,4 +225,29 @@ function buyingCityFilter(cityName, cityProp) {
                 return splitPerCity.join(';')
         }
     }
+}
+
+// free parking event
+function freeParkingEvent(mods, giliran, tempPlayerPosNow, destinationPos) {
+    const customDadu = (destinationPos > tempPlayerPosNow 
+                    ? destinationPos - tempPlayerPosNow 
+                    : (destinationPos + 28) - tempPlayerPosNow)
+    // trigger the kocok dadu button
+    kocokDaduTrigger(mods, giliran, customDadu)
+    qS('.acakDadu').disabled = false
+    qS('.acakDadu').click()
+}
+
+// tax city event
+function taxCityEvent(endTurnMoney, data) {
+    const taxCityData = {}
+    // money left after paying tax
+    taxCityData.moneyLeft = endTurnMoney - data.cityTaxAmount
+    // no change in the player cities
+    taxCityData.cities = null
+    // city owner who is the city that player stepped on
+    taxCityData.cityOwner  = data.cityOwner
+    // the tax amount that player have to pay
+    taxCityData.cityTaxAmount = data.cityTaxAmount
+    return taxCityData
 }

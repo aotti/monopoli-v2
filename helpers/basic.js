@@ -49,7 +49,7 @@ function catchResponse(res, err, logMessage) {
     return newResponse(500, res, err)
 }
 
-function isStringOrNumberOrBool(data, type) {
+function isVariableAppropriate(data, type) {
     if(typeof data === type)
         return false
     else if(typeof data !== type)
@@ -67,6 +67,6 @@ module.exports = {
     newPromise, 
     newResponse, 
     catchResponse,
-    isStringOrNumberOrBool, 
+    isVariableAppropriate, 
     isTheLengthAppropriate
 }

@@ -33,7 +33,7 @@ function getDiceNumber() {
 }
 
 // toggle kocok dadu button, so the next player can moves
-function kocokDaduToggle(giliran, mods) {
+function kocokDaduToggle(mods, giliran) {
     if(myGameData.username != null) {
         console.log(`giliranCounter: ${giliran}`);
         // check whose turn is it now and enable the kocok dadu button
@@ -41,7 +41,7 @@ function kocokDaduToggle(giliran, mods) {
             qS('.acakDadu').disabled = false
             qS('.acakDaduTeks').innerText = 'Giliran Anda'
             // roll the dice
-            kocokDaduTrigger(giliran, mods)
+            kocokDaduTrigger(mods, giliran)
         }
         // else disable it
         else {
@@ -52,7 +52,7 @@ function kocokDaduToggle(giliran, mods) {
 }
 
 // when player click the kocok dadu button
-function kocokDaduTrigger(giliran, mods, customDadu = null) {
+function kocokDaduTrigger(mods, giliran, customDadu = null) {
     qS('.acakDadu').onclick = () => {
         // disable after click
         qS('.acakDadu').disabled = true
@@ -206,6 +206,10 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
                         case steps%28 >= 0 && steps%28 < 3:
                             myBranchChance.status = true
                             break
+                        // set to false if outside branch lands
+                        default:
+                            myBranchChance.status = false
+                            break
                     }
                 }
                 // player money 
@@ -213,59 +217,57 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
                 // player money if walkthrough start
                 if(oneTimeStatus.throughStart === true)
                     endTurnMoney = alterPlayerMoney(playerMoney, 25_000)
-                // ### CEK SEMUA PETAK 
-                const landsAction = new Promise((resolve, reject) => {
-                    // save retrieved data
-                    let landEventData = {
-                        moneyLeft: endTurnMoney,
-                        cities: playerCities
-                    }
-                    const getDataAfterLandEvent = steppedOnAnyLand(playersTurnShape, playerLaps)
-                    // if player dont get any land event after stop moving
-                    if(getDataAfterLandEvent == null) 
-                        return playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData)
-                    // if the player get any land event
-                    const { buttons, data } = getDataAfterLandEvent
-                    for(let button of buttons) {
-                        button.onclick = (ev) => {
-                            qS('.confirm_box').remove()
-                            data.selectedButton = ev.target.classList[0]
-                            switch(data.event) {
-                                case 'buyingCity':
-                                    landEventData = buyingCityEvent(endTurnMoney, data)
-                                    break
-                            }
-                            if(landEventData.cities == null)
-                                landEventData.cities = playerCities
-                            console.log(landEventData);
-                            return resolve(landEventData)
-                        }
-                    }
-                })
-                landsAction.then(landEventData => {
-                    playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData)
-                })
+                // required data if land event happens
+                const requiredLandEventData = {
+                    mods: mods,
+                    giliran: giliran,
+                    endTurnMoney: endTurnMoney,
+                    playerCities: playerCities,
+                    playersTurnShape: playersTurnShape,
+                    playerDiceMove: playerDiceMove,
+                    playerLaps: playerLaps
+                }
+                // check land event 
+                landEventHandler(requiredLandEventData)
             }
         }
     }
 }
 
-function playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData) {
+// data for sending tax to the city owner
+function targetOwner(cityOwner) {
+    const getTargetOwner = playersTurn.map(v => {return v}).indexOf(cityOwner)
+    return playersTurnId[getTargetOwner]
+}
+function taxPaidOff(cityOwner, cityTaxAmount) {
+    const getTargetMoney = playersTurnObj.map(v => {return v.username}).indexOf(cityOwner)
+    const taxPaidOff = playersTurnObj[getTargetMoney].harta_uang + cityTaxAmount 
+    return taxPaidOff
+}
+
+function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventData) {
+    // land event data
+    const { moneyLeft, cities, cityOwner, cityTaxAmount } = returnedLandEventData
     // choose next player
     const nextPlayer = (giliran + 1) % playersTurnId.length
     // payload
     const jsonData = {
         user_id: myGameData.id,
         pos: `${playerDiceMove}`,
-        harta_uang: landEventData.moneyLeft,
-        harta_kota: landEventData.cities,
+        harta_uang: moneyLeft,
+        harta_kota: cities,
         kartu: '',
         jalan: false,
         penjara: false,
         putaran: (oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps),
-        next_player: playersTurnId[nextPlayer]
+        next_player: playersTurnId[nextPlayer],
+        // tax payment
+        tax_payment: 
+            cityOwner && cityTaxAmount ? {
+                target_owner: targetOwner(cityOwner),
+                target_money: taxPaidOff(cityOwner, cityTaxAmount)
+            } : null
     }
-    console.log(jsonData);
     // send data to server
     fetcher(`/turnend`, 'PATCH', jsonData)
     .then(result => {

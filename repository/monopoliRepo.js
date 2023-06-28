@@ -217,7 +217,7 @@ class MonopoliRepo {
 
     playerTurnEndRepo(req, res) {
         // TABLE = players
-        const { user_id, pos, harta_uang, harta_kota, kartu, jalan, penjara, putaran, next_player } = req.body
+        const { user_id, pos, harta_uang, harta_kota, kartu, jalan, penjara, putaran, next_player, tax_payment } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
@@ -252,31 +252,48 @@ class MonopoliRepo {
                 } 
             }}
         })
-        // update player data
-        return newPromise(updateData(req, res, queryObject))
-        .then(() => {
-            // update next player jalan to TRUE
-            return newPromise(updateData(req, res, queryObject2))
-            .then(() => {
-                // get only next player data from players table
-                return newPromise(selectOne(req, res, queryObject2))
-                .then(resultOne => {
-                    if(resultOne.length == 0)
-                        return  newResponse(404, res, 'user tidak ditemukan')
-                    // get other player data from players table
-                    return newPromise(selectAll(req, res, queryObject2))
-                    .then(resultAll => {
-                        if(resultAll.length == 0)
-                            return  newResponse(404, res, 'user tidak ditemukan')
-                        return [{ nextPlayerData: resultOne, otherPlayerData: resultAll }]
-                    })
-                    .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 4'))
-                })
-                .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 3'))
+        // if tax payment exist
+        if(tax_payment) {
+            const queryObject3 = {}
+            Object.defineProperties(queryObject3, {
+                table: {enumerable: true, value: 'players'},
+                // multiple where
+                multipleWhere: {enumerable: true, value: false},
+                whereColumn: {enumerable: true, value: 'user_id'},
+                whereValue: {enumerable: true, value: tax_payment.target_owner},
+                updateColumn: {enumerable: true, get: function() {
+                    return {
+                        harta_uang: tax_payment.target_money
+                    } 
+                }}
             })
-            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 2'))
+            // update player data whom gets money from taxes
+            newPromise(updateData(req, res, queryObject3))
+            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 1'))
+        }
+        // update current player data
+        newPromise(updateData(req, res, queryObject))
+        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 2'))
+        // update next player jalan to TRUE
+        return newPromise(updateData(req, res, queryObject2))
+        .then(() => {
+            // get only next player data from players table
+            return newPromise(selectOne(req, res, queryObject2))
+            .then(resultOne => {
+                if(resultOne.length == 0)
+                    return  newResponse(404, res, 'user tidak ditemukan')
+                // get other player data from players table
+                return newPromise(selectAll(req, res, queryObject2))
+                .then(resultAll => {
+                    if(resultAll.length == 0)
+                        return  newResponse(404, res, 'user tidak ditemukan')
+                    return [{ nextPlayerData: resultOne, otherPlayerData: resultAll }]
+                })
+                .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 5'))
+            })
+            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 4'))
         })
-        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 1'))
+        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 3'))
     }
 
     gameResumeRepo(req, res) {

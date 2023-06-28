@@ -7,7 +7,7 @@ function playerMovingHandler(payload) {
     // get shape element for each player
     const playersTurnShape = thisShapeIsMe(username)
     // change firstTime to false after the first dice roll
-    if(username == myBranchChance.username && myBranchChance.chance >= mods[0].branch)
+    if(username == myBranchChance.username && myBranchChance.chance > mods[0].branch)
         myBranchChance.status = false
     // set global branch value, so other player can see where other player gonna move
     branchChance = branch
@@ -38,15 +38,28 @@ function playerTurnEndHandler(payload) {
             const moneyList = qSA('.uangPlayer')
             if(typeof moneyList[i] === 'object' && typeof playersTurnObj[i].harta_uang === 'number') {
                 moneyList[i].innerText = `Rp ${currencyComma(playersTurnObj[i].harta_uang)}`
+                // if player gain money
+                if(playersTurnObj[i].harta_uang > playersPreMoney[i].harta_uang) {
+                    moneyList[i].classList.add('plus')
+                    setTimeout(() => { moneyList[i].classList.remove('plus') }, 2000);
+                }
+                // if player loss money
+                else if(playersTurnObj[i].harta_uang < playersPreMoney[i].harta_uang) {
+                    moneyList[i].classList.add('minus')
+                    setTimeout(() => { moneyList[i].classList.remove('minus') }, 2000);
+                }
             }
         }
         // update player cities
         placeHomeAndHotelOnCity(otherPlayerData)
         setTimeout(() => {
+            // update player pre money 
+            for(let i in otherPlayerData)
+                playersPreMoney[i].harta_uang = otherPlayerData[i].harta_uang
             // set back to false for next turn
             oneTimeStatus.turnEnd = false
             // enable kocok dadu button for next player
-            kocokDaduToggle(giliran, mods)
+            kocokDaduToggle(mods, giliran)
         }, 3000);
     }
 }

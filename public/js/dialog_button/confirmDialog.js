@@ -1,6 +1,6 @@
 // confirm dialog when player step on land to  
 // buy house || get cards || going to jail  || free parking
-function confirmDialog(dialogText, elementTypes, htmlElements, classAttributes, classValues, textValues) {
+function confirmDialog(dialogText, elementTypes = [], htmlElements = [], classAttributes = [], classValues = [], textValues = []) {
     // create dialog box
     const dialogConfirmBox = cE('div')
     const dialogTextBox = cE('div')
