@@ -56,8 +56,16 @@ function landEventHandler(requiredLandEventData) {
                 const destinationPos = +eventButton.target.value
                 qS('.confirm_box').innerText = `---------\nMenuju ke petak ${destinationPos}\n---------`
                 return freeParkingEvent(mods, giliran, tempPlayerPosNow, destinationPos)
+            // paying tax to the city owner
             case 'taxCity':
                 landEventData = taxCityEvent(endTurnMoney, data)
+                if(landEventData.cities === null)
+                    landEventData.cities = playerCities
+                setTimeout(() => { qS('.confirm_box').remove() }, 3000);
+                return landEventData
+            // get into jail
+            case 'imprisoned':
+                landEventData = imprisonedEvent(endTurnMoney, data)
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);

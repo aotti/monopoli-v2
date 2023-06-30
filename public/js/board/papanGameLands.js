@@ -111,15 +111,15 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                                 return '1rumah'
                             // if player bought 1 house
                             case '1rumah':
-                                propText = '\u{1F3E0}';
+                                propText = `${emoji.house}`;
                                 return '2rumah';
                             // if player bought 2 house
                             case '2rumah':
-                                propText = '\u{1F3E0} \u{1F3E0}';
+                                propText = `${emoji.house} ${emoji.house}`;
                                 return '2rumah1hotel';
                             // if player bought 2 house and 1 hotel
                             case '2rumah1hotel':
-                                propText = '\u{1F3E0} \u{1F3E0} \u{1F3E8}';
+                                propText = `${emoji.house} ${emoji.house} ${emoji.hotel}`;
                                 return 'komplek';
                         }
                     })()

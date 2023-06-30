@@ -199,7 +199,7 @@ class MonopoliRepo {
         // required data for query
         Object.defineProperties(queryObject, {
             table: {enumerable: true, value: 'players'},
-            selectColumn: {enumerable: true, value: 'user_id(username), harta_uang, harta_kota, giliran, putaran'},
+            selectColumn: {enumerable: true, value: 'user_id(username), harta_uang, harta_kota, giliran, putaran, penjara'},
             // multiple where
             multipleWhere: {enumerable: true, value: false},
             whereColumn: {enumerable: true, value: 'user_id'},

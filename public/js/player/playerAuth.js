@@ -35,8 +35,6 @@ function filterRegisterLogin(filterData, regexes, spanElements, textValues, bord
     return tempFilterStatus
 }
 
-const check = '\u{2714}'
-const cross = '\u{2716}'
 // register
 function playerRegisterOrLogin(type, targetButton) {
     // filter user input
@@ -68,7 +66,7 @@ function playerRegisterOrLogin(type, targetButton) {
             :
             ['Username', 'Password'], 
         // border & marks
-        '2px solid blue', [check, cross]
+        '2px solid blue', [emoji.check, emoji.cross]
     )
     // update filterStatus
     filterStatus.username = getFilterStatus[0]

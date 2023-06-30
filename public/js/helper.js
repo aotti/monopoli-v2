@@ -65,7 +65,7 @@ function feedbackTurnOff() {
  * @param {String} errorMessage - error message (string)
  */
 function errorNotification(errorMessage) {
-    feedbackTurnOn(`[\u{2755}] ${errorMessage}`)
+    feedbackTurnOn(`[${emoji.warning}] ${errorMessage}`)
 }
 
 function removeDialog(dialogWrapper, dialogContainer) {

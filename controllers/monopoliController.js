@@ -145,9 +145,10 @@ class Monopoli {
                         playerDadu: playerDadu, 
                         branch: branch,
                         harta_uang: resultMoving[0].harta_uang,
-                        harta_kota:  resultMoving[0].harta_kota,
+                        harta_kota: resultMoving[0].harta_kota,
                         putaran: resultMoving[0].putaran,
-                        giliran: resultMoving[0].giliran
+                        giliran: resultMoving[0].giliran,
+                        penjara: resultMoving[0].penjara
                     }
                     const payload = {
                         playerMoving: jsonData,

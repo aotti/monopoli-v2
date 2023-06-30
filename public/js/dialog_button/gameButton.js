@@ -52,7 +52,7 @@ function gameButtons() {
         // attribute values
         [null, 'putaranTeks', 'putaranBuff'],
         // innerText
-        [null, `Putaran #`, '\u{2615}']
+        [null, `Putaran #`, emoji.coffee]
     )
     // paksa start
     const paksaMulaiSpan = cE('span')
@@ -210,7 +210,7 @@ function interactWithButtons(mods, gameStatus = null) {
             dialogInfo,
             cE('div'), 'bentukPlayer',
             cE('span'), cE('span'),
-            'Bentuk Player', `Player 1 = O - Player 2 = \u{25A2} - Player 3 = \u{25B3} - Player 4 = \u{25C7} - Player 5 = pokoknya tabung`
+            'Bentuk Player', `Player 1 = O - Player 2 = ${emoji.rectangle} - Player 3 = ${emoji.triangle} - Player 4 = ${emoji.diamond} - Player 5 = pokoknya tabung`
         )
         // create close button
         const closePlayerDiv = cE('div')

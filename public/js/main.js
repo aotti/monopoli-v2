@@ -1,4 +1,19 @@
 const url = window.location.origin
+// emoji
+const emoji = {
+    pray: '\u{1F64F}',
+    house: '\u{1F3E0}',
+    hotel: '\u{1F3E8}',
+    sunglas: '\u{1F60E}',
+    coffee: '\u{2615}',
+    rectangle: '\u{25A2}',
+    triangle: '\u{25B3}',
+    diamond: '\u{25C7}',
+    check: '\u{2714}',
+    cross: '\u{2716}',
+    catShock: '\u{1F640}',
+    warning: '\u{2755}'
+}
 // saving the user data
 const myGameData = {
     id: null,
@@ -25,6 +40,8 @@ const myBranchChance = {
     chance: null,
     status: true
 }
+// prison counter
+let prisonCounter = 0
 // get game status
 getGameStatus()
 // create monopoly board

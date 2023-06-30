@@ -3,7 +3,7 @@ function playerMovingHandler(payload) {
     // mods need index 0 to use, ex: mods[0].branch / mods[0].board_shape
     const { playerMoving, mods } = payload
     // player moving
-    const { username, playerDadu, branch, harta_uang, harta_kota, putaran, giliran } = playerMoving
+    const { username, playerDadu, branch, harta_uang, harta_kota, putaran, giliran, penjara } = playerMoving
     // get shape element for each player
     const playersTurnShape = thisShapeIsMe(username)
     // change firstTime to false after the first dice roll
@@ -12,7 +12,7 @@ function playerMovingHandler(payload) {
     // set global branch value, so other player can see where other player gonna move
     branchChance = branch
     // getMessage.payload is playerDadu
-    playerMoves(mods, giliran, playerDadu, playersTurnShape, harta_uang, harta_kota, putaran)
+    playerMoves(mods, giliran, playerDadu, playersTurnShape, harta_uang, harta_kota, putaran, penjara)
 }
 
 // realtime handler for playerTurnEnd

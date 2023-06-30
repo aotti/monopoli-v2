@@ -143,15 +143,11 @@ function getDiceMove(mods, playerPosNow, playerDadu) {
 }
 
 // player realtime moving
-function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, playerCities, playerLaps) {
+function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, playerCities, playerLaps, playerImprisoned) {
     // my pos right now
     const playerPosNow = +playersTurnShape.parentElement.classList[0].match(/\d+/)
     // dice animation
     const daduAnimasi = qS('#dice1')
-    // my pos after roll dice
-    const playerDiceMove = getDiceMove(mods, playerPosNow, playerDadu)
-    // steps counter
-    let steps = 0, stepsCounter = 0
     // display dice roll number if the number is <= 6
     if(playerDadu <= 6) {
         // make the 3d dice visible
@@ -175,6 +171,15 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
         qS('.acakDaduTeks').innerText = `Angka Dadu: ${playerDadu}`
     // display branch number
     qS('.acakGiliranTeks').innerText = `Cabang: ${branchChance}`
+    // check if player is imprisoned or not
+    if(playerImprisoned === true) {
+        const holdMoves = getOutOfJail(mods, giliran, playerDadu, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps)
+        if(holdMoves == 'stopMoves') return
+    }
+    // my pos after roll dice
+    const playerDiceMove = getDiceMove(mods, playerPosNow, playerDadu)
+    // steps counter
+    let steps = 0, stepsCounter = 0
     // start moving the player
     let moveDelay = 0
     const startInterval = setInterval(() => { moveDelay < 2 ? moveDelay++ : playerMoving() }, 500)
@@ -234,20 +239,11 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
     }
 }
 
-// data for sending tax to the city owner
-function targetOwner(cityOwner) {
-    const getTargetOwner = playersTurn.map(v => {return v}).indexOf(cityOwner)
-    return playersTurnId[getTargetOwner]
-}
-function taxPaidOff(cityOwner, cityTaxAmount) {
-    const getTargetMoney = playersTurnObj.map(v => {return v.username}).indexOf(cityOwner)
-    const taxPaidOff = playersTurnObj[getTargetMoney].harta_uang + cityTaxAmount 
-    return taxPaidOff
-}
-
+// ends player turn then send data to server
 function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventData) {
     // land event data
-    const { moneyLeft, cities, cityOwner, cityTaxAmount } = returnedLandEventData
+    // moneyLeft and cities = must have value
+    const { moneyLeft, cities, cityOwner, cityTaxAmount, imprisoned } = returnedLandEventData
     // choose next player
     const nextPlayer = (giliran + 1) % playersTurnId.length
     // payload
@@ -258,7 +254,7 @@ function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventDat
         harta_kota: cities,
         kartu: '',
         jalan: false,
-        penjara: false,
+        penjara: imprisoned ? imprisoned : false,
         putaran: (oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps),
         next_player: playersTurnId[nextPlayer],
         // tax payment
@@ -278,4 +274,45 @@ function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventDat
     .catch(err => {
         return errorCapsule(err, anErrorOccured)
     })
+}
+
+// data for sending tax to the city owner
+function targetOwner(cityOwner) {
+    const getTargetOwner = playersTurn.map(v => {return v}).indexOf(cityOwner)
+    return playersTurnId[getTargetOwner]
+}
+function taxPaidOff(cityOwner, cityTaxAmount) {
+    const getTargetMoney = playersTurnObj.map(v => {return v.username}).indexOf(cityOwner)
+    const taxPaidOff = playersTurnObj[getTargetMoney].harta_uang + cityTaxAmount 
+    return taxPaidOff
+}
+
+// prison
+function getOutOfJail(mods, giliran, playerDadu, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps) {
+    // make sure only the current player can run this code
+    if(playersTurn[giliran] == myGameData.username && playersTurnShape.id == myGameData.username) {
+        console.log(`prison player: ${playersTurn[giliran]};${playersTurnShape.id};${myGameData.username}`);
+        // increment prison counter
+        prisonCounter += playerDadu
+        // if prisonCounter = 1 OR more/equal than 7, player continue walking
+        if(prisonCounter === 1 || prisonCounter >= 7) {
+            prisonCounter = 0
+            feedbackTurnOn(`counter: ${prisonCounter}, Anda bebas`)
+            feedbackTurnOff()
+            return 'continueMoves'
+        }
+        // if doesnt meet reqs, end the turn
+        else {
+            feedbackTurnOn(`counter: ${prisonCounter}, mohon bersabar ${emoji.pray}`)
+            feedbackTurnOff()
+            const prisonerData = {
+                moneyLeft: playerMoney,
+                cities: playerCities,
+                imprisoned: true
+            }
+            // getDiceMove with value 0 to prevent player from moving
+            playerTurnEnd(giliran, getDiceMove(mods, playerPosNow, 0), playerLaps, prisonerData)
+            return 'stopMoves'
+        }
+    }
 }

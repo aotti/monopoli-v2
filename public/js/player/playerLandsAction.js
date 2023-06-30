@@ -50,6 +50,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     const stepOnCity = getTheLandElement(Object.values(prevSibObj), regexBuyCity)
     const stepOnParking = getTheLandElement(Object.values(prevSibObj), 'area_parkir')
     const stepOnTax = getTheLandElement(Object.values(prevSibObj), regexTaxCity)
+    const stepOnJail = getTheLandElement(Object.values(prevSibObj), 'area_penjara')
     // === start lands event ===
     // if stepOnCity has value AND stepOnCity[0] not null, 
     // it means the player is on the right land to buy city 
@@ -95,6 +96,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         }
         return landData
     }
+    // if the player stepped on city but it belongs to someone else, pay money to them
     else if(stepOnTax && stepOnTax[0] && playerLaps > 1) {
         // to remove freeParking confirm box after playerMoves done
         if(qS('.confirm_box'))
@@ -107,7 +109,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         // used to send the money to the right player
         const cityOwner = land.classList[0].split('_')[4]
         // text when player pay taxes
-        const taxText = `Anda terkena pajak di Kota ${cityName} sebesar Rp ${currencyComma(cityTaxAmount)} \u{1F640}`
+        const taxText = `Anda terkena pajak di Kota ${cityName} sebesar Rp ${currencyComma(cityTaxAmount)} ${emoji.catShock}`
         // create buying city dialog
         confirmDialog(taxText)
         // set confirm box top position
@@ -123,6 +125,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         }
         return landData
     }
+    // free parking, move to other land according to player choice
     else if(stepOnParking && stepOnParking[0] && playerLaps > 1) {
         function parkingButtonsAndNumbers(type) {
             let tempArray = []
@@ -154,6 +157,23 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
             buttons: qSA('.parkingButtons'),
             data: {
                 event: 'freeParking'
+            }
+        }
+        return landData
+    }
+    else if(stepOnJail && stepOnJail[0] && playerLaps > 1) {
+        // text when player pay taxes
+        const taxText = `Semoga Anda mendapat hidayah ${emoji.pray} tapi kena azab dulu ${emoji.sunglas}`
+        // create buying city dialog
+        confirmDialog(taxText)
+        // set confirm box top position
+        qS('.confirm_box').style.top = '40%'
+        // return confirm button and required data
+        const landData = {
+            buttons: null,
+            data: {
+                event: 'imprisoned',
+                penjara: true
             }
         }
         return landData
@@ -250,4 +270,16 @@ function taxCityEvent(endTurnMoney, data) {
     // the tax amount that player have to pay
     taxCityData.cityTaxAmount = data.cityTaxAmount
     return taxCityData
+}
+
+// imprisoned event
+function imprisonedEvent(endTurnMoney, data) {
+    const imprisonedData = {}
+    // no change in the money left
+    imprisonedData.moneyLeft = endTurnMoney
+    // no change in the player cities
+    imprisonedData.cities = null
+    // prison status true
+    imprisonedData.imprisoned = data.penjara
+    return imprisonedData
 }
