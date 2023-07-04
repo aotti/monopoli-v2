@@ -29,6 +29,21 @@ function getLocStorage(name) { return localStorage.getItem(name) }
 function currencyComma(money) { return money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
 
 /**
+ * @param {String} cityName any name of city with lowercase string 
+ * @returns city name but the first letter is Uppercase (if its special city, hyphen will be added)
+ */
+function cityNameFirstLetter(cityName) {
+    const splitPerLetter = cityName.split('')
+    // assuming the city name has a hyphen
+    if(cityName.match(/\d/)) {
+        const theLastIndex = splitPerLetter.length-1
+        splitPerLetter.splice(theLastIndex, 0, '-')
+    }
+    splitPerLetter[0] = splitPerLetter[0].toUpperCase()
+    return splitPerLetter.join('')
+}
+
+/**
  * @event display message to feedback box
  */
 function feedbackTurnOn(text) {

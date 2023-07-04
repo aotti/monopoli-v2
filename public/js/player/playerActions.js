@@ -221,7 +221,7 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
                 let endTurnMoney = playerMoney
                 // player money if walkthrough start
                 if(oneTimeStatus.throughStart === true)
-                    endTurnMoney = alterPlayerMoney(playerMoney, 25_000)
+                    endTurnMoney = playerMoney + 25_000
                 // required data if land event happens
                 const requiredLandEventData = {
                     mods: mods,
@@ -255,7 +255,7 @@ function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventDat
         kartu: '',
         jalan: false,
         penjara: imprisoned ? imprisoned : false,
-        putaran: (oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps),
+        putaran: oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps,
         next_player: playersTurnId[nextPlayer],
         // tax payment
         tax_payment: 

@@ -36,12 +36,6 @@ function gameResume(result) {
     const tempPlayerTurns = []
     const tempPlayerPos = []
     let giliranCounter = null
-    // make sure no weird player is joining the game
-    const areYouPlaying = playersPlaying.map(v => {return v.user_id.username}).indexOf(myGameData.username)
-    if(areYouPlaying == -1) {
-        errorNotification('Anda tidak sedang bermain.. akwoakwoak')
-        return feedbackTurnOff()
-    }
     // empty urutan text
     const urutanGiliran = qS('.urutanGiliran')
     urutanGiliran.innerText = ``
@@ -89,6 +83,12 @@ function gameResume(result) {
         if(adjustPlayerTurnId != -1) {
             playersTurnId.push(playersPlaying[adjustPlayerTurnId].user_id.id)
         }
+    }
+    // make sure no weird player is joining the game
+    const areYouPlaying = playersPlaying.map(v => {return v.user_id.username}).indexOf(myGameData.username)
+    if(areYouPlaying == -1) {
+        errorNotification('Anda tidak sedang bermain.. akwoakwoak')
+        return feedbackTurnOff()
     }
     // recreate player list
     createPlayerList()

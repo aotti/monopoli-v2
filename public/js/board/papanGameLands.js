@@ -12,6 +12,8 @@ function pricesForSpecialAndCursed(playerDadu, mods) {
     // laps > 6 == 12_000
     const hargaKhusus = (playerDadu > 1 ? playerDadu * 4000 : 0)
     for(let land of specialAndCursedLands) {
+        // check if any special area is already bought
+        const specialOwner = land.classList[0].split('_')[4]
         // ### REGEX UNTUK AMBIL HARGA CLASS = classList.toString().match(/\d{2,}/)
         // get class text without price
         const getClassPrice = land.classList.toString().match(/\d{2,}/)
@@ -20,25 +22,20 @@ function pricesForSpecialAndCursed(playerDadu, mods) {
         // ### REGEX UNTUK AMBIL HARGA TEXT = innerText.match(/Rp \d.\d{2,}/)
         // get innertext without price
         const getContentPrice = land.innerText.match(/Rp \d+.\d+/)
-        const contentTextRegex = new RegExp(`.*(?=${getContentPrice})`)
+        const contentTextRegex = specialOwner ? new RegExp(`.*(?=\\s\\W)`) : new RegExp(`.*(?=${getContentPrice})`)
         const getContentText = land.innerText.match(contentTextRegex)
         // rewrite class and innertext
+        // cursed land
         if(land.classList.toString().match(/cursed/)) {
             land.classList.remove(land.classList[0])
             land.classList.add(`${getClassText}${hargaKutukan}`)
             land.innerText = `${getContentText} Rp ${currencyComma(hargaKutukan)}`
         }
-        else if(land.classList.toString().match(/special/)) {
-            let specialPrice = null
-            if(land.classList.toString().match(/\d/) == 1)
-                specialPrice = 15000
-            else if(land.classList.toString().match(/\d/) == 2)
-                specialPrice = 25000
-            else if(land.classList.toString().match(/\d/) == 3)
-                specialPrice = 35000
+        // special land
+        else if(specialOwner && land.classList.toString().match(/special/)) {
+            const specialPrice = +land.classList[0].split('_')[3]
             land.classList.remove(land.classList[0])
-            land.classList.add(`${getClassText}${specialPrice + hargaKhusus}`)
-            land.innerText = `${getContentText} Rp ${currencyComma(specialPrice + hargaKhusus)}`
+            land.classList.add(`${getClassText}${specialPrice + hargaKhusus}_${specialOwner}`)
         }
     }
 }
@@ -76,20 +73,21 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
     const allLands = qSA('[class^=kota], [class*=special]')
     // base prices for all cities
     const baseCityPrices = [
-        {city: 'Padang', price: 48000}, {city: 'Bengkulus', price: 50000}, {city: 'Pontianac', price: 62000},
-        {city: 'Jakarta', price: 69000}, {city: 'Bekasih', price: 71000}, {city: 'Bandung', price: 73500},
-        {city: 'Ciamis', price: 76000}, {city: 'Jokjakarta', price: 83000}, {city: 'Semarang', price: 87000},
-        {city: 'Maumere', price: 90000}, {city: 'Merauke', price: 94000}
+        {city: 'khusus1', price: 15_000}, {city: 'khusus2', price: 25_000}, {city: 'khusus3', price: 35_000},
+        {city: 'padang', price: 48_000}, {city: 'bengkulus', price: 50_000}, {city: 'pontianac', price: 62_000},
+        {city: 'jakarta', price: 69_000}, {city: 'bekasih', price: 71_000}, {city: 'bandung', price: 73_000},
+        {city: 'ciamis', price: 76_000}, {city: 'jokjakarta', price: 83_000}, {city: 'semarang', price: 87_000},
+        {city: 'maumere', price: 90_000}, {city: 'merauke', price: 94_000}
     ]
     // cities that are one row
     const citiesWithOneRowTax = findOneRowCity(allPlayersCities)
     // start loop allLands
     for(let land of allLands) {
         // land name that we lookin for 
-        const landName = land.innerText.split(/\W/)[1]
+        const landName = land.classList[0].split('_')[1]
         // looking for all lands that have been bought by players
         allPlayersCities.forEach(v => {
-            // turn string into array
+            // turn string (data from db) into array
             const splitPerCity = v.harta_kota.split(';')
             for(let splitCity of splitPerCity) {
                 // if city exist in database
@@ -106,6 +104,9 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                     const nextClassList = (()=>{
                         switch(lastProp) {
                             // if player only buy the land
+                            case 'special':
+                                propText = `(${v.user_id.username})`
+                                return 'special'
                             case 'tanah':
                                 propText = `(${v.user_id.username})`
                                 return '1rumah'
@@ -129,6 +130,8 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                         const baseLandPrice = baseCityPrices.map(v => { if(v.city == landName) return v.price }).filter(i=>i)[0]
                         // set the price based on city property
                         switch(lastProp) {
+                            case 'special':
+                                return (baseLandPrice + 10_000);
                             case 'tanah':
                                 return (baseLandPrice + (baseLandPrice * .10) + (baseLandPrice * oneRowTax));
                             // if player bought 1 house
@@ -144,9 +147,15 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                     })()
                     // remove current classList and add the new one
                     land.classList.remove(land.classList[0])
-                    land.classList.add(`kota_${landName.toLowerCase()}_${nextClassList}_${nextPropPrice}_${v.user_id.username}`)
+                    // for special area
+                    if(nextClassList === 'special') 
+                        land.classList.add(`area_${landName}_${nextClassList}_${nextPropPrice}_${v.user_id.username}`)
+                    // for normal city
+                    else 
+                        land.classList.add(`kota_${landName}_${nextClassList}_${nextPropPrice}_${v.user_id.username}`)
+                    // ### ATTR data-owner MUNGKIN KEPAKE NANTI BUAT JUAL KOTA
                     land.setAttribute('data-owner', `${v.user_id.username} - Rp ${nextPropPrice}`)
-                    land.innerText = `Kota ${landName} \n${propText}` 
+                    land.innerText = `Kota ${cityNameFirstLetter(landName)} \n${propText}` 
                 }
             }
         })

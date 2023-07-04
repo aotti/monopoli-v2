@@ -203,7 +203,7 @@ function interactWithButtons(mods, gameStatus = null) {
             dialogInfo,
             cE('div'), 'joinedPlayer',
             cE('span'), cE('span'),
-            'Joined Player', (playersTurn.length > 0 ? playersTurn.join(', ') : '~')
+            'Joined Player', (playersTurn.length > 0 ? playersTurn.join(', ') : 'login untuk melihat player')
         )
         // div bentuk player
         dialogBoxSpanChild(

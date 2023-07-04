@@ -12,7 +12,9 @@ const emoji = {
     check: '\u{2714}',
     cross: '\u{2716}',
     catShock: '\u{1F640}',
-    warning: '\u{2755}'
+    warning: '\u{2755}',
+    joy: '\u{1F923}',
+    sweatJoy: '\u{1F605}'
 }
 // saving the user data
 const myGameData = {

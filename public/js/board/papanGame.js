@@ -127,13 +127,13 @@ function insertLandsToBoard(mods) {
     // name and price for each land
     const landNames = [
                         {[np[0]]:'Kota Padang Rp 48.000'}, {[np[1]]:'Kota Bengkulus Rp 50.000'}, {[np[2]]:'Kota Pontianac Rp 62.000'},
-                        {[np[3]]:'Kota Jakarta Rp 69.000'}, {[np[4]]:'Kota Bekasih Rp 71.000'}, {[np[5]]:'Kota Bandung Rp 73.500'},
+                        {[np[3]]:'Kota Jakarta Rp 69.000'}, {[np[4]]:'Kota Bekasih Rp 71.000'}, {[np[5]]:'Kota Bandung Rp 73.000'},
                         {[np[6]]:'Kota Ciamis Rp 76.000'}, {[np[7]]:'Kota Jokjakarta Rp 83.000'}, {[np[8]]:'Kota Semarang Rp 87.000'},
                         {[np[9]]:'Kota Maumere Rp 90.000'}, {[np[10]]:'Kota Merauke Rp 94.000'}, {[np[11]]:'Imagine lewat start..'},
                         {[np[12]]:'Masuk Penjara Bos!'}, {[np[13]]:'Imagine bebas parkir..'}, {[np[14]]:'Kartu Dana Umum'}, {[np[15]]:'Kartu Kesempatan'},
                         {[np[16]]:'Kartu Dana Umum'}, {[np[17]]:'Kartu Kesempatan'}, {[np[18]]:'Kartu Dana Umum'}, {[np[19]]:'Kartu Kesempatan'},
-                        {[np[20]]:`Kota khusus-1 Rp ${kotaKhususPrices[0]}`}, {[np[21]]:`Kota khusus-2 Rp ${kotaKhususPrices[1]}`}, {[np[22]]:`Kota khusus-3 Rp ${kotaKhususPrices[2]}`},
-                        {[np[23]]:`Kota terkutuk-1 Rp ${kotaTerkutukPrices}`}, {[np[24]]:`Kota terkutuk-2 Rp ${kotaTerkutukPrices}`},
+                        {[np[20]]:`Kota Khusus-1 Rp ${kotaKhususPrices[0]}`}, {[np[21]]:`Kota Khusus-2 Rp ${kotaKhususPrices[1]}`}, {[np[22]]:`Kota Khusus-3 Rp ${kotaKhususPrices[2]}`},
+                        {[np[23]]:`Kota Terkutuk-1 Rp ${kotaTerkutukPrices}`}, {[np[24]]:`Kota Terkutuk-2 Rp ${kotaTerkutukPrices}`},
                         {[np[29]]:'Kartu Kesempatan'}, {[np[30]]:'Kartu Dana Umum'}, {[np[31]]:'Kartu Kesempatan'}, {[np[32]]:'Kartu Dana Umum'}
                         ]
     

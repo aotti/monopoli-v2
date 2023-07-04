@@ -42,7 +42,11 @@ function landEventHandler(requiredLandEventData) {
     // INNER FUNCTION 
     // check which event is occured
     function whichEventIsOccured(data, landEventData, eventButton = null) {
-        switch(data.event) {
+        let dataEvent = data.event
+        // if data.event is array, only get the index 0 for switch to prevent error
+        if(typeof dataEvent === 'object') 
+            dataEvent = dataEvent[0]
+        switch(dataEvent) {
             // buying city land event
             case 'buyingCity':
                 qS('.confirm_box').remove()
@@ -66,6 +70,19 @@ function landEventHandler(requiredLandEventData) {
             // get into jail
             case 'imprisoned':
                 landEventData = imprisonedEvent(endTurnMoney, data)
+                if(landEventData.cities === null)
+                    landEventData.cities = playerCities
+                setTimeout(() => { qS('.confirm_box').remove() }, 3000);
+                return landEventData
+            // get into jail
+            case 'cursedCity':
+                landEventData = curseLandEvent(endTurnMoney, data)
+                if(landEventData.cities === null)
+                    landEventData.cities = playerCities
+                setTimeout(() => { qS('.confirm_box').remove() }, 3000);
+                return landEventData
+            case 'specialCity':
+                landEventData = specialLandEvent(endTurnMoney, data)
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);

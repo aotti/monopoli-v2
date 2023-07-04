@@ -51,44 +51,88 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     const stepOnParking = getTheLandElement(Object.values(prevSibObj), 'area_parkir')
     const stepOnTax = getTheLandElement(Object.values(prevSibObj), regexTaxCity)
     const stepOnJail = getTheLandElement(Object.values(prevSibObj), 'area_penjara')
+    const stepOnCurse = getTheLandElement(Object.values(prevSibObj), 'cursed')
+    const stepOnSpecial = getTheLandElement(Object.values(prevSibObj), 'special')
     // === start lands event ===
     // if stepOnCity has value AND stepOnCity[0] not null, 
     // it means the player is on the right land to buy city 
-    if(stepOnCity && stepOnCity[0] && playerLaps > 1) {
+    if((stepOnCity || stepOnSpecial) && (stepOnCity[0] || stepOnSpecial[0]) && playerLaps > 1) {
         // to remove freeParking confirm box after playerMoves done
         if(qS('.confirm_box'))
             qS('.confirm_box').remove()
         // step sound
         qS('#pMasukLokasi').play();
         // setting for buying text
-        const land = stepOnCity[1]
+        const land = stepOnSpecial[1] || stepOnCity[1]
         // only city name, ex: Jakarta
-        const cityName = land.innerText.split(/\W/)[1]
-        // full city name, ex: Kota Jakarta
-        const landName = land.innerText.match(new RegExp(`Kota ${cityName}`))[0]
+        const cityName = land.classList[0].split('_')[1]
+        // full city name, ex: Kota Jakarta / Area Khusus-1
+        const landName = land.innerText.match(new RegExp(`(Kota|Area) ${cityNameFirstLetter(cityName)}`))[0]
+        // property type, ex: tanah/1rumah/special
         const propertyType = land.classList[0].split('_')[2]
+        // the city price
         const landPrice = +land.classList[0].split('_')[3]
-        // text when player gonna buy city
-        const buyingText = `Apakah Anda ingin membeli ${propertyType == '2rumah1hotel' ? '1hotel' : propertyType} di ${landName} dengan harga Rp ${currencyComma(landPrice)}?`
-        // confirm button
-        const buyAgree = cE('input')
-        const buyDisagree = cE('input')
-        const { types, buttons, attributes, classes, text } = {
-            types: fillTheElementsForDialog('button', 2),
-            buttons: fillTheElementsForDialog([buyAgree, buyDisagree], null, true),
-            attributes: fillTheElementsForDialog('class', 2),
-            classes: fillTheElementsForDialog(['buyAgree', 'buyDisagree'], null, true),
-            text: fillTheElementsForDialog(['Yakali gk beli', 'Skip dulu'], null, true)
+        // other
+        let buyingOrSpecialText = null
+        let eventType = null
+        let specialType = null
+        // if step on special
+        if(cityName.match(/khusus/)) {
+            // if the special city is still available
+            if(land.classList[0].split('_')[4] == null) {
+                // text when player gonna buy city
+                buyingOrSpecialText = `Apakah Anda ingin membeli ${landName} dengan harga Rp ${currencyComma(landPrice)}?`
+                eventType = 'buyingCity'
+            }
+            // if the special city owner is step on its city
+            else if(land.classList[0].split('_')[4] == myGameData.username) {
+                // text when player gonna pay special tax
+                buyingOrSpecialText = `Anda mendapat uang dari ${landName} sebesar Rp ${currencyComma(landPrice)} ${emoji.sunglas}`
+                eventType = 'specialCity'
+                specialType = 'profitSpecial'
+            }
+            // if other player is step on someone special city
+            else if(land.classList[0].split('_')[4] != myGameData.username) {
+                // text when player gonna pay special tax
+                buyingOrSpecialText = `Anda terkena pajak di ${landName} sebesar Rp ${currencyComma(landPrice)} ${emoji.catShock}`
+                eventType = 'specialCity'
+                specialType = 'taxSpecial'
+            }
         }
-        // create buying city dialog
-        confirmDialog(buyingText, types, buttons, attributes, classes, text)
+        // if step on city
+        else {
+            // text when player gonna buy city
+            buyingOrSpecialText = `Apakah Anda ingin membeli ${propertyType == '2rumah1hotel' ? '1hotel' : propertyType} di ${landName} dengan harga Rp ${currencyComma(landPrice)}?`
+            eventType = 'buyingCity'
+        }
+        // confirm dialog when buying city
+        if(eventType == 'buyingCity') {
+            // confirm button
+            const buyAgree = cE('input')
+            const buyDisagree = cE('input')
+            // required elements for confirm dialog
+            const { types, buttons, attributes, classes, text } = {
+                types: fillTheElementsForDialog('button', 2),
+                buttons: fillTheElementsForDialog([buyAgree, buyDisagree], null, true),
+                attributes: fillTheElementsForDialog('class', 2),
+                classes: fillTheElementsForDialog(['buyAgree', 'buyDisagree'], null, true),
+                text: fillTheElementsForDialog(['Yakali gk beli', 'Skip dulu'], null, true)
+            }
+            // create buying city dialog
+            confirmDialog(buyingOrSpecialText, types, buttons, attributes, classes, text)
+        }
+        // confirm dialog when paying or getting money
+        else if(eventType == 'specialCity') {
+            // create special tax/profit dialog
+            confirmDialog(buyingOrSpecialText)
+        }
         // set confirm box top position
         qS('.confirm_box').style.top = '40%'
         // return confirm button and required data
         const landData = {
-            buttons: qSA('.buyAgree, .buyDisagree'),
+            buttons: specialType ? null : qSA('.buyAgree, .buyDisagree'),
             data: {
-                event: 'buyingCity',
+                event: specialType ? [eventType, specialType] : eventType,
                 cityName: cityName,
                 cityProp: propertyType,
                 cityPrice: landPrice
@@ -110,7 +154,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         const cityOwner = land.classList[0].split('_')[4]
         // text when player pay taxes
         const taxText = `Anda terkena pajak di Kota ${cityName} sebesar Rp ${currencyComma(cityTaxAmount)} ${emoji.catShock}`
-        // create buying city dialog
+        // create city tax dialog
         confirmDialog(taxText)
         // set confirm box top position
         qS('.confirm_box').style.top = '40%'
@@ -130,7 +174,8 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         function parkingButtonsAndNumbers(type) {
             let tempArray = []
             for(let i=0; i<28; i++) {
-                if(i == 9 || i == 23) continue
+                // 6 9 14 19 23 = kota khusus, penjara, parkir bebas
+                if(i == 6 || i == 9 || i == 14 || i == 19 || i == 23) continue
                 tempArray[i] = (type == 'button' ? cE('input') : i+1)
             }
             return tempArray
@@ -161,6 +206,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         }
         return landData
     }
+    // player going to jail and cant move
     else if(stepOnJail && stepOnJail[0] && playerLaps > 1) {
         // text when player pay taxes
         const taxText = `Semoga Anda mendapat hidayah ${emoji.pray} tapi kena azab dulu ${emoji.sunglas}`
@@ -174,6 +220,25 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
             data: {
                 event: 'imprisoned',
                 penjara: true
+            }
+        }
+        return landData
+    }
+    // only to deplete player money
+    else if(stepOnCurse && stepOnCurse[0] && playerLaps > 1) {
+        const land = stepOnCurse[1]
+        const cursePrice = +land.classList[0].split('_')[3]
+        const curseText = `Anda terkena kutukan sebesar Rp ${currencyComma(cursePrice)} ${emoji.sweatJoy} ${emoji.pray}`
+        // create curse dialog
+        confirmDialog(curseText)
+        // set confirm box top position
+        qS('.confirm_box').style.top = '40%'
+        // return confirm button and required data
+        const landData = {
+            buttons: null,
+            data: {
+                event: 'cursedCity',
+                curseAmount: cursePrice
             }
         }
         return landData
@@ -282,4 +347,32 @@ function imprisonedEvent(endTurnMoney, data) {
     // prison status true
     imprisonedData.imprisoned = data.penjara
     return imprisonedData
+}
+
+// curse land event
+function curseLandEvent(endTurnMoney, data) {
+    const curseLandData = {}
+    // money left after paying curse
+    curseLandData.moneyLeft = endTurnMoney - data.curseAmount
+    // no change in the player cities
+    curseLandData.cities = null
+    return curseLandData
+}
+
+// special land event
+function specialLandEvent(endTurnMoney, data) {
+    const specialLandData = {}
+    if(data.event[1] == 'taxSpecial') {
+        // money left after paying special tax
+        specialLandData.moneyLeft = endTurnMoney - data.cityPrice
+        // no change in the player cities
+        specialLandData.cities = null
+    }
+    else if(data.event[1] == 'profitSpecial') {
+        // money left after getting special profit
+        specialLandData.moneyLeft = endTurnMoney + data.cityPrice
+        // no change in the player cities
+        specialLandData.cities = null
+    }
+    return specialLandData
 }
