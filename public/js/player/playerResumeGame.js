@@ -55,6 +55,9 @@ function gameResume(result) {
                 myBranchChance.chance = 1
             else
                 myBranchChance.chance = 100
+            // set myPrisonCounter
+            myPrisonCounter.username = playersPlaying[i].user_id.username
+            myPrisonCounter.counter = 1
         }
         // get giliran to refill playersTurn
         tempPlayerTurns.push(playersPlaying[i].giliran)

@@ -42,8 +42,13 @@ const myBranchChance = {
     chance: null,
     status: true
 }
-// prison counter
+// global prison counter
 let prisonCounter = 0
+// private prison counter
+const myPrisonCounter = {
+    username: null,
+    counter: null
+}
 // get game status
 getGameStatus()
 // create monopoly board

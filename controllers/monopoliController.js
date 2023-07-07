@@ -139,11 +139,12 @@ class Monopoli {
             MonopoliRepo.getModsDataRepo(req, res)
             .then(resultMods => {
                 if(resultMods.length > 0) {
-                    const { playerDadu, username, branch } = req.body
+                    const { playerDadu, username, branch, prison } = req.body
                     const jsonData = {
                         username: username, 
                         playerDadu: playerDadu, 
                         branch: branch,
+                        prison: prison,
                         harta_uang: resultMoving[0].harta_uang,
                         harta_kota: resultMoving[0].harta_kota,
                         putaran: resultMoving[0].putaran,

@@ -1,16 +1,20 @@
 function pricesForSpecialAndCursed(playerDadu, mods) {
     const specialAndCursedLands = qSA('[class*=cursed], [class*=special]') 
+    // get player laps
+    const getPlayerLaps = +qS('.putaranTeks').innerText.match(/\d+/)
     // set the price for kotaTerkutuk
     // set random percent for price on kotaTerkutuk
     const randKutukan = Math.floor(Math.random() * ((mods[0].curse_max + 1) - mods[0].curse_min)) + mods[0].curse_min
-    // 4k * jumlah player * jumlah laps
-    const rumusKutukan1 = 4e3 * playersTurn.length * playerDadu
-    // 10k * jumlah  laps * rand
-    const rumusKutukan2 = 1e4 * playerDadu * (randKutukan / 100)
-    const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2)
+    // 4000 * jumlah player * jumlah laps
+    const rumusKutukan1 = 4000 * playersTurn.length * getPlayerLaps
+    // playerDadu * jumlah  laps * rand
+    const rumusKutukan2 = (playerDadu * 1000) * getPlayerLaps * (randKutukan / 100)
+    // add player dadu to formula
+    const rumusKutukan3 = rumusKutukan1 * (randKutukan / 100)
+    const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2 + rumusKutukan3)
     // set the price for kotaKhusus
     // laps > 6 == 12_000
-    const hargaKhusus = (playerDadu > 1 ? playerDadu * 4000 : 0)
+    const hargaKhusus = (getPlayerLaps > 6 ? 4000 * playerDadu : 2000 * playerDadu)
     for(let land of specialAndCursedLands) {
         // check if any special area is already bought
         const specialOwner = land.classList[0].split('_')[4]

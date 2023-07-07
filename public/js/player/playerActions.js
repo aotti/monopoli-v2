@@ -72,13 +72,17 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         // on 2nd time roll branch, create new value
         if(myBranchChance.status === false)
             myBranchChance.chance = mathBranch
+        // prison counter
+        myPrisonCounter.counter += playerDadu
         // payload
         const jsonData = {
             user_id: playersTurnId[giliran],
             username: playersTurn[giliran],
             playerDadu: playerDadu,
-            branch: myBranchChance.chance
+            branch: myBranchChance.chance,
+            prison: myPrisonCounter.counter
         }
+        console.log(jsonData);
         // send data to server
         fetcher(`/moveplayer`, 'POST', jsonData)
         .then(result => {
@@ -173,8 +177,13 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
     qS('.acakGiliranTeks').innerText = `Cabang: ${branchChance}`
     // check if player is imprisoned or not
     if(playerImprisoned === true) {
-        const holdMoves = getOutOfJail(mods, giliran, playerDadu, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps)
+        const holdMoves = getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps)
+        // if player doesnt meet req to be free
         if(holdMoves == 'stopMoves') return
+        // if player can moves 
+        // ### PASTIKAN HANYA PLAYER YG SEDANG GILIRAN YG AKAN DI SET 0
+        if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username)
+            myPrisonCounter.counter = 0
     }
     // my pos after roll dice
     const playerDiceMove = getDiceMove(mods, playerPosNow, playerDadu)
@@ -288,31 +297,25 @@ function taxPaidOff(cityOwner, cityTaxAmount) {
 }
 
 // prison
-function getOutOfJail(mods, giliran, playerDadu, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps) {
-    // make sure only the current player can run this code
-    if(playersTurn[giliran] == myGameData.username && playersTurnShape.id == myGameData.username) {
-        console.log(`prison player: ${playersTurn[giliran]};${playersTurnShape.id};${myGameData.username}`);
-        // increment prison counter
-        prisonCounter += playerDadu
-        // if prisonCounter = 1 OR more/equal than 7, player continue walking
-        if(prisonCounter === 1 || prisonCounter >= 7) {
-            prisonCounter = 0
-            feedbackTurnOn(`counter: ${prisonCounter}, Anda bebas`)
-            feedbackTurnOff()
-            return 'continueMoves'
+function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps) {
+    // if prisonCounter = 1 OR more/equal than 7, player continue walking
+    if(prisonCounter === 1 || prisonCounter >= 7) {
+        feedbackTurnOn(`counter: ${prisonCounter}, Anda bebas`)
+        feedbackTurnOff()
+        return 'continueMoves'
+    }
+    // if doesnt meet reqs, end the turn
+    else {
+        feedbackTurnOn(`counter: ${prisonCounter}, mohon bersabar ${emoji.pray}`)
+        feedbackTurnOff()
+        const prisonerData = {
+            moneyLeft: playerMoney,
+            cities: playerCities,
+            imprisoned: true
         }
-        // if doesnt meet reqs, end the turn
-        else {
-            feedbackTurnOn(`counter: ${prisonCounter}, mohon bersabar ${emoji.pray}`)
-            feedbackTurnOff()
-            const prisonerData = {
-                moneyLeft: playerMoney,
-                cities: playerCities,
-                imprisoned: true
-            }
-            // getDiceMove with value 0 to prevent player from moving
+        // getDiceMove with value 0 to prevent player from moving
+        if(playersTurnShape.id == myGameData.username && playersTurn[giliran] == myGameData.username)
             playerTurnEnd(giliran, getDiceMove(mods, playerPosNow, 0), playerLaps, prisonerData)
-            return 'stopMoves'
-        }
+        return 'stopMoves'
     }
 }
