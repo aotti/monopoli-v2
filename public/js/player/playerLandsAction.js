@@ -53,6 +53,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     const stepOnJail = getTheLandElement(Object.values(prevSibObj), 'area_penjara')
     const stepOnCurse = getTheLandElement(Object.values(prevSibObj), 'cursed')
     const stepOnSpecial = getTheLandElement(Object.values(prevSibObj), 'special')
+    const stepOnCards = getTheLandElement(Object.values(prevSibObj), 'kartu')
     // === start lands event ===
     // if stepOnCity has value AND stepOnCity[0] not null, 
     // it means the player is on the right land to buy city 
@@ -239,6 +240,18 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
             data: {
                 event: 'cursedCity',
                 curseAmount: cursePrice
+            }
+        }
+        return landData
+    }
+    // player getting buff/debuff card
+    else if(stepOnCards && stepOnCards[0] && playerLaps > 1) {
+        // return confirm button and required data
+        const landData = {
+            buttons: null,
+            data: {
+                event: 'drawCard',
+                cardType: stepOnCards[1].classList[0]
             }
         }
         return landData

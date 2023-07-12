@@ -43,6 +43,7 @@ function landEventHandler(requiredLandEventData) {
     // check which event is occured
     function whichEventIsOccured(data, landEventData, eventButton = null) {
         let dataEvent = data.event
+        const tempPlayerPosNow = +playersTurnShape.parentElement.classList[0].match(/\d+/)
         // if data.event is array, only get the index 0 for switch to prevent error
         if(typeof dataEvent === 'object') 
             dataEvent = dataEvent[0]
@@ -56,7 +57,6 @@ function landEventHandler(requiredLandEventData) {
                 return landEventData
             // free parking land event
             case 'freeParking':
-                const tempPlayerPosNow = +playersTurnShape.parentElement.classList[0].match(/\d+/)
                 const destinationPos = +eventButton.target.value
                 qS('.confirm_box').innerText = `---------\nMenuju ke petak ${destinationPos}\n---------`
                 return freeParkingEvent(mods, giliran, tempPlayerPosNow, destinationPos)
@@ -84,6 +84,13 @@ function landEventHandler(requiredLandEventData) {
             // special city event
             case 'specialCity':
                 landEventData = specialLandEvent(endTurnMoney, data)
+                if(landEventData.cities === null)
+                    landEventData.cities = playerCities
+                setTimeout(() => { qS('.confirm_box').remove() }, 3000);
+                return landEventData
+            // cards event
+            case 'drawCard':
+                landEventData = cardsEvent(mods, giliran, tempPlayerPosNow, endTurnMoney, data)
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);

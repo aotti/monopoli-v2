@@ -52,9 +52,7 @@ function insertLandsToBoard(mods) {
     // set random percent for price on kotaTerkutuk
     const randKutukan = Math.floor(Math.random() * ((mods[5] + 1) - mods[4])) + mods[4]
     // set the price for kotaTerkutuk
-    const rumusKutukan1 = 4e3 * 1 * 1
-    const rumusKutukan2 = 1e4 * 1 * (randKutukan / 100)
-    const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2)
+    const hargaKutukan = Math.floor(4e3 + 1e4 * (randKutukan / 100))
     // set the price for kotaKhusus
     const hargaKhusus = 0
     // land numbers
