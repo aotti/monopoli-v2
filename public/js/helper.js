@@ -44,6 +44,133 @@ function cityNameFirstLetter(cityName) {
 }
 
 /**
+ * @param {Number} giliran player's turn number 
+ * @returns all cities owned by the player
+ */
+function playerCityList(giliran, resultCond = null) {
+    const allLands = qSA('[class^=kota], [class*=special]')
+    // array to contain cities
+    const allOwnedCities = []
+    // find cities
+    for(let city of allLands) {
+        const ownedCityRegex = new RegExp(playersTurn[giliran])
+        // if the player own any city, insert to container
+        if(city.classList[0].match(ownedCityRegex)) 
+            allOwnedCities.push(city)
+    }
+    return allOwnedCities
+}
+
+/**
+ * @param {String} cityName the name of the city to be purchased  
+ * @param {String} cityProp the kind of property to be purchased 
+ * @param {String} condition the condition on filtering the cities 
+ * @returns all cities after being bought or remove the sold city
+ */
+function manageCities(cityName, cityProp, condition) {
+    // kota-tanah,1rumah,2rumah,2rumah1hotel;kota2-tanah,1rumah,2rumah,2rumah1hotel
+    // find your data in playersTurnObj
+    const findYourCity = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
+    if(findYourCity !== -1) {
+        // get your harta_kota
+        const yourCities = playersTurnObj[findYourCity].harta_kota
+        if(condition == 'buy') {
+            switch(yourCities) {
+                // first time bought a city
+                case '':
+                    return `${cityName}-${cityProp}`
+                // the next time bought a city
+                default:
+                    // split data to per city
+                    const splitPerCity = yourCities.split(';') 
+                    // find city that player is just bought 
+                    const findPerCity = splitPerCity.map(v => {return v.includes(cityName)}).indexOf(true)
+                    // if bought new city, push to array
+                    if(findPerCity === -1) 
+                        splitPerCity.push(`${cityName}-${cityProp}`)
+                    // if bought new city property, replace the old city
+                    else if(findPerCity !== -1) {
+                        const newCityProp = `${splitPerCity[findPerCity]},${cityProp}`
+                        splitPerCity.splice(findPerCity, 1, newCityProp)
+                    }
+                    return splitPerCity.join(';')
+            }
+        }
+        else if(condition == 'sell') {
+            // split data to per city
+            const splitPerCity = yourCities.split(';') 
+            // find city that player is just bought 
+            const findPerCity = splitPerCity.map(v => {return v.includes(cityName)}).indexOf(true)
+            if(findPerCity === -1) {
+                feedbackTurnOn('kota yang ingin dijual tidak ditemukan')
+                return feedbackTurnOff()
+            }
+            // remove the city
+            splitPerCity.splice(findPerCity, 1)
+            // return the cities back to string
+            return splitPerCity.join(';')
+        }
+    }
+}
+
+/**
+ * @param {String} card the card name
+ * @returns all cards once obtained or remove a card after use
+ */
+function manageCards(card, used = false) {
+    const findYourCard = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
+    if(findYourCard !== -1) {
+        // get your cards
+        const yourCards = playersTurnObj[findYourCard].kartu
+        switch(yourCards) {
+            // have 0 card
+            case '':
+                return card
+            // have > 0 cards
+            default:
+                if(used === false) {
+                    const splitPerCard = yourCards.split(';')
+                    // indexOf(card) is possible cuz the map value is the same as card value
+                    const findPerCard = splitPerCard.map(v => {return v}).indexOf(card)
+                    // if you dont have the card yet, then push to array
+                    if(findPerCard === -1) 
+                        splitPerCard.push(card)
+                    // return cards
+                    return splitPerCard.join(';')
+                }
+                else if(used === true) {
+                    // split data to per card
+                    const splitPerCard = yourCities.split(';') 
+                    // find card that player just used 
+                    const findPerCard = splitPerCard.map(v => {return v}).indexOf(card)
+                    if(findPerCard === -1) {
+                        feedbackTurnOn('kartu yang ingin dihapus tidak ditemukan')
+                        return feedbackTurnOff()
+                    }
+                    // removee the card
+                    splitPerCard.splice(findPerCard, 1)
+                    // return the cards back to string
+                    return splitPerCard.join(';')
+                }
+        }
+    }
+}
+
+/**
+ * @param {Array} customArray 
+ * @returns shuffled array values
+ */
+function shuffle(customArray) {
+    let currentIndex = customArray.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [customArray[currentIndex], customArray[randomIndex]] = [customArray[randomIndex], customArray[currentIndex]];
+    }
+    return customArray;
+}
+
+/**
  * @event display message to feedback box
  */
 function feedbackTurnOn(text) {

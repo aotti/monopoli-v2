@@ -1,8 +1,17 @@
-function landEventHandler(requiredLandEventData) {
+function landEventHandler(requiredLandEventData, promiseResult = null) {
     // required data if land event happens
-    const { mods, giliran, endTurnMoney, playerCities, playersTurnShape, playerDiceMove, playerLaps } = requiredLandEventData
+    const { 
+        mods, giliran, 
+        endTurnMoney, playerCities, 
+        playersTurnShape, playerDiceMove, 
+        playerLaps 
+    } = requiredLandEventData
     // check land event 
     const landsAction = new Promise((resolve, reject) => {
+        // if outer result is exist
+        if(promiseResult) {
+            return resolve(promiseResult)
+        }
         // variable to save retrieved data from land event
         let landEventData = {
             // the value is to prevent if the player dont get any land event
@@ -19,6 +28,8 @@ function landEventHandler(requiredLandEventData) {
         // if the land event have no buttons
         if(buttons === null) {
             const returnedLandEventData = whichEventIsOccured(data, landEventData)
+            // if the player is on freeParking/something that need more interaction, dont resolve
+            if(returnedLandEventData == null) return
             return resolve(returnedLandEventData)
         }
         // if the land event have buttons
@@ -28,7 +39,7 @@ function landEventHandler(requiredLandEventData) {
                 data.selectedButton = ev.target.classList[0]
                 // check which event is occured
                 const returnedLandEventData = whichEventIsOccured(data, landEventData, ev)
-                // if the player is on freeParking, dont resolve
+                // if the player is on freeParking/something that need more interaction, dont resolve
                 if(returnedLandEventData == null) return
                 // other than freeParking, resolve
                 return resolve(returnedLandEventData)
@@ -52,6 +63,7 @@ function landEventHandler(requiredLandEventData) {
             case 'buyingCity':
                 qS('.confirm_box').remove()
                 landEventData = buyingCityEvent(endTurnMoney, data)
+                // if nothing changes on cities, refill the value
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 return landEventData
@@ -63,6 +75,7 @@ function landEventHandler(requiredLandEventData) {
             // paying tax to the city owner
             case 'taxCity':
                 landEventData = taxCityEvent(endTurnMoney, data)
+                // if nothing changes on cities, refill the value
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
@@ -70,6 +83,7 @@ function landEventHandler(requiredLandEventData) {
             // get into jail
             case 'imprisoned':
                 landEventData = imprisonedEvent(endTurnMoney, data)
+                // if nothing changes on cities, refill the value
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
@@ -77,6 +91,7 @@ function landEventHandler(requiredLandEventData) {
             // cursed city event
             case 'cursedCity':
                 landEventData = curseLandEvent(endTurnMoney, data)
+                // if nothing changes on cities, refill the value
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
@@ -84,6 +99,7 @@ function landEventHandler(requiredLandEventData) {
             // special city event
             case 'specialCity':
                 landEventData = specialLandEvent(endTurnMoney, data)
+                // if nothing changes on cities, refill the value
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
@@ -91,6 +107,9 @@ function landEventHandler(requiredLandEventData) {
             // cards event
             case 'drawCard':
                 landEventData = cardsEvent(mods, giliran, tempPlayerPosNow, endTurnMoney, data)
+                // if the player is on freeParking/something that need more interaction, return null
+                if(landEventData == null) return
+                // if nothing changes on cities, refill the value
                 if(landEventData.cities === null)
                     landEventData.cities = playerCities
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
@@ -111,7 +130,7 @@ function buyingCityEvent(endTurnMoney, data) {
             // money left after bought a city
             buyingCityData.moneyLeft = endTurnMoney - data.cityPrice
             // add new city/prop to player cities
-            buyingCityData.cities = buyingCityFilter(data.cityName, data.cityProp)
+            buyingCityData.cities = manageCities(data.cityName, data.cityProp, 'buy')
             return buyingCityData
         }
         // dont have enough money
@@ -133,36 +152,6 @@ function buyingCityEvent(endTurnMoney, data) {
         // no change in the player cities
         buyingCityData.cities = null
         return buyingCityData
-    }
-}
-
-function buyingCityFilter(cityName, cityProp) {
-    // kota-tanah,1rumah,2rumah,2rumah1hotel;kota2-tanah,1rumah,2rumah,2rumah1hotel
-    // find your data in playersTurnObj
-    const findYourCity = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
-    if(findYourCity !== -1) {
-        // get your harta_kota
-        const yourCity = playersTurnObj[findYourCity].harta_kota
-        switch(yourCity) {
-            // first time bought a city
-            case '':
-                return `${cityName}-${cityProp}`
-            // the next time bought a city
-            default:
-                // split data to per city
-                const splitPerCity = yourCity.split(';') 
-                // find city that player is just bought 
-                const findPerCity = splitPerCity.map(v => {return v.includes(cityName)}).indexOf(true)
-                // if bought new city, push to array
-                if(findPerCity === -1) 
-                    splitPerCity.push(`${cityName}-${cityProp}`)
-                // if bought new city property, replace the old city
-                else if(findPerCity !== -1) {
-                    const newCityProp = `${splitPerCity[findPerCity]},${cityProp}`
-                    splitPerCity.splice(findPerCity, 1, newCityProp)
-                }
-                return splitPerCity.join(';')
-        }
     }
 }
 

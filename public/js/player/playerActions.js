@@ -64,7 +64,7 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         }
         // run player moves with realtime
         // roll the dice
-        const playerDadu = customDadu || getDiceNumber()
+        const playerDadu = customDadu || 4
         // set prices for kota khusus and terkutuk
         pricesForSpecialAndCursed(playerDadu, mods)
         // roll the branch
@@ -82,7 +82,6 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
             branch: myBranchChance.chance,
             prison: myPrisonCounter.counter
         }
-        console.log(jsonData);
         // send data to server
         fetcher(`/moveplayer`, 'POST', jsonData)
         .then(result => {
@@ -252,7 +251,7 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
 function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventData) {
     // land event data
     // moneyLeft and cities = must have value
-    const { moneyLeft, cities, cityOwner, cityTaxAmount, imprisoned } = returnedLandEventData
+    const { moneyLeft, cities, cityOwner, cityTaxAmount, imprisoned, cards } = returnedLandEventData
     // choose next player
     const nextPlayer = (giliran + 1) % playersTurnId.length
     // payload
@@ -261,7 +260,7 @@ function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventDat
         pos: `${playerDiceMove}`,
         harta_uang: moneyLeft,
         harta_kota: cities,
-        kartu: '',
+        kartu: cards ? cards : '',
         jalan: false,
         penjara: imprisoned ? imprisoned : false,
         putaran: oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps,

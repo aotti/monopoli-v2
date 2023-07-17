@@ -105,7 +105,7 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                     // set innerText on the city, if player have house, then fill this with house emoji
                     let propText = null
                     // prepare new classList for each land
-                    const nextClassList = (()=>{
+                    const nextPropType = (()=>{
                         switch(lastProp) {
                             // if player only buy the land
                             case 'special':
@@ -152,14 +152,39 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                     // remove current classList and add the new one
                     land.classList.remove(land.classList[0])
                     // for special area
-                    if(nextClassList === 'special') 
-                        land.classList.add(`area_${landName}_${nextClassList}_${nextPropPrice}_${v.user_id.username}`)
+                    if(nextPropType === 'special') 
+                        land.classList.add(`area_${landName}_${nextPropType}_${nextPropPrice}_${v.user_id.username}`)
                     // for normal city
                     else 
-                        land.classList.add(`kota_${landName}_${nextClassList}_${nextPropPrice}_${v.user_id.username}`)
+                        land.classList.add(`kota_${landName}_${nextPropType}_${nextPropPrice}_${v.user_id.username}`)
                     // ### ATTR data-owner MUNGKIN KEPAKE NANTI BUAT JUAL KOTA
                     land.setAttribute('data-owner', `${v.user_id.username} - Rp ${nextPropPrice}`)
                     land.innerText = `Kota ${cityNameFirstLetter(landName)} \n${propText}` 
+                }
+                else {
+                    // if the land already have an owner, then stop
+                    if(land.classList[0].split('_')[4]) return
+                    // if no owner, then continue
+                    const landType = (()=>{
+                        if(land.classList[0].match('area'))
+                            return 'special'
+                        else if(land.classList[0].match('kota'))
+                            return 'kota'
+                    })()
+                    const landBasePrice = (()=>{
+                        for(let land of baseCityPrices) {
+                            if(land.city === landName)
+                                return land.price
+                        }
+                    })()
+                    // remove current classList and add the new one
+                    land.classList.remove(land.classList[0])
+                    // for special area
+                    if(landType === 'special') 
+                        land.classList.add(`area_${landName}_special_${landBasePrice}`)
+                    // for normal city
+                    else if(landType === 'kota')
+                        land.classList.add(`kota_${landName}_tanah_${landBasePrice}`)
                 }
             }
         })
