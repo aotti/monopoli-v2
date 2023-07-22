@@ -99,7 +99,7 @@ function manageCities(cityName, cityProp, condition) {
         else if(condition == 'sell') {
             // split data to per city
             const splitPerCity = yourCities.split(';') 
-            // find city that player is just bought 
+            // find city that player is gonna sell 
             const findPerCity = splitPerCity.map(v => {return v.includes(cityName)}).indexOf(true)
             if(findPerCity === -1) {
                 feedbackTurnOn('kota yang ingin dijual tidak ditemukan')
@@ -107,6 +107,20 @@ function manageCities(cityName, cityProp, condition) {
             }
             // remove the city
             splitPerCity.splice(findPerCity, 1)
+            // return the cities back to string
+            return splitPerCity.join(';')
+        }
+        else if(condition == 'disaster') {
+            // split data to per city
+            const splitPerCity = yourCities.split(';') 
+            // find city that player is just bought 
+            const findPerCity = splitPerCity.map(v => {return v.includes(cityName)}).indexOf(true)
+            if(findPerCity === -1) {
+                feedbackTurnOn('kota yang kena gempa tidak ditemukan')
+                return feedbackTurnOff()
+            }
+            // remove the city prop
+            splitPerCity[findPerCity] = splitPerCity[findPerCity].match(new RegExp(`.*(?=.${cityProp})`))
             // return the cities back to string
             return splitPerCity.join(';')
         }

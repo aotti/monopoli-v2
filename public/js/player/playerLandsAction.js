@@ -71,12 +71,12 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     const stepOnSpecial = getTheLandElement(Object.values(prevSibObj), 'special')
     const stepOnCards = getTheLandElement(Object.values(prevSibObj), 'kartu')
     // === start lands event ===
+    // remove any confirm box after playerMoves done
+    if(qS('.confirm_box'))
+        qS('.confirm_box').remove()
     // if stepOnCity has value AND stepOnCity[0] not null, 
     // it means the player is on the right land to buy city 
     if((stepOnCity || stepOnSpecial) && (stepOnCity[0] || stepOnSpecial[0]) && playerLaps > 1) {
-        // to remove freeParking confirm box after playerMoves done
-        if(qS('.confirm_box'))
-            qS('.confirm_box').remove()
         // step sound
         qS('#pMasukLokasi').play();
         // setting for buying text
@@ -159,9 +159,6 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     }
     // if the player stepped on city but it belongs to someone else, pay money to them
     else if(stepOnTax && stepOnTax[0] && playerLaps > 1) {
-        // to remove freeParking confirm box after playerMoves done
-        if(qS('.confirm_box'))
-            qS('.confirm_box').remove()
         const land = stepOnTax[1]
         // city that player stepped on
         const cityName = land.innerText.split(/\W/)[1]
@@ -216,10 +213,10 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
     }
     // player going to jail and cant move
     else if(stepOnJail && stepOnJail[0] && playerLaps > 1) {
-        // text when player pay taxes
-        const taxText = `Semoga Anda mendapat hidayah ${emoji.pray} tapi kena azab dulu ${emoji.sunglas}`
-        // create buying city dialog
-        confirmDialog(taxText)
+        // text when player going to jail
+        const jailText = `Semoga Anda mendapat hidayah ${emoji.pray} tapi kena azab dulu ${emoji.sunglas}`
+        // create going to jail dialog
+        confirmDialog(jailText)
         // set confirm box top position
         qS('.confirm_box').style.top = '40%'
         // return confirm button and required data

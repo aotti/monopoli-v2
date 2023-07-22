@@ -184,11 +184,13 @@ function taxCityEvent(endTurnMoney, data) {
 function imprisonedEvent(endTurnMoney, data) {
     const imprisonedData = {}
     // no change in the money left
-    imprisonedData.moneyLeft = endTurnMoney
+    imprisonedData.moneyLeft = getLocStorage('fineAmount') ? endTurnMoney - +getLocStorage('fineAmount') : endTurnMoney
     // no change in the player cities
     imprisonedData.cities = null
     // prison status true
     imprisonedData.imprisoned = data.penjara
+    // remove fine from local storage
+    getLocStorage('fineAmount') ? localStorage.removeItem('fineAmount') : null
     return imprisonedData
 }
 

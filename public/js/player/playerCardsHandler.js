@@ -1,98 +1,36 @@
 function cardsEvent(mods, giliran, tempPlayerPosNow, endTurnMoney, data) {
     if(data.cardType == 'kartu_danaUmum') {
-        return danaUmumCards(mods, giliran, tempPlayerPosNow, endTurnMoney)
+        return danaUmumCards('Dana Umum', mods, giliran, tempPlayerPosNow, endTurnMoney)
     }
     else if(data.cardType == 'kartu_kesempatan') {
-
+        return kesempatanCards('Kesempatan', mods, giliran, tempPlayerPosNow, endTurnMoney)
     }
 }
 
-function danaUmumCards(mods, giliran, tempPlayerPosNow, endTurnMoney) {
+function danaUmumCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney) {
     qS('#pDanaUmum').play();
+    return preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney)
+}
+
+function kesempatanCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney) {
+    qS('#pKesempatan').play();
+    return preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney)
+}
+
+function preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney) {
     // random number to pick cards
     const chances = Math.random() * 100
-    // cards container
-    const cardList = {}
     // pick cards and put into container
-    // chances < 9
-    if(chances < 9) {
-        // card list
-        cardList.cards = [
-            'Gaji bulanan sudah cair, Anda mendapatkan 160.000',
-            'Bayar tagihan listrik & air 100.000',
-            'Menjual 1 kota yang Anda miliki (acak)'
-        ]
-        // card types
-        cardList.types = ['gainMoney', 'loseMoney', 'sellCity']
-        // find city for the card effect 
-        const getRandomCity = playerCityList(giliran)
-        const randomCityObj = {}
-        if(getRandomCity.length > 0) {
-            randomCityObj.index = Math.floor(Math.random() * getRandomCity.length)
-            randomCityObj.name = getRandomCity[randomCityObj.index].classList[0].split('_')[1]
-            randomCityObj.price = +getRandomCity[randomCityObj.index].classList[0].split('_')[3]
-            randomCityObj.result = `${randomCityObj.name}-${randomCityObj.price}`
-        }
-        else if(getRandomCity.length === 0) 
-            randomCityObj.result = `Anda belum punya kota ${emoji.joy}`
-        // card effects
-        cardList.effects = [160_000, 100_000, randomCityObj.result]
-    }
-    // chances >= 9 && chances < 25
-    else if(chances >= 9 && chances < 25) {
-        cardList.cards = [
-            'Bayar rumah sakit 50.000',
-            'Debt collector datang ke rumah, bayar hutang 60.000',
-            'Gilang si baik hati memberi anda uang 5.000',
-            'Kartu anti pajak \u{1F60E}',
-            'Pilih kota anda yang ingin dituju'
-        ]
-        // card types
-        cardList.types = ['loseMoney', 'loseMoney', 'gainMoney', 'specialCard', 'moveForward']
-        // card effects
-        cardList.effects = [50_000, 60_000, 5_000, 'anti-pajak', null]
-    }
-    // chances >= 25 && chances < 51
-    else if(chances >= 25 && chances < 51) {
-        cardList.cards = [
-            'Gilang sang hecker meretas akun bank anda dan kehilangan uang 20.000',
-            'Kartu penghambat rezeki \u{1F5FF}',
-            'Mobil anda rusak, bayar biaya perbaikan 35.000',
-            'Kartu nerf pajak 35%',
-            'Anda mendapat uang 20.000 dikali jumlah angka pada koin yang dipilih'
-        ]
-        // card types
-        cardList.types = ['loseMoney', 'specialCard', 'loseMoney', 'specialCard', 'miniGame']
-        // card effects
-        cardList.effects = [20_000, 'penghambat-rezeki', 35_000, 'nerf-pajak', 'choose_a_coin']
-    }
-    // chances >= 51 && chances < 95
-    else if(chances >= 51 && chances < 95) {
-        cardList.cards = [
-            'Hadiah dari bank, anda mendapatkan 40.000',
-            'Anda mendapat warisan 65.000',
-            'Anda ulang tahun hari ini, dapat 15.000 dari tiap player'
-        ]
-        // card types
-        cardList.types = ['gainMoney', 'gainMoney', 'gainMoney']
-        // card effects
-        cardList.effects = [40_000, 65_000, (15_000 * playersTurn.length-1)]
-    }
-    else if(chances >= 95 && chances < 100) {
-        cardList.cards = ['Kartu upgrade kota']
-        // card types
-        cardList.types = ['specialCard']
-        // card effects
-        cardList.effects = ['upgrade-kota']
-    }
+    const cardList = choosingCard(cardEventType, chances, giliran)
     // pick a card
     const cardPickIndex = Math.floor(Math.random() * cardList.cards.length)
     const cardPick = cardList.cards[cardPickIndex]
     const cardType = cardList.types[cardPickIndex]
     const cardEffect = cardList.effects[cardPickIndex]
     // check card type then activate the effect
-    const cardText = `[Dana Umum]\n${cardPick}`
+    const cardText = `[${cardEventType}]\n${cardPick}`
     const cardsObject = {
+        cardEventType: cardEventType,
         mods: mods,
         giliran: giliran,
         tempPlayerPosNow: tempPlayerPosNow,
@@ -106,8 +44,9 @@ function danaUmumCards(mods, giliran, tempPlayerPosNow, endTurnMoney) {
 
 function checkAndActivateCard(cardsObject) {
     // retrieve data
-    const { mods, giliran, tempPlayerPosNow, endTurnMoney, cardType, cardEffect, cardText } = cardsObject
+    const { cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney, cardType, cardEffect, cardText } = cardsObject
     const cardsEventData = {}
+    const splitEffect = typeof cardEffect === 'number' ? cardEffect : cardEffect.split('-')
     // check card type
     switch(cardType) {
         case 'gainMoney':
@@ -125,25 +64,26 @@ function checkAndActivateCard(cardsObject) {
             confirmDialog(cardText)
             return cardsEventData
         case 'sellCity':
-            const splitEffect = cardEffect.split('-')
+            // dont have any city
             if(splitEffect.length === 1) {
                 cardsEventData.moneyLeft = endTurnMoney
                 // if no changes on city, just make it null
                 cardsEventData.cities = null
                 // create card dialog
-                confirmDialog(`${cardText}\n\n${splitEffect[0]}`)
+                confirmDialog(`${cardText}\n---\n${splitEffect[0]}`)
             }
+            // have atleast 1 city
             else if(splitEffect.length === 2) {
                 cardsEventData.moneyLeft = endTurnMoney + +splitEffect[1]
                 // if no changes on city, just make it null
                 cardsEventData.cities = manageCities(splitEffect[0], null, 'sell')
                 // create card dialog
-                confirmDialog(`${cardText}\n\nKota ${splitEffect[0]} terjual ${emoji.catShock}`)
+                confirmDialog(`${cardText}\n---\nKota ${splitEffect[0]} terjual ${emoji.catShock}`)
             }
             return cardsEventData
         case 'moveForward':
             // player select the forward number
-            if(cardEffect === null) {
+            if(splitEffect[0] === 'manual') {
                 const allLands = qSA('[class^=kota], [class*=special]')
                 // array for cities number (land number)
                 const citiesArray = []
@@ -165,6 +105,14 @@ function checkAndActivateCard(cardsObject) {
                 confirmDialog(cardText, types, buttons, attributes, classes, text)
                 // set confirm box top position
                 qS('.confirm_box').style.top = '40%'
+                // if the player doesnt have any city
+                if(citiesArray.length === 0) {
+                    qS('.confirm_box').firstChild.innerText += `\n---\nAnda belum punya kota ${emoji.joy}`
+                    cardsEventData.moneyLeft = endTurnMoney
+                    // if no changes on city, just make it null
+                    cardsEventData.cities = null
+                    return cardsEventData
+                }
                 // if the card needs player interaction
                 for(let button of qSA('.parkingButtons')) {
                     button.onclick = (ev) => {
@@ -172,8 +120,10 @@ function checkAndActivateCard(cardsObject) {
                         const customDadu = (destinationPos > tempPlayerPosNow 
                                         ? destinationPos - tempPlayerPosNow 
                                         : (destinationPos + 28) - tempPlayerPosNow)
-                        // change confirm_box text
-                        qS('.confirm_box').innerText = `[Dana Umum]\nMenuju ke petak ${destinationPos}\n---------`
+                        // add confirm_box text
+                        setTimeout(() => {
+                            qS('.confirm_box').firstChild.innerText += `\n---\nMenuju ke petak ${destinationPos}`
+                        }, 1000);
                         // trigger the kocok dadu button
                         kocokDaduTrigger(mods, giliran, customDadu)
                         qS('.acakDadu').disabled = false
@@ -182,12 +132,109 @@ function checkAndActivateCard(cardsObject) {
                 }
             }
             // determined forward number
-            else if(typeof cardEffect === 'number') {
-
+            else if(splitEffect[0] === 'auto') {
+                // filter the effect
+                switch(splitEffect[1]) {
+                    // going to jail and pay 90% fine
+                    case 'penjara90%':
+                        // create card dialog
+                        confirmDialog(cardText)
+                        // set confirm box top position
+                        qS('.confirm_box').style.top = '40%'
+                        // set fine
+                        const fineAmount = endTurnMoney * .90
+                        setLocStorage('fineAmount', fineAmount)
+                        // start moving 
+                        const destinationPos = 10
+                        const customDadu = (destinationPos > tempPlayerPosNow 
+                                        ? destinationPos - tempPlayerPosNow 
+                                        : (destinationPos + 28) - tempPlayerPosNow)
+                        // trigger the kocok dadu button
+                        kocokDaduTrigger(mods, giliran, customDadu)
+                        qS('.acakDadu').disabled = false
+                        return qS('.acakDadu').click()
+                    case 'aduNasib':
+                        const freeOrJail = Math.random() * 100
+                        // create parking dialog
+                        confirmDialog(cardText)
+                        // set confirm box top position
+                        qS('.confirm_box').style.top = '40%'
+                        // free parking
+                        if(freeOrJail < 51) {
+                            // start moving 
+                            return gambleFreeOrJail(24, tempPlayerPosNow, mods, giliran)
+                        }
+                        // prison
+                        else if(freeOrJail >= 51 && freeOrJail < 100) {
+                            // set fine
+                            const fineAmount = endTurnMoney * .90
+                            setLocStorage('fineAmount', fineAmount)
+                            // start moving 
+                            return gambleFreeOrJail(10, tempPlayerPosNow, mods, giliran)
+                        }
+                    case 'kotaOrangLain':
+                        const allLands = qSA('[class^=kota], [class*=special]')
+                        // array for cities number (land number)
+                        const citiesArray = []
+                        for(let land of allLands) {
+                            // find player city based on username
+                            if(land.classList[0].split('_')[4] && !land.classList[0].includes(myGameData.username)) {
+                                citiesArray.push(land.parentElement.title)}
+                        }
+                        // parking button and number
+                        const citiesButtons = createButtonsOrTextValue('button', false, citiesArray)
+                        const { types, buttons, attributes, classes, text } = {
+                            types: fillTheElementsForDialog('button', citiesArray.length),
+                            buttons: fillTheElementsForDialog(citiesButtons, null, true),
+                            attributes: fillTheElementsForDialog('class', citiesArray.length),
+                            classes: fillTheElementsForDialog('parkingButtons', citiesArray.length),
+                            text: fillTheElementsForDialog(citiesArray, null, true)
+                        }
+                        // create parking dialog
+                        confirmDialog(cardText, types, buttons, attributes, classes, text)
+                        // set confirm box top position
+                        qS('.confirm_box').style.top = '40%'
+                        // if the player doesnt have any city
+                        if(citiesArray.length === 0) {
+                            qS('.confirm_box').firstChild.innerText += `\n---\nPlayer lain masih misqueen ${emoji.joy}`
+                            cardsEventData.moneyLeft = endTurnMoney
+                            // if no changes on city, just make it null
+                            cardsEventData.cities = null
+                            return cardsEventData
+                        }
+                        const autoClick = Math.floor(Math.random() * citiesArray.length)
+                        // click random city
+                        qSA('.parkingButtons')[autoClick].onclick = (ev) => {
+                            const destinationPos = +ev.target.value
+                            const customDadu = (destinationPos > tempPlayerPosNow 
+                                            ? destinationPos - tempPlayerPosNow 
+                                            : (destinationPos + 28) - tempPlayerPosNow)
+                            // add confirm_box text
+                            setTimeout(() => {
+                                qS('.confirm_box').firstChild.innerText += `\n---\nMenuju ke petak ${destinationPos}`
+                            }, 1000);
+                            // trigger the kocok dadu button
+                            kocokDaduTrigger(mods, giliran, customDadu)
+                            qS('.acakDadu').disabled = false
+                            return qS('.acakDadu').click()
+                        }
+                        qSA('.parkingButtons')[autoClick].click()
+                        for(let button of qSA('.parkingButtons'))
+                            button.disabled = true
+                }
             }
             return
         case 'moveBackward':
-            break
+            // create card dialog
+            confirmDialog(cardText)
+            // set confirm box top position
+            qS('.confirm_box').style.top = '40%'
+            // start moving 
+            const customDadu = cardEffect
+            // trigger the kocok dadu button
+            kocokDaduTrigger(mods, giliran, customDadu)
+            qS('.acakDadu').disabled = false
+            return qS('.acakDadu').click()
         case 'specialCard':
             cardsEventData.moneyLeft = endTurnMoney
             // if no changes on city, just make it null
@@ -238,5 +285,191 @@ function checkAndActivateCard(cardsObject) {
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
                 landEventHandler(tempRequiredLandEventData, tempCardsEventData)
             })
+        case 'disaster':
+            cardsEventData.moneyLeft = endTurnMoney
+            // if no changes on city, just make it null
+            if(splitEffect.length === 1) {
+                cardsEventData.cities = null
+                confirmDialog(cardText)
+                setTimeout(() => {
+                    qS('.confirm_box').firstChild.innerText += `\n---\n${splitEffect[0]}`
+                }, 1000);
+            }
+            else if(splitEffect.length === 2) {
+                cardsEventData.cities = manageCities(splitEffect[0], splitEffect[1], 'disaster')
+                confirmDialog(cardText)
+                setTimeout(() => {
+                    qS('.confirm_box').firstChild.innerText += `\n---\nKota ${splitEffect[0]} hancur bang ${emoji.catShock}`
+                }, 1000);
+            }
+            return cardsEventData
     }
+}
+
+function choosingCard(cardEventType, chances, giliran) {
+    const tempCardList = {}
+    // chances < 9
+    if(chances < 9) {
+        switch(cardEventType) {
+            // dana umum
+            case 'Dana Umum':
+                // card list
+                tempCardList.cards = [
+                    'Gaji bulanan sudah cair, Anda mendapatkan 160.000',
+                    'Bayar tagihan listrik & air 100.000',
+                    'Menjual 1 kota yang Anda miliki (acak)'
+                ]
+                // card types
+                tempCardList.types = ['gainMoney', 'loseMoney', 'sellCity']
+                // card effects
+                tempCardList.effects = [160_000, 100_000, getRandomCity(giliran)]
+                break
+            // kesempatan
+            case 'Kesempatan':
+                tempCardList.cards = [
+                    'Anda tertangkap basah korupsi, masuk penjara dan denda 90% dari total uang',
+                    'Anda mendapatkan uang kaget sebanyak 200.000',
+                    'Kartu bebas penjara'
+                ]
+                // card types
+                tempCardList.types = ['moveForward', 'gainMoney', 'specialCard']
+                // card effects
+                tempCardList.effects = [`auto-penjara90%`, 200_000, 'bebas-penjara']
+                break
+        }
+    }
+    // chances >= 9 && chances < 25
+    else if(chances >= 9 && chances < 25) {
+        switch(cardEventType) {
+            // dana umum
+            case 'Dana Umum':
+                tempCardList.cards = [
+                    'Bayar rumah sakit 50.000',
+                    'Preman pinjol datang ke rumah, bayar hutang 60.000',
+                    `Gilang si belok memberi anda uang 5.000 ${emoji.sweatJoy}`,
+                    `Kartu anti pajak ${emoji.sunglas}`,
+                    'Pilih kota anda yang ingin dituju'
+                ]
+                // card types
+                tempCardList.types = ['loseMoney', 'loseMoney', 'gainMoney', 'specialCard', 'moveForward']
+                // card effects
+                tempCardList.effects = [50_000, 60_000, 5_000, 'anti-pajak', 'manual']
+                break
+            // kesempatan
+            case 'Kesempatan':
+                tempCardList.cards = [
+                    'Menuju kota punya orang lain',
+                    'Gilang menjatuhkan ichi ochanya, Anda mundur 3 langkah untuk mengembalikan',
+                    'Adu nasib, masuk parkir bebas atau masuk penjara',
+                    'Kartu nerf parkir bebas',
+                    'Gempa bumi, 1 bangunan roboh #menangid'
+                ]
+                // card types
+                tempCardList.types = ['moveForward', 'moveBackward', 'moveForward', 'specialCard', 'disaster']
+                // card effects
+                // ### UNTUK GEMPA BUMI, PILIH KOTA RANDOM (JIKA PUNYA) LALU HAPUS PROP YG PALING AKHIR (KECUALI TANAH)
+                tempCardList.effects = ['auto-kotaOrangLain', -3, 'auto-aduNasib', 'nerf-parkir', getDestroyTarget()]
+                break
+        }
+    }
+    // chances >= 25 && chances < 51
+    else if(chances >= 25 && chances < 51) {
+        switch(cardEventType) {
+            // dana umum
+            case 'Dana Umum':
+                tempCardList.cards = [
+                    'Gilang sang hecker meretas akun bank anda dan kehilangan uang 20.000',
+                    'Kartu penghambat rezeki \u{1F5FF}',
+                    'Mobil anda rusak, bayar biaya perbaikan 35.000',
+                    'Kartu nerf pajak 35%',
+                    'Anda mendapat uang 20.000 dikali jumlah angka pada koin yang dipilih'
+                ]
+                // card types
+                tempCardList.types = ['loseMoney', 'specialCard', 'loseMoney', 'specialCard', 'miniGame']
+                // card effects
+                tempCardList.effects = [20_000, 'penghambat-rezeki', 35_000, 'nerf-pajak', 'choose_a_coin']
+                break
+            // kesempatan
+            case 'Kesempatan':
+                break
+        }
+    }
+    // chances >= 51 && chances < 95
+    else if(chances >= 51 && chances < 95) {
+        switch(cardEventType) {
+            // dana umum
+            case 'Dana Umum':
+                tempCardList.cards = [
+                    'Hadiah dari bank, anda mendapatkan 40.000',
+                    'Anda mendapat warisan 65.000',
+                    'Anda ulang tahun hari ini, dapat 15.000 dari tiap player'
+                ]
+                // card types
+                tempCardList.types = ['gainMoney', 'gainMoney', 'gainMoney']
+                // card effects
+                tempCardList.effects = [40_000, 65_000, (15_000 * playersTurn.length-1)]
+                break
+            // kesempatan
+            case 'Kesempatan':
+                break
+        }
+    }
+    // chances >= 95 && chances < 100
+    else if(chances >= 95 && chances < 100) {
+        switch(cardEventType) {
+            // dana umum
+            case 'Dana Umum':
+                tempCardList.cards = ['Kartu upgrade kota']
+                // card types
+                tempCardList.types = ['specialCard']
+                // card effects
+                tempCardList.effects = ['upgrade-kota']
+                break
+            // kesempatan
+            case 'Kesempatan':
+                break
+        }
+    }
+    return tempCardList
+}
+
+function getRandomCity(giliran) {
+    // find city for the card effect 
+    const findCities = playerCityList(giliran)
+    const randomCityObj = {}
+    if(findCities.length > 0) {
+        randomCityObj.index = Math.floor(Math.random() * findCities.length)
+        randomCityObj.name = findCities[randomCityObj.index].classList[0].split('_')[1]
+        randomCityObj.price = +findCities[randomCityObj.index].classList[0].split('_')[3]
+        randomCityObj.result = `${randomCityObj.name}-${randomCityObj.price}`
+    }
+    else if(findCities.length === 0) 
+        randomCityObj.result = `Anda belum punya kota ${emoji.joy}`
+    return randomCityObj.result
+}
+
+function gambleFreeOrJail(destinationPos, tempPlayerPosNow, mods, giliran) {
+    const customDadu = (destinationPos > tempPlayerPosNow 
+                    ? destinationPos - tempPlayerPosNow 
+                    : (destinationPos + 28) - tempPlayerPosNow)
+    // change confirm_box text
+    setTimeout(() => {
+        qS('.confirm_box').firstChild.innerText += `\n---\nMenuju ke ${destinationPos === 10 ? 'Penjara' : 'Parkir Bebas'}`
+    }, 1000);
+    // trigger the kocok dadu button
+    kocokDaduTrigger(mods, giliran, customDadu)
+    qS('.acakDadu').disabled = false
+    return qS('.acakDadu').click()
+}
+
+function getDestroyTarget() {
+    const findMyCity = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
+    const splitPerCity = playersTurnObj[findMyCity].harta_kota.split(';')
+    const destroyTarget = Math.floor(Math.random() * splitPerCity.length)
+    const splitPerProp = splitPerCity[destroyTarget].split(',')
+    const destroyObj = {
+        city: splitPerProp[0].split('-')[0],
+        prop: splitPerProp[splitPerProp.length-1] === 'tanah' ? null : splitPerProp[splitPerProp.length-1]
+    }
+    return destroyObj.prop === null ? 'Tanah hungkul nya.. kumaha atuh nteu tiasa' : `${destroyObj.city}-${destroyObj.prop}`
 }

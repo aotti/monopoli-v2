@@ -14,7 +14,8 @@ const emoji = {
     catShock: '\u{1F640}',
     warning: '\u{2755}',
     joy: '\u{1F923}',
-    sweatJoy: '\u{1F605}'
+    sweatJoy: '\u{1F605}',
+    sob: '\u{1F62D}'
 }
 // saving the user data
 const myGameData = {

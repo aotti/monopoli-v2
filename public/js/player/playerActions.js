@@ -64,7 +64,7 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         }
         // run player moves with realtime
         // roll the dice
-        const playerDadu = customDadu || 4
+        const playerDadu = customDadu || 5
         // set prices for kota khusus and terkutuk
         pricesForSpecialAndCursed(playerDadu, mods)
         // roll the branch
@@ -135,7 +135,7 @@ function getDiceMove(mods, playerPosNow, playerDadu) {
     // get the pos after roll
     const tempDiceMove = footsteps(playerPosNow + playerDadu)
     let tempPlayerDice = null
-    // if we go inside branch, add letter 'a' to the dice value  
+    // if we go inside branch, add letter 'a' to the dice value 
     if(mods[0].board_shape == 'bercabangDua' && branchChance <= mods[0].branch && (tempDiceMove == 1 || tempDiceMove == 2 || tempDiceMove == 14 || tempDiceMove == 15 || tempDiceMove == 16 || tempDiceMove == 28))
         tempPlayerDice = tempDiceMove + 'a'
     // if outside branch, nothing to add
@@ -152,7 +152,7 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
     // dice animation
     const daduAnimasi = qS('#dice1')
     // display dice roll number if the number is <= 6
-    if(playerDadu <= 6) {
+    if(playerDadu > 0 && playerDadu <= 6) {
         // make the 3d dice visible
         daduAnimasi.style.visibility = 'visible';
         for(let i=1; i<=6; i++) {
@@ -180,7 +180,6 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
         // if player doesnt meet req to be free
         if(holdMoves == 'stopMoves') return
         // if player can moves 
-        // ### PASTIKAN HANYA PLAYER YG SEDANG GILIRAN YG AKAN DI SET 0
         if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username)
             myPrisonCounter.counter = 0
     }
@@ -194,7 +193,8 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
     function playerMoving() {
         // steps used to sync with the next land number
         // stepsCounter + 1 cuz the loop stops before we can get the last increment
-        steps = playerPosNow + (stepsCounter + 1)
+        // check if playerDadu is positive / negative
+        steps = playerDadu > 0 ? playerPosNow + (stepsCounter + 1) : playerPosNow - (stepsCounter + 1)
         // for lands in branch
         let steps2 = null
         // move player to other lands
@@ -202,7 +202,8 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
         // the stepsCounter value is 0
         stepsCounter++
         // loop stops and the stepsCounter value is 1
-        if(stepsCounter == playerDadu) {
+        // Math.abs required to prevent infinity backward steps, because the dice is negative number
+        if(stepsCounter == Math.abs(playerDadu)) {
             // player turn end
             clearInterval(startInterval)
             // ONLY PLAYER IN TURN THAT CAN FETCH
