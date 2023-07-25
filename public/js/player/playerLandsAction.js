@@ -48,28 +48,32 @@ function createButtonsOrTextValue(type, parking, customArray = null, prefix = nu
     return tempArray
 }
 
-function steppedOnAnyLand(playersTurnShape, playerLaps) {
+function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
     // regex for lands
     const regexBuyCity = new RegExp('.*tanah.\\d+.|.*1rumah.\\d+.'+myGameData.username+'|.*2rumah.\\d+.'+myGameData.username+'|.*2rumah1hotel.\\d+.'+myGameData.username)
     const regexTaxCity = new RegExp('.*1rumah.\\d+.*|.*2rumah.\\d+.*|.*2rumah1hotel.\\d+.*|.*komplek.\\d+.*')
     // get land element
-    const prevSib = playersTurnShape.previousSibling
+    const prevSib = playersTurnShape ? playersTurnShape.previousSibling : null
     const prevSibObj = {}
-    Object.defineProperties(prevSibObj,{
-        pSib : {enumerable: true, value: prevSib},
-        pSib2 : {enumerable: true, get: function(){return this.pSib ? this.pSib.previousSibling : null}},
-        pSib3 : {enumerable: true, get: function(){return this.pSib2 ? this.pSib2.previousSibling : null}},
-        pSib4 : {enumerable: true, get: function(){return this.pSib3 ? this.pSib3.previousSibling : null}},
-        pSib5 : {enumerable: true, get: function(){return this.pSib4 ? this.pSib4.previousSibling : null}}
-    });
+    if(prevSib) {
+        Object.defineProperties(prevSibObj,{
+            pSib : {enumerable: true, value: prevSib},
+            pSib2 : {enumerable: true, get: function(){return this.pSib ? this.pSib.previousSibling : null}},
+            pSib3 : {enumerable: true, get: function(){return this.pSib2 ? this.pSib2.previousSibling : null}},
+            pSib4 : {enumerable: true, get: function(){return this.pSib3 ? this.pSib3.previousSibling : null}},
+            pSib5 : {enumerable: true, get: function(){return this.pSib4 ? this.pSib4.previousSibling : null}}
+        });
+    }
     // check which land is player on
-    const stepOnCity = getTheLandElement(Object.values(prevSibObj), regexBuyCity)
+    const stepOnCity = (outerEventData && outerEventData.type == 'buyCity' ? outerEventData.elements : null) || 
+                        getTheLandElement(Object.values(prevSibObj), regexBuyCity)
     const stepOnParking = getTheLandElement(Object.values(prevSibObj), 'area_parkir')
     const stepOnTax = getTheLandElement(Object.values(prevSibObj), regexTaxCity)
     const stepOnJail = getTheLandElement(Object.values(prevSibObj), 'area_penjara')
     const stepOnCurse = getTheLandElement(Object.values(prevSibObj), 'cursed')
     const stepOnSpecial = getTheLandElement(Object.values(prevSibObj), 'special')
-    const stepOnCards = getTheLandElement(Object.values(prevSibObj), 'kartu')
+    const stepOnCards = (outerEventData && outerEventData.type == 'kartu_danaUmum' ? outerEventData.elements : null) || 
+                        getTheLandElement(Object.values(prevSibObj), 'kartu')
     // === start lands event ===
     // remove any confirm box after playerMoves done
     if(qS('.confirm_box'))
@@ -80,7 +84,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
         // step sound
         qS('#pMasukLokasi').play();
         // setting for buying text
-        const land = stepOnSpecial[1] || stepOnCity[1]
+        const land = (stepOnSpecial ? stepOnSpecial[1] : null) || stepOnCity[1]
         // only city name, ex: Jakarta
         const cityName = land.classList[0].split('_')[1]
         // full city name, ex: Kota Jakarta / Area Khusus-1
@@ -255,7 +259,7 @@ function steppedOnAnyLand(playersTurnShape, playerLaps) {
             buttons: null,
             data: {
                 event: 'drawCard',
-                cardType: stepOnCards[1].classList[0]
+                cardType: (outerEventData ? outerEventData.type : null) || stepOnCards[1].classList[0]
             }
         }
         return landData

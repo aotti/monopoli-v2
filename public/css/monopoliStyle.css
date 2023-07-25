@@ -479,7 +479,7 @@
   z-index: 100;
   top: 40%;
   left: 28%;
-  padding: 3px;
+  padding: 8px 0;
   background: lightskyblue;
   border: 1px solid;
   border-radius: 7px;
@@ -496,7 +496,7 @@
 }
 
 .confirm_box > div {
-  padding: 10px 0;
+  padding-bottom: 10px;
   line-height: 20px;
 }
 

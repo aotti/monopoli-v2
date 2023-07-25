@@ -1,27 +1,27 @@
-function cardsEvent(mods, giliran, tempPlayerPosNow, endTurnMoney, data) {
+function cardsEvent(mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney, data) {
     if(data.cardType == 'kartu_danaUmum') {
-        return danaUmumCards('Dana Umum', mods, giliran, tempPlayerPosNow, endTurnMoney)
+        return danaUmumCards('Dana Umum', mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
     }
     else if(data.cardType == 'kartu_kesempatan') {
-        return kesempatanCards('Kesempatan', mods, giliran, tempPlayerPosNow, endTurnMoney)
+        return kesempatanCards('Kesempatan', mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
     }
 }
 
-function danaUmumCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney) {
+function danaUmumCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney) {
     qS('#pDanaUmum').play();
-    return preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney)
+    return preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
 }
 
-function kesempatanCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney) {
+function kesempatanCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney) {
     qS('#pKesempatan').play();
-    return preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney)
+    return preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
 }
 
-function preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney) {
+function preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney) {
     // random number to pick cards
     const chances = Math.random() * 100
     // pick cards and put into container
-    const cardList = choosingCard(cardEventType, chances, giliran)
+    const cardList = choosingCard(cardEventType, chances, giliran, endTurnMoney)
     // pick a card
     const cardPickIndex = Math.floor(Math.random() * cardList.cards.length)
     const cardPick = cardList.cards[cardPickIndex]
@@ -33,6 +33,7 @@ function preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnM
         cardEventType: cardEventType,
         mods: mods,
         giliran: giliran,
+        playersTurnShape: playersTurnShape,
         tempPlayerPosNow: tempPlayerPosNow,
         endTurnMoney: endTurnMoney,
         cardType: cardType,
@@ -44,9 +45,13 @@ function preparingCards(cardEventType, mods, giliran, tempPlayerPosNow, endTurnM
 
 function checkAndActivateCard(cardsObject) {
     // retrieve data
-    const { cardEventType, mods, giliran, tempPlayerPosNow, endTurnMoney, cardType, cardEffect, cardText } = cardsObject
+    const { mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney, cardType, cardEffect, cardText } = cardsObject
     const cardsEventData = {}
-    const splitEffect = typeof cardEffect === 'number' ? cardEffect : cardEffect.split('-')
+    const splitEffect = (()=>{
+        if(typeof cardEffect === 'number') return cardEffect 
+        else if(typeof cardEffect === 'string') return cardEffect.split('-')
+        else if(Array.isArray(cardEffect)) return cardEffect
+    })()
     // check card type
     switch(cardType) {
         case 'gainMoney':
@@ -63,6 +68,40 @@ function checkAndActivateCard(cardsObject) {
             // create card dialog
             confirmDialog(cardText)
             return cardsEventData
+        case 'buyCity':
+            if(splitEffect.length === 1) {
+                cardsEventData.moneyLeft = endTurnMoney
+                // if no changes on city, just make it null
+                cardsEventData.cities = null
+                // create card dialog
+                confirmDialog(`${cardText}\n---\n${splitEffect[0]}`)
+                return cardsEventData
+            }
+            else if(splitEffect.length === 2) {
+                confirmDialog(`${cardText}\n---\nloading..`)
+                // run buy city dialog after 3 secs
+                setTimeout(() => {
+                    const tempRequiredLandEventData = {
+                        mods: mods,
+                        giliran: giliran,
+                        playersTurnShape: playersTurnShape,
+                        playerDiceMove: tempPlayerPosNow,
+                        playerLaps: +qS('.putaranTeks').innerText.match(/\d+/),
+                        endTurnMoney: endTurnMoney,
+                        playerCities: playersTurnObj[giliran].harta_kota
+                    }
+                    // trigger land event from 
+                    const outerEvent = {
+                        cond: 'stepOnCity',
+                        data: {
+                            type: 'buyCity',
+                            elements: splitEffect
+                        }
+                    }
+                    landEventHandler(tempRequiredLandEventData, null, outerEvent)
+                }, 3000);
+            }
+            break
         case 'sellCity':
             // dont have any city
             if(splitEffect.length === 1) {
@@ -245,7 +284,7 @@ function checkAndActivateCard(cardsObject) {
             return cardsEventData
         case 'miniGame':
             new Promise((resolve, reject) => {
-                if(cardEffect === 'choose_a_coin') {
+                if(splitEffect[0] === 'choose_a_coin') {
                     const coinArray = [1,2,3]
                     // shuffle the coins
                     shuffle(coinArray)
@@ -273,6 +312,64 @@ function checkAndActivateCard(cardsObject) {
                         }
                     }
                 }
+                else if(splitEffect[0] === 'move_or_draw') {
+                    const selectMove = cE('input')
+                    const selectDraw = cE('input')
+                    // required elements for confirm dialog
+                    const { types, buttons, attributes, classes, text } = {
+                        types: fillTheElementsForDialog('button', 2),
+                        buttons: fillTheElementsForDialog([selectMove, selectDraw], null, true),
+                        attributes: fillTheElementsForDialog('class', 2),
+                        classes: fillTheElementsForDialog(['selectMove', 'selectDraw'], null, true),
+                        text: fillTheElementsForDialog(['Maju sampai Start', 'Ambil Kartu'], null, true)
+                    }
+                    // create choice button dialog
+                    confirmDialog(cardText, types, buttons, attributes, classes, text)
+                    for(let button of qSA('.selectMove, .selectDraw')) {
+                        // select a button
+                        button.onclick = (ev) => {
+                            // move to start
+                            if(ev.target.classList[0] === 'selectMove') {
+                                // replace the text without buttons
+                                qS('.confirm_box').innerText = `[Kesempatan]\n${cardText}\n---\nMenuju ke start..`
+                                // start moving 
+                                const destinationPos = 1
+                                const customDadu = (destinationPos > tempPlayerPosNow 
+                                                ? destinationPos - tempPlayerPosNow 
+                                                : (destinationPos + 28) - tempPlayerPosNow)
+                                // trigger the kocok dadu button
+                                kocokDaduTrigger(mods, giliran, customDadu)
+                                qS('.acakDadu').disabled = false
+                                return qS('.acakDadu').click()
+                            }
+                            // draw a card
+                            else if(ev.target.classList[0] === 'selectDraw') {
+                                // replace the text without buttons
+                                qS('.confirm_box').innerText = `[Kesempatan]\n${cardText}\n---\nMengambil kartu..`
+                                setTimeout(() => {
+                                    const tempRequiredLandEventData = {
+                                        mods: mods,
+                                        giliran: giliran,
+                                        playersTurnShape: playersTurnShape,
+                                        playerDiceMove: tempPlayerPosNow,
+                                        playerLaps: +qS('.putaranTeks').innerText.match(/\d+/),
+                                        endTurnMoney: endTurnMoney,
+                                        playerCities: playersTurnObj[giliran].harta_kota
+                                    }
+                                    // trigger land event from 
+                                    const outerEvent = {
+                                        cond: 'drawCard',
+                                        data: {
+                                            type: 'kartu_danaUmum',
+                                            elements: [true, qS('.kartu_danaUmum')]
+                                        }
+                                    }
+                                    return landEventHandler(tempRequiredLandEventData, null, outerEvent)
+                                }, 1000);
+                            }
+                        }
+                    }
+                }
             })
             .then(tempCardsEventData => {
                 const tempRequiredLandEventData = {
@@ -285,6 +382,7 @@ function checkAndActivateCard(cardsObject) {
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
                 landEventHandler(tempRequiredLandEventData, tempCardsEventData)
             })
+            break
         case 'disaster':
             cardsEventData.moneyLeft = endTurnMoney
             // if no changes on city, just make it null
@@ -306,23 +404,22 @@ function checkAndActivateCard(cardsObject) {
     }
 }
 
-function choosingCard(cardEventType, chances, giliran) {
+function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
     const tempCardList = {}
+    console.log(chances);
     // chances < 9
-    if(chances < 9) {
+    if(chances < 99) {
         switch(cardEventType) {
             // dana umum
             case 'Dana Umum':
                 // card list
-                tempCardList.cards = [
-                    'Gaji bulanan sudah cair, Anda mendapatkan 160.000',
-                    'Bayar tagihan listrik & air 100.000',
+                tempCardList.cards = [ 
                     'Menjual 1 kota yang Anda miliki (acak)'
                 ]
                 // card types
-                tempCardList.types = ['gainMoney', 'loseMoney', 'sellCity']
+                tempCardList.types = [ 'sellCity']
                 // card effects
-                tempCardList.effects = [160_000, 100_000, getRandomCity(giliran)]
+                tempCardList.effects = [ getRandomCity(giliran, 'sell')]
                 break
             // kesempatan
             case 'Kesempatan':
@@ -391,6 +488,17 @@ function choosingCard(cardEventType, chances, giliran) {
                 break
             // kesempatan
             case 'Kesempatan':
+                tempCardList.cards = [ 
+                    'Renovasi rumah, bayar 30% dari total uang',
+                    'Anda lari dikejar biawak, mundur 2 langkah',
+                    'Pilih maju sampai start atau ambil kartu dana umum',
+                    'Kartu dadu gaming \u{1F633}',
+                    'Upgrade 1 kota yang anda miliki (acak)'
+                ]
+                // card types
+                tempCardList.types = ['loseMoney', 'moveBackward', 'miniGame', 'specialCard', 'buyCity']
+                // card effects
+                tempCardList.effects = [(endTurnMoney * .3), -2, 'move_or_draw', 'dadu-gaming', getRandomCity(giliran, 'buy')]
                 break
         }
     }
@@ -419,33 +527,36 @@ function choosingCard(cardEventType, chances, giliran) {
         switch(cardEventType) {
             // dana umum
             case 'Dana Umum':
+            // kesempatan
+            case 'Kesempatan':
                 tempCardList.cards = ['Kartu upgrade kota']
                 // card types
                 tempCardList.types = ['specialCard']
                 // card effects
                 tempCardList.effects = ['upgrade-kota']
                 break
-            // kesempatan
-            case 'Kesempatan':
-                break
         }
     }
     return tempCardList
 }
 
-function getRandomCity(giliran) {
+function getRandomCity(giliran, condition) {
     // find city for the card effect 
     const findCities = playerCityList(giliran)
     const randomCityObj = {}
     if(findCities.length > 0) {
-        randomCityObj.index = Math.floor(Math.random() * findCities.length)
-        randomCityObj.name = findCities[randomCityObj.index].classList[0].split('_')[1]
-        randomCityObj.price = +findCities[randomCityObj.index].classList[0].split('_')[3]
-        randomCityObj.result = `${randomCityObj.name}-${randomCityObj.price}`
+        const cityIndex = Math.floor(Math.random() * findCities.length)
+        randomCityObj.name = findCities[cityIndex].classList[0].split('_')[1]
+        randomCityObj.prop = findCities[cityIndex].classList[0].split('_')[2]
+        randomCityObj.price = +findCities[cityIndex].classList[0].split('_')[3]
+        randomCityObj.resultSell = `${randomCityObj.name}-${randomCityObj.price}`
+        randomCityObj.resultBuy = [true, findCities[cityIndex]]
     }
-    else if(findCities.length === 0) 
-        randomCityObj.result = `Anda belum punya kota ${emoji.joy}`
-    return randomCityObj.result
+    else if(findCities.length === 0) {
+        randomCityObj.resultSell = `Anda belum punya kota ${emoji.joy}`
+        randomCityObj.resultBuy = `Anda belum punya kota ${emoji.joy}`
+    }
+    return condition === 'sell' ? randomCityObj.resultSell : randomCityObj.resultBuy
 }
 
 function gambleFreeOrJail(destinationPos, tempPlayerPosNow, mods, giliran) {

@@ -1,4 +1,4 @@
-function landEventHandler(requiredLandEventData, promiseResult = null) {
+function landEventHandler(requiredLandEventData, promiseResult = null, outerEvent = null) {
     // required data if land event happens
     const { 
         mods, giliran, 
@@ -13,13 +13,22 @@ function landEventHandler(requiredLandEventData, promiseResult = null) {
             return resolve(promiseResult)
         }
         // variable to save retrieved data from land event
-        let landEventData = {
+        const landEventData = {
             // the value is to prevent if the player dont get any land event
             moneyLeft: endTurnMoney,
             cities: playerCities
         }
         // when the player step on any land event
-        const getDataAfterLandEvent = steppedOnAnyLand(playersTurnShape, playerLaps)
+        const getDataAfterLandEvent = (()=>{
+            if(outerEvent) {
+                switch(outerEvent.cond) {
+                    case 'stepOnCity':
+                    case 'drawCard':
+                        return steppedOnAnyLand(null, playerLaps, outerEvent.data)
+                }
+            }
+            return steppedOnAnyLand(playersTurnShape, playerLaps)
+        })()
         // if player dont get any land event after stop moving
         if(getDataAfterLandEvent == null) 
             return playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData)
@@ -61,6 +70,7 @@ function landEventHandler(requiredLandEventData, promiseResult = null) {
         switch(dataEvent) {
             // buying city land event
             case 'buyingCity':
+                // remove confirm box after button clicked
                 qS('.confirm_box').remove()
                 landEventData = buyingCityEvent(endTurnMoney, data)
                 // if nothing changes on cities, refill the value
@@ -106,7 +116,7 @@ function landEventHandler(requiredLandEventData, promiseResult = null) {
                 return landEventData
             // cards event
             case 'drawCard':
-                landEventData = cardsEvent(mods, giliran, tempPlayerPosNow, endTurnMoney, data)
+                landEventData = cardsEvent(mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney, data)
                 // if the player is on freeParking/something that need more interaction, return null
                 if(landEventData == null) return
                 // if nothing changes on cities, refill the value

@@ -47,14 +47,23 @@ function cityNameFirstLetter(cityName) {
  * @param {Number} giliran player's turn number 
  * @returns all cities owned by the player
  */
-function playerCityList(giliran, resultCond = null) {
+function playerCityList(giliran, lostCity = null) {
     const allLands = qSA('[class^=kota], [class*=special]')
     // array to contain cities
     const allOwnedCities = []
+    if(lostCity) {
+        // find cities
+        for(let city of allLands) {
+            // if the player username match with any city classlist, insert to container
+            if(city.classList[0].match(lostCity)) 
+                allOwnedCities.push(city)
+        }
+        return allOwnedCities[0]
+    }
     // find cities
     for(let city of allLands) {
         const ownedCityRegex = new RegExp(playersTurn[giliran])
-        // if the player own any city, insert to container
+        // if the player username match with any city classlist, insert to container
         if(city.classList[0].match(ownedCityRegex)) 
             allOwnedCities.push(city)
     }

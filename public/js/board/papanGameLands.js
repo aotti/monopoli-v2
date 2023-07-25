@@ -90,87 +90,34 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
         // land name that we lookin for 
         const landName = land.classList[0].split('_')[1]
         // looking for all lands that have been bought by players
+            const doubleCheckOwner = []
         allPlayersCities.forEach(v => {
             // turn string (data from db) into array
             const splitPerCity = v.harta_kota.split(';')
             for(let splitCity of splitPerCity) {
                 // if city exist in database
-                if(splitCity.match(landName)) {
-                    // place home or hotel on city
-                    // add more price if the player have all the houses from the same row
-                    const oneRowTax = citiesWithOneRowTax.map(v => {return v == landName ? .25 : 0}).filter(i=>i)
-                    // get the lastest city property, ex: tanah,1rumah,2rumah => 2rumah is the lastest property
-                    const propLength = splitCity.split('-')[1].split(',').length
-                    const lastProp = splitCity.split('-')[1].split(',')[propLength-1]
-                    // set innerText on the city, if player have house, then fill this with house emoji
-                    let propText = null
-                    // prepare new classList for each land
-                    const nextPropType = (()=>{
-                        switch(lastProp) {
-                            // if player only buy the land
-                            case 'special':
-                                propText = `(${v.user_id.username})`
-                                return 'special'
-                            case 'tanah':
-                                propText = `(${v.user_id.username})`
-                                return '1rumah'
-                            // if player bought 1 house
-                            case '1rumah':
-                                propText = `${emoji.house}`;
-                                return '2rumah';
-                            // if player bought 2 house
-                            case '2rumah':
-                                propText = `${emoji.house} ${emoji.house}`;
-                                return '2rumah1hotel';
-                            // if player bought 2 house and 1 hotel
-                            case '2rumah1hotel':
-                                propText = `${emoji.house} ${emoji.house} ${emoji.hotel}`;
-                                return 'komplek';
-                        }
-                    })()
-                    // prepare new price for each land
-                    const nextPropPrice = (()=>{
-                        // filter used to remove undefined values in array after map
-                        const baseLandPrice = baseCityPrices.map(v => { if(v.city == landName) return v.price }).filter(i=>i)[0]
-                        // set the price based on city property
-                        switch(lastProp) {
-                            case 'special':
-                                return (baseLandPrice + 10_000);
-                            case 'tanah':
-                                return (baseLandPrice + (baseLandPrice * .10) + (baseLandPrice * oneRowTax));
-                            // if player bought 1 house
-                            case '1rumah':
-                                return (baseLandPrice + (baseLandPrice * .20) + (baseLandPrice * oneRowTax));
-                            // if player bought 2 house
-                            case '2rumah':
-                                return (baseLandPrice + (baseLandPrice * .30) + (baseLandPrice * oneRowTax));
-                            // if player bought 2 house and 1 hotel
-                            case '2rumah1hotel':
-                                return (baseLandPrice + (baseLandPrice * .40) + (baseLandPrice * oneRowTax));
-                        }
-                    })()
-                    // remove current classList and add the new one
-                    land.classList.remove(land.classList[0])
-                    // for special area
-                    if(nextPropType === 'special') 
-                        land.classList.add(`area_${landName}_${nextPropType}_${nextPropPrice}_${v.user_id.username}`)
-                    // for normal city
-                    else 
-                        land.classList.add(`kota_${landName}_${nextPropType}_${nextPropPrice}_${v.user_id.username}`)
-                    // ### ATTR data-owner MUNGKIN KEPAKE NANTI BUAT JUAL KOTA
-                    land.setAttribute('data-owner', `${v.user_id.username} - Rp ${nextPropPrice}`)
-                    land.innerText = `Kota ${cityNameFirstLetter(landName)} \n${propText}` 
+                if(splitCity.split('-')[0] === landName) {
+                    const cityExistObj = {
+                        citiesWithOneRowTax: citiesWithOneRowTax, 
+                        land: land,
+                        landName: landName, 
+                        splitCity: splitCity, 
+                        vUsername: v.user_id.username, 
+                        baseCityPrices: baseCityPrices
+                    }
+                    setHousesAndHotels(cityExistObj)
                 }
-                else {
-                    // if the land already have an owner, then stop
-                    if(land.classList[0].split('_')[4]) return
-                    // if no owner, then continue
+                else if(splitCity.split('-')[0] !== landName) {
+                    // to check if any city classlist owner removed
+                    doubleCheckOwner.push(landName)
+                    // check land type
                     const landType = (()=>{
                         if(land.classList[0].match('area'))
                             return 'special'
                         else if(land.classList[0].match('kota'))
                             return 'kota'
                     })()
+                    // get land base price
                     const landBasePrice = (()=>{
                         for(let land of baseCityPrices) {
                             if(land.city === landName)
@@ -183,10 +130,114 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                     if(landType === 'special') 
                         land.classList.add(`area_${landName}_special_${landBasePrice}`)
                     // for normal city
-                    else if(landType === 'kota')
+                    else if(landType === 'kota') 
                         land.classList.add(`kota_${landName}_tanah_${landBasePrice}`)
+                    land.removeAttribute('data-owner')
+                    land.innerText = `Kota ${cityNameFirstLetter(landName)} Rp ${currencyComma(+landBasePrice)}` 
                 }
             }
         })
+        if(doubleCheckOwner.length === 1) {
+            // get username and harta_kota
+            const myHartaKota = getMyHartaKota(allPlayersCities, doubleCheckOwner[0])
+            // if myHartaKota is undefined, stop
+            if(myHartaKota == null) return
+            // data required to rebuild the lost city
+            const cityExistObj = {
+                citiesWithOneRowTax: citiesWithOneRowTax, 
+                land: playerCityList(null, doubleCheckOwner[0]),
+                landName: doubleCheckOwner[0], 
+                splitCity: myHartaKota.splitCity, 
+                vUsername: myHartaKota.username, 
+                baseCityPrices: baseCityPrices
+            }
+            // rebuild the lost city
+            setHousesAndHotels(cityExistObj)
+        }
+    }
+}
+
+function setHousesAndHotels(cityExistObj) {
+    const { citiesWithOneRowTax, land, landName, splitCity, vUsername, baseCityPrices } = cityExistObj
+    // place home or hotel on city
+    // add more price if the player have all the houses from the same row
+    const oneRowTax = citiesWithOneRowTax.map(v => {return v == landName ? .25 : 0}).filter(i=>i)
+    // get the lastest city property, ex: tanah,1rumah,2rumah => 2rumah is the lastest property
+    const propLength = splitCity.split('-')[1].split(',').length
+    const lastProp = splitCity.split('-')[1].split(',')[propLength-1]
+    // set innerText on the city, if player have house, then fill this with house emoji
+    let propText = null
+    // prepare new classList for each land
+    const nextPropType = (()=>{
+        switch(lastProp) {
+            // if player only buy the land
+            case 'special':
+                propText = `(${vUsername})`
+                return 'special'
+            case 'tanah':
+                propText = `(${vUsername})`
+                return '1rumah'
+            // if player bought 1 house
+            case '1rumah':
+                propText = `${emoji.house}`;
+                return '2rumah';
+            // if player bought 2 house
+            case '2rumah':
+                propText = `${emoji.house} ${emoji.house}`;
+                return '2rumah1hotel';
+            // if player bought 2 house and 1 hotel
+            case '2rumah1hotel':
+                propText = `${emoji.house} ${emoji.house} ${emoji.hotel}`;
+                return 'komplek';
+        }
+    })()
+    // prepare new price for each land
+    const nextPropPrice = (()=>{
+        // filter used to remove undefined values in array after map
+        const baseLandPrice = baseCityPrices.map(v => { if(v.city == landName) return v.price }).filter(i=>i)[0]
+        // set the price based on city property
+        switch(lastProp) {
+            case 'special':
+                return (baseLandPrice + 10_000);
+            case 'tanah':
+                return (baseLandPrice + (baseLandPrice * .10) + (baseLandPrice * oneRowTax));
+            // if player bought 1 house
+            case '1rumah':
+                return (baseLandPrice + (baseLandPrice * .20) + (baseLandPrice * oneRowTax));
+            // if player bought 2 house
+            case '2rumah':
+                return (baseLandPrice + (baseLandPrice * .30) + (baseLandPrice * oneRowTax));
+            // if player bought 2 house and 1 hotel
+            case '2rumah1hotel':
+                return (baseLandPrice + (baseLandPrice * .40) + (baseLandPrice * oneRowTax));
+        }
+    })()
+    // remove current classList and add the new one
+    land.classList.remove(land.classList[0])
+    // for special area
+    if(nextPropType === 'special') 
+        land.classList.add(`area_${landName}_${nextPropType}_${nextPropPrice}_${vUsername}`)
+    // for normal city
+    else 
+        land.classList.add(`kota_${landName}_${nextPropType}_${nextPropPrice}_${vUsername}`)
+    // ### ATTR data-owner MUNGKIN KEPAKE NANTI BUAT JUAL KOTA
+    land.setAttribute('data-owner', `${vUsername} - Rp ${nextPropPrice}`)
+    land.innerText = `Kota ${cityNameFirstLetter(landName)} \n${propText}` 
+}
+
+function getMyHartaKota(allPlayersCities, theLostCity) {
+    for(let player of allPlayersCities) {
+        // find spcific player
+        if(player.user_id.username === myGameData.username) {
+            // get the harta kota
+            const splitPerCity = player.harta_kota.split(';')
+            for(let splitCity of splitPerCity) {
+                // get the lost city
+                if(splitCity.split('-')[0] === theLostCity) {
+                    // return the username and the lost city
+                    return {username: player.user_id.username, splitCity: splitCity}
+                }
+            }
+        }
     }
 }

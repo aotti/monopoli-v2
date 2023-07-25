@@ -64,7 +64,7 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         }
         // run player moves with realtime
         // roll the dice
-        const playerDadu = customDadu || 5
+        const playerDadu = customDadu || 4
         // set prices for kota khusus and terkutuk
         pricesForSpecialAndCursed(playerDadu, mods)
         // roll the branch
