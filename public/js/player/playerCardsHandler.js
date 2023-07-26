@@ -183,15 +183,16 @@ function checkAndActivateCard(cardsObject) {
                         // set fine
                         const fineAmount = endTurnMoney * .90
                         setLocStorage('fineAmount', fineAmount)
-                        // start moving 
-                        const destinationPos = 10
-                        const customDadu = (destinationPos > tempPlayerPosNow 
-                                        ? destinationPos - tempPlayerPosNow 
-                                        : (destinationPos + 28) - tempPlayerPosNow)
+                        // set destination and playerDadu 
+                        const penjaraPos = 10
+                        const customDaduPenjara = (penjaraPos > tempPlayerPosNow 
+                                        ? penjaraPos - tempPlayerPosNow 
+                                        : (penjaraPos + 28) - tempPlayerPosNow)
                         // trigger the kocok dadu button
-                        kocokDaduTrigger(mods, giliran, customDadu)
+                        kocokDaduTrigger(mods, giliran, customDaduPenjara)
                         qS('.acakDadu').disabled = false
-                        return qS('.acakDadu').click()
+                        qS('.acakDadu').click()
+                        break
                     case 'aduNasib':
                         const freeOrJail = Math.random() * 100
                         // create parking dialog
@@ -201,7 +202,7 @@ function checkAndActivateCard(cardsObject) {
                         // free parking
                         if(freeOrJail < 51) {
                             // start moving 
-                            return gambleFreeOrJail(24, tempPlayerPosNow, mods, giliran)
+                            gambleFreeOrJail(24, tempPlayerPosNow, mods, giliran)
                         }
                         // prison
                         else if(freeOrJail >= 51 && freeOrJail < 100) {
@@ -209,8 +210,9 @@ function checkAndActivateCard(cardsObject) {
                             const fineAmount = endTurnMoney * .90
                             setLocStorage('fineAmount', fineAmount)
                             // start moving 
-                            return gambleFreeOrJail(10, tempPlayerPosNow, mods, giliran)
+                            gambleFreeOrJail(10, tempPlayerPosNow, mods, giliran)
                         }
+                        break
                     case 'kotaOrangLain':
                         const allLands = qSA('[class^=kota], [class*=special]')
                         // array for cities number (land number)
@@ -260,6 +262,15 @@ function checkAndActivateCard(cardsObject) {
                         qSA('.parkingButtons')[autoClick].click()
                         for(let button of qSA('.parkingButtons'))
                             button.disabled = true
+                        break
+                    case 'oneStep':
+                        // set playerDadu 
+                        const customDadu = 1
+                        // trigger the kocok dadu button
+                        kocokDaduTrigger(mods, giliran, customDadu)
+                        qS('.acakDadu').disabled = false
+                        qS('.acakDadu').click()
+                        break
                 }
             }
             return
@@ -331,7 +342,7 @@ function checkAndActivateCard(cardsObject) {
                             // move to start
                             if(ev.target.classList[0] === 'selectMove') {
                                 // replace the text without buttons
-                                qS('.confirm_box').innerText = `[Kesempatan]\n${cardText}\n---\nMenuju ke start..`
+                                qS('.confirm_box').innerText = `\n${cardText}\n---\nMenuju ke start..`
                                 // start moving 
                                 const destinationPos = 1
                                 const customDadu = (destinationPos > tempPlayerPosNow 
@@ -345,7 +356,7 @@ function checkAndActivateCard(cardsObject) {
                             // draw a card
                             else if(ev.target.classList[0] === 'selectDraw') {
                                 // replace the text without buttons
-                                qS('.confirm_box').innerText = `[Kesempatan]\n${cardText}\n---\nMengambil kartu..`
+                                qS('.confirm_box').innerText = `\n${cardText}\n---\nMengambil kartu..`
                                 setTimeout(() => {
                                     const tempRequiredLandEventData = {
                                         mods: mods,
@@ -366,6 +377,44 @@ function checkAndActivateCard(cardsObject) {
                                     }
                                     return landEventHandler(tempRequiredLandEventData, null, outerEvent)
                                 }, 1000);
+                            }
+                        }
+                    }
+                }
+                else if(splitEffect[0] === 'money_or_move') {
+                    const selectMoney = cE('input')
+                    const selectMove = cE('input')
+                    // required elements for confirm dialog
+                    const { types, buttons, attributes, classes, text } = {
+                        types: fillTheElementsForDialog('button', 2),
+                        buttons: fillTheElementsForDialog([selectMoney, selectMove], null, true),
+                        attributes: fillTheElementsForDialog('class', 2),
+                        classes: fillTheElementsForDialog(['selectMoney', 'selectMove'], null, true),
+                        text: fillTheElementsForDialog([`Ambil Uang ${emoji.pray}`, `Maju 2 langkah ${emoji.sunglas}`], null, true)
+                    }
+                    // create choice button dialog
+                    confirmDialog(cardText, types, buttons, attributes, classes, text)
+                    for(let button of qSA('.selectMoney, .selectMove')) {
+                        button.onclick = (ev) => {
+                            // jika anda jadi maling
+                            if(ev.target.value.match('Uang')) {
+                                // replace the text without buttons
+                                qS('.confirm_box').innerText = `\n${cardText}\n---\nHaram nian lanang ko..`
+                                cardsEventData.moneyLeft = endTurnMoney + 50_000
+                                // if no changes on city, just make it null
+                                cardsEventData.cities = null
+                                return resolve(cardsEventData)
+                            }
+                            // jika iman anda kuat
+                            else if(ev.target.value.match('Maju')) {
+                                // replace the text without buttons
+                                qS('.confirm_box').innerText = `\n${cardText}\n---\nOrang baik ${emoji.sweatJoy} ${emoji.pray}`
+                                // set playerDadu 
+                                const customDadu = 2
+                                // trigger the kocok dadu button
+                                kocokDaduTrigger(mods, giliran, customDadu)
+                                qS('.acakDadu').disabled = false
+                                return qS('.acakDadu').click()
                             }
                         }
                     }
@@ -408,18 +457,20 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
     const tempCardList = {}
     console.log(chances);
     // chances < 9
-    if(chances < 99) {
+    if(chances < 9) {
         switch(cardEventType) {
             // dana umum
             case 'Dana Umum':
                 // card list
                 tempCardList.cards = [ 
-                    'Menjual 1 kota yang Anda miliki (acak)'
+                    'Gaji bulanan sudah cair, anda mendapatkan 160.000',
+                    'Bayar tagihan listrik & air 100.000',
+                    'Menjual 1 kota yang dimiliki (acak)'
                 ]
                 // card types
-                tempCardList.types = [ 'sellCity']
+                tempCardList.types = ['gainMoney', 'loseMoney', 'sellCity']
                 // card effects
-                tempCardList.effects = [ getRandomCity(giliran, 'sell')]
+                tempCardList.effects = [160_000, 100_000, getRandomCity(giliran, 'sell')]
                 break
             // kesempatan
             case 'Kesempatan':
@@ -503,7 +554,7 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
         }
     }
     // chances >= 51 && chances < 95
-    else if(chances >= 51 && chances < 95) {
+    else if(chances >= 1 && chances < 95) {
         switch(cardEventType) {
             // dana umum
             case 'Dana Umum':
@@ -519,6 +570,15 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
                 break
             // kesempatan
             case 'Kesempatan':
+                tempCardList.cards = [
+                    'Kaki anda tersandung, maju 1 langkah',
+                    'Anda menemukan uang 30.000 di kantong celana',
+                    'Anda menemukan uang 50.000 di jalan, ambil uang atau maju 2 langkah'
+                ]
+                // card types
+                tempCardList.types = ['moveForward', 'gainMoney', 'miniGame']
+                // card effects
+                tempCardList.effects = ['auto-oneStep', 30_000, 'money_or_move']
                 break
         }
     }

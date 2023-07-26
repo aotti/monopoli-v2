@@ -137,11 +137,10 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
                 }
             }
         })
+        // if theres a city that already bought but the classlist and text are gone
         if(doubleCheckOwner.length === 1) {
             // get username and harta_kota
             const myHartaKota = getMyHartaKota(allPlayersCities, doubleCheckOwner[0])
-            // if myHartaKota is undefined, stop
-            if(myHartaKota == null) return
             // data required to rebuild the lost city
             const cityExistObj = {
                 citiesWithOneRowTax: citiesWithOneRowTax, 
@@ -227,16 +226,13 @@ function setHousesAndHotels(cityExistObj) {
 
 function getMyHartaKota(allPlayersCities, theLostCity) {
     for(let player of allPlayersCities) {
-        // find spcific player
-        if(player.user_id.username === myGameData.username) {
-            // get the harta kota
-            const splitPerCity = player.harta_kota.split(';')
-            for(let splitCity of splitPerCity) {
-                // get the lost city
-                if(splitCity.split('-')[0] === theLostCity) {
-                    // return the username and the lost city
-                    return {username: player.user_id.username, splitCity: splitCity}
-                }
+        // get the harta kota
+        const splitPerCity = player.harta_kota.split(';')
+        for(let splitCity of splitPerCity) {
+            // get the lost city
+            if(splitCity.split('-')[0] === theLostCity) {
+                // return the username and the lost city
+                return {username: player.user_id.username, splitCity: splitCity}
             }
         }
     }
