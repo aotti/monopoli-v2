@@ -15,7 +15,8 @@ const emoji = {
     warning: '\u{2755}',
     joy: '\u{1F923}',
     sweatJoy: '\u{1F605}',
-    sob: '\u{1F62D}'
+    sob: '\u{1F62D}',
+    cowboy: '\u{1F920}'
 }
 // saving the user data
 const myGameData = {
@@ -50,16 +51,27 @@ const myPrisonCounter = {
     username: null,
     counter: null
 }
-// get game status
-getGameStatus()
-// create monopoly board
-createBoard()
-// create game buttons
-gameButtons()
-// auto login if uuid still in localStorage
-playerAutoLogin()
-// check game status before deciding the turn 
-// for each player and set up the game
-checkGameStatus()
-// resume the game if a player need to reload the page
-allPlayersLastPos()
+gameStatusCounter = 0
+const gameStatusInterval = setInterval(() => {
+    if(gameStatusCounter < 1) {
+        // get game status
+        getGameStatus()
+    }
+    else if(gameStatusCounter >= 1) {
+        clearInterval(gameStatusInterval)
+        delete gameStatusCounter
+        // create monopoly board
+        createBoard()
+        // create game buttons
+        gameButtons()
+        // auto login if uuid still in localStorage
+        playerAutoLogin()
+        // check game status before deciding the turn 
+        // for each player and set up the game
+        checkGameStatus()
+        // resume the game if a player need to reload the page
+        allPlayersLastPos()
+        return
+    }
+    gameStatusCounter++
+}, 500);

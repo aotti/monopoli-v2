@@ -85,6 +85,40 @@ class MonopoliRepo {
         .catch(err => catchResponse(res, err, 'Monopoli.getModsDataRepo'))
     }
 
+    changeModsDataRepo(req, res) {
+        const { username, boardShape, moneyStart, moneyLose, curseMin, curseMax } = req.body
+        // TABLE = mods
+        // required data for query
+        const queryObject = {
+            table: 'mods',
+            // multiple where
+            multipleWhere: false,
+            whereColumn: 'id',
+            whereValue: 1,
+            get updateColumn() {
+                return {
+                    board_shape: boardShape,
+                    money_start: moneyStart,
+                    money_lose: moneyLose,
+                    curse_min: curseMin,
+                    curse_max: curseMax
+                } 
+            }
+        }
+        // if non admin player trying to change mods, return error
+        if(username !== 'dengkul') {
+            return catchResponse(res, 'this user is not admin', 'Monopoli.changeModsDataRepo 1')
+        }
+        // update mods data
+        return newPromise(updateData(req, res, queryObject))
+        .then(() => {
+            // get all player data
+            return newPromise(selectOne(req, res, queryObject))
+            .catch(err => catchResponse(res, err, 'Monopoli.changeModsDataRepo 3'))
+        })
+        .catch(err => catchResponse(res, err, 'Monopoli.changeModsDataRepo 2'))
+    }
+
     playerJoinedRepo(req, res) {
         // TABLE = prepares
         const {randNumber, username} = req.body

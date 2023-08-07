@@ -10,8 +10,14 @@ function createBoard() {
         const mods = [result.data[0].board_shape, result.data[0].branch,
                     result.data[0].money_start, result.data[0].money_lose, 
                     result.data[0].curse_min, result.data[0].curse_max]
+        // remove admin setting if no uuid
         // interact with game buttons 
-        interactWithButtons(result.data)
+        // if the game is over
+        if(qS('#gameStatus').style.background !== 'lightgrey') 
+            interactWithButtons(result.data, qS('#gameStatus').style.background)
+        // other than game over
+        else 
+            interactWithButtons(result.data)
         // set board shape
         if(mods[0] == 'persegiPanjangV1')
             persegiPanjangV1();

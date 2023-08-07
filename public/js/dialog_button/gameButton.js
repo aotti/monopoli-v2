@@ -302,7 +302,7 @@ function interactWithButtons(mods, gameStatus = null) {
             removeDialog(dialogWrapper, dialogInfo)
         }
     }
-    // profil dialog
+    // profil dialog and logout button
     qS('#cekProfil').onclick = ()=>{
         if(qS('.dialog_info')) return
         const papanGame = qS('#papan_game')
@@ -357,18 +357,275 @@ function interactWithButtons(mods, gameStatus = null) {
         }
         // logout account
         qS('#logoutProfilButton').onclick = (ev) => {
+            // check if player is already logged in
             if(getLocStorage('uuid') == null) {
                 removeDialog(dialogWrapper, dialogInfo)
-                return errorNotification('anda belum login')
+                errorNotification('Anda belum login')
+                return feedbackTurnOff()
             }
-            // ### HANYA BISA LOGOUT JIKA SUDAH SURRENDER / GAME STATUS != PLAYING
+            // check if player is not surrender/lose yet
+            const findSurrender = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
+            // player exist
+            if(findSurrender > -1) {
+                const surrendMoney = playersTurnObj[findSurrender].harta_uang
+                // if the player money still doesnt meet req for surrend/lose
+                if(surrendMoney > -mods[0].money_lose) {
+                    removeDialog(dialogWrapper, dialogInfo)
+                    errorNotification('Klik [udahan dulu lah] di setting kalo mau logout')
+                    return feedbackTurnOff()
+                }
+            }
+            // when meet all reqs, player will be able to logout
             ev.target.disabled = true
             playerLogout()
+        }
+    }
+    // admin settings
+    if(qS('#adminSetting')) {
+        qS('#adminSetting').onclick = ()=>{
+            if(qS('.dialog_info')) return
+            const papanGame = qS('#papan_game')
+            // create wrapper and dialog container
+            const dialogWrapper = cE('div')
+            const dialogInfo = cE('div')
+            dialogWrapper.classList.add('dialog_wrapper')
+            dialogInfo.classList.add('dialog_info')
+            // append wrapper and dialog container
+            dialogWrapper.appendChild(dialogInfo)
+            papanGame.appendChild(dialogWrapper)
+            // admin elements
+            // admin title
+            const titleModsDiv = cE('div')
+            const titleModsSpan = cE('h3')
+            appendGameDialogBoxesOrButtonsToBoard(
+                false, true,
+                ['div', 'div', 'span'],
+                [dialogInfo, titleModsDiv, titleModsSpan],
+                [null, 'class', 'none'],
+                [null, 'dialogTitle', null],
+                [null, null, 'Admin Setting']
+            )
+            // change mods button
+            const editModsSpan = cE('div')
+            const editModsTeks = cE('span')
+            const editModsButton = cE('input')
+            appendGameDialogBoxesOrButtonsToBoard(
+                // 2nd container
+                false, true, 
+                // element types
+                ['div', 'div', 'span', 'button'],
+                // elements (1st element must be a container, 2nd optional)
+                [dialogInfo, editModsSpan, editModsTeks, editModsButton],
+                // attribute types
+                [null, 'class', 'class', 'class'],
+                // attribute values
+                [null, 'editModsSpan', 'editModsTeks', 'editModsButton'],
+                // innerText
+                [null, null, 'Edit Mods', 'Edit']
+            )
+            // reset game status button
+            const gameStatusSpan = cE('div')
+            const gameStatusTeks = cE('span')
+            const gameStatusButton = cE('input')
+            appendGameDialogBoxesOrButtonsToBoard(
+                // 2nd container
+                false, true, 
+                // element types
+                ['div', 'div', 'span', 'button'],
+                // elements (1st element must be a container, 2nd optional)
+                [dialogInfo, gameStatusSpan, gameStatusTeks, gameStatusButton],
+                // attribute types
+                [null, 'class', 'class', 'class'],
+                // attribute values
+                [null, 'gameStatusSpan', 'gameStatusTeks', 'gameStatusButton'],
+                // innerText
+                [null, null, 'Game Status', 'Reset to unready']
+            )
+            // reset table player data
+            const playerTableSpan = cE('div')
+            const playerTableTeks = cE('span')
+            const playerTableButton = cE('input')
+            appendGameDialogBoxesOrButtonsToBoard(
+                // 2nd container
+                false, true, 
+                // element types
+                ['div', 'div', 'span', 'button'],
+                // elements (1st element must be a container, 2nd optional)
+                [dialogInfo, playerTableSpan, playerTableTeks, playerTableButton],
+                // attribute types
+                [null, 'class', 'class', 'class'],
+                // attribute values
+                [null, 'playerTableSpan', 'playerTableTeks', 'playerTableButton'],
+                // innerText
+                [null, null, 'Player Table', 'Reset the table']
+            )
+            // setting status
+            const settingStatusSpan = cE('div')
+            const settingStatusTeks = cE('span')
+            const settingStatusInput = cE('input')
+            settingStatusInput.readOnly = true
+            appendGameDialogBoxesOrButtonsToBoard(
+                // 2nd container
+                false, true, 
+                // element types
+                ['div', 'div', 'span', 'text'],
+                // elements (1st element must be a container, 2nd optional)
+                [dialogInfo, settingStatusSpan, settingStatusTeks, settingStatusInput],
+                // attribute types
+                [null, 'class', 'class', 'class'],
+                // attribute values
+                [null, 'settingStatusSpan', 'settingStatusTeks', 'settingStatusInput'],
+                // innerText
+                [null, null, 'Setting Status', 'none']
+            )
+            // create close button
+            const closeAdminDiv = cE('div')
+            const closeAdminButton = cE('input')
+            appendGameDialogBoxesOrButtonsToBoard(
+                false, true,
+                ['div', 'div', 'button'],
+                [dialogInfo, closeAdminDiv, closeAdminButton],
+                [null, 'class', 'id'],
+                [null, 'closeAdmin', 'closeAdminButton'],
+                [null, null, 'Tutup']
+            )
+            // close dialog
+            closeAdminButton.onclick = () => {
+                removeDialog(dialogWrapper, dialogInfo)
+            }
+            // edit mods button
+            editModsButton.onclick = () => {
+                dialogInfo.style.left = '20%'
+                const getEditModsElements = editModsElements(dialogWrapper)
+                // board type
+                appendGameDialogBoxesOrButtonsToBoard(
+                    false, true,
+                    getEditModsElements.boardType.elementTypes,
+                    getEditModsElements.boardType.elements,
+                    getEditModsElements.boardType.attrTypes,
+                    getEditModsElements.boardType.attrs,
+                    getEditModsElements.boardType.textValues
+                )
+                // money start
+                appendGameDialogBoxesOrButtonsToBoard(
+                    false, true,
+                    getEditModsElements.moneyStart.elementTypes,
+                    getEditModsElements.moneyStart.elements,
+                    getEditModsElements.moneyStart.attrTypes,
+                    getEditModsElements.moneyStart.attrs,
+                    getEditModsElements.moneyStart.textValues
+                )
+                // money lose
+                appendGameDialogBoxesOrButtonsToBoard(
+                    false, true,
+                    getEditModsElements.moneyLose.elementTypes,
+                    getEditModsElements.moneyLose.elements,
+                    getEditModsElements.moneyLose.attrTypes,
+                    getEditModsElements.moneyLose.attrs,
+                    getEditModsElements.moneyLose.textValues
+                )
+                // curse min
+                appendGameDialogBoxesOrButtonsToBoard(
+                    false, true,
+                    getEditModsElements.curseMin.elementTypes,
+                    getEditModsElements.curseMin.elements,
+                    getEditModsElements.curseMin.attrTypes,
+                    getEditModsElements.curseMin.attrs,
+                    getEditModsElements.curseMin.textValues
+                )
+                // curse max
+                appendGameDialogBoxesOrButtonsToBoard(
+                    false, true,
+                    getEditModsElements.curseMax.elementTypes,
+                    getEditModsElements.curseMax.elements,
+                    getEditModsElements.curseMax.attrTypes,
+                    getEditModsElements.curseMax.attrs,
+                    getEditModsElements.curseMax.textValues
+                )
+                // save button
+                appendGameDialogBoxesOrButtonsToBoard(
+                    false, true,
+                    getEditModsElements.saveMods.elementTypes,
+                    getEditModsElements.saveMods.elements,
+                    getEditModsElements.saveMods.attrTypes,
+                    getEditModsElements.saveMods.attrs,
+                    getEditModsElements.saveMods.textValues
+                )
+                qS('#saveModsButton').onclick = () => {
+                    const modsChanges = [
+                        qS('.editModsBoardEl').value,
+                        qS('.editModsMoneyStartEl').value,
+                        qS('.editModsMoneyLoseEl').value,
+                        qS('.editModsCurseMinEl').value,
+                        qS('.editModsCurseMaxEl').value
+                    ]
+                    const modsConfirm = `
+                        Board Type    > ${modsChanges[0]}
+                        Money Start  > Rp ${currencyComma(modsChanges[1])}
+                        Money Lose  > Rp -${currencyComma(modsChanges[2])}
+                        Curse Range > ${modsChanges[3]} ~ ${modsChanges[4]}%
+    
+                        Are you sure?
+                    `
+                    const jsonData = {
+                        username: myGameData.username,
+                        boardShape: modsChanges[0],
+                        moneyStart: modsChanges[1],
+                        moneyLose: modsChanges[2],
+                        curseMin: modsChanges[3],
+                        curseMax: modsChanges[4]
+                    }
+                    if(confirm(modsConfirm)) {
+                        settingStatusInput.style.background = 'lightblue'
+                        settingStatusInput.value = 'loading..'
+                        fetcher('/mods', 'PATCH', jsonData)
+                        .then(result => {
+                            if(result.status !==  200) {
+                                settingStatusInput.style.background = 'coral'
+                                return settingStatusInput.value = 'you are not admin'
+                            }
+                            settingStatusInput.style.background = 'limegreen'
+                            settingStatusInput.value = 'edit mods success'
+                            return fetcherResults(result)
+                        })
+                        .catch(err => {
+                            return errorCapsule(err, anErrorOccured)
+                        })
+                    }
+                }
+            }
+            // reset game status function
+            gameStatusButton.onclick = () => {
+                if(gameStatus === null || gameStatus === 'unready') {
+                    settingStatusInput.style.background = 'coral'
+                    return settingStatusInput.value = 'unable to reset status'
+                }
+                settingStatusInput.style.background = 'lightblue'
+                settingStatusInput.value = 'loading..'
+                // reset function
+                resetter.resetGameStatus()
+                // ==============
+                const startInterval = setInterval(() => {
+                    if(qS('#gameStatus').style.background === 'lightgrey') {
+                        clearInterval(startInterval)
+                        settingStatusInput.style.background = 'limegreen'
+                        return settingStatusInput.value = 'reset status success'
+                    }
+                }, 1000);
+            }
+            // reset player table function
+            playerTableButton.onclick = () => {
+                settingStatusInput.style.background = 'lightblue'
+                settingStatusInput.value = 'loading..'
+                // reset function
+                return resetter.resetPlayerTable(settingStatusInput)
+            }
         }
     }
     // register & login dialog
     for(let reglog of qSA('.register, .login')) {
         reglog.onclick = (ev)=>{
+            // if getLocStorage('uuid') exist, that mean the player is alr logged in
             if(qS('.dialog_info') || getLocStorage('uuid')) return
             const papanGame = qS('#papan_game')
             // create wrapper and dialog container
@@ -518,10 +775,6 @@ function interactWithButtons(mods, gameStatus = null) {
     if(gameStatus == 'playing') {
         // setting button
         qS('.setting_button').onclick = ()=>{
-            qS('.uangPlayer').classList.add('plus')
-            setTimeout(() => {
-                qS('.uangPlayer').classList.remove('plus')
-            }, 2000);
             if(qS('.setting_menu').style.display == 'none' || qS('.setting_menu').style.display == '') {
                 qS('.setting_menu').style.display = 'block';
                 qS('.setting_arrow').style.display = 'block';
@@ -559,8 +812,101 @@ function interactWithButtons(mods, gameStatus = null) {
             }
         }
     }
+}
 
-    qS('#clearStorage').onclick = ()=>{
-        localStorage.clear()
+function editModsElements(dialogWrapper) {
+    function rangeInputAttr(input, min, max, step) {
+        input.type = 'range'
+        input.min = min
+        input.max = max
+        input.step = step
     }
+    const editModsDialog = cE('div')
+    editModsDialog.classList.add('editModsDialog')
+    dialogWrapper.appendChild(editModsDialog)
+    // board
+    const editModsBoardSpan = cE('h4')
+    const editModsBoardEl = (()=>{
+        const comboBox = cE('select')
+        const optionValues = ['persegiPanjangV1', 'persegiPanjangV2', 'anggapSegitiga', 'bercabangDua']
+        for(let val of optionValues) {
+            const option = cE('option')
+            option.value = val
+            option.innerText = val
+            comboBox.appendChild(option)
+        }
+        return comboBox
+    })()
+    // money start
+    const editModsMoneyStartSpan = cE('h4')
+    const editModsMoneyStartEl = cE('input')
+    rangeInputAttr(editModsMoneyStartEl, 25000, 125000, 25000)
+    // money lose
+    const editModsMoneyLoseSpan = cE('h4')
+    const editModsMoneyLoseEl = cE('input')
+    rangeInputAttr(editModsMoneyLoseEl, 25000, 75000, 25000)
+    // curse min
+    const editModsCurseMinSpan = cE('h4')
+    const editModsCurseMinEl = cE('input')
+    rangeInputAttr(editModsCurseMinEl, 10, 20, 2.5)
+    // curse max
+    const editModsCurseMaxSpan = cE('h4')
+    const editModsCurseMaxEl = cE('input')
+    rangeInputAttr(editModsCurseMaxEl, 20, 30, 2.5) 
+    // save mods
+    const saveModsDiv = cE('div')
+    const saveModsButton = cE('input')
+    // required edit mods element, class & value
+    // ### BELUM ADA TOMBOL SAVE UNTUK UBAH MODS
+    const editModsObj = {
+        // board type
+        boardType: {
+            elementTypes: ['div', 'span', 'combox'],
+            elements: [editModsDialog, editModsBoardSpan, editModsBoardEl],
+            attrTypes: [null, 'none', 'class-only'],
+            attrs: [null, null, 'editModsBoardEl'],
+            textValues: [null, 'Board Type', null]
+        },
+        // money start
+        moneyStart: {
+            elementTypes: ['div', 'span', 'range'],
+            elements: [editModsDialog, editModsMoneyStartSpan, editModsMoneyStartEl],
+            attrTypes: [null, 'none', 'class'],
+            attrs: [null, null, 'editModsMoneyStartEl'],
+            textValues: [null, 'Money Start', null]
+        },
+        // money lose
+        moneyLose: {
+            elementTypes: ['div', 'span', 'range'],
+            elements: [editModsDialog, editModsMoneyLoseSpan, editModsMoneyLoseEl],
+            attrTypes: [null, 'none', 'class'],
+            attrs: [null, null, 'editModsMoneyLoseEl'],
+            textValues: [null, 'Money Lose', null]
+        },
+        // curse min
+        curseMin: {
+            elementTypes: ['div', 'span', 'range'],
+            elements: [editModsDialog, editModsCurseMinSpan, editModsCurseMinEl],
+            attrTypes: [null, 'none', 'class'],
+            attrs: [null, null, 'editModsCurseMinEl'],
+            textValues: [null, 'Curse Min', null]
+        },
+        // curse max
+        curseMax: {
+            elementTypes: ['div', 'span', 'range'],
+            elements: [editModsDialog, editModsCurseMaxSpan, editModsCurseMaxEl],
+            attrTypes: [null, 'none', 'class'],
+            attrs: [null, null, 'editModsCurseMaxEl'],
+            textValues: [null, 'Curse Max', null]
+        },
+        // curse max
+        saveMods: {
+            elementTypes: ['div', 'div', 'button'],
+            elements: [editModsDialog, saveModsDiv, saveModsButton],
+            attrTypes: [null, 'class', 'id'],
+            attrs: [null, 'saveMods', 'saveModsButton'],
+            textValues: [null, null, 'Save']
+        }
+    }
+    return editModsObj
 }

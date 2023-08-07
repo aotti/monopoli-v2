@@ -26,7 +26,7 @@ function getDiceNumber() {
         const pickNumber = Math.floor(Math.random() * daduParts.one.number.length)
         return daduParts.one.number[pickNumber]
     }
-    else if(daduChance >= daduParts.one.chance && daduChance <= daduParts.two.chance) {
+    else if(daduChance > daduParts.one.chance && daduChance <= daduParts.two.chance) {
         const pickNumber = Math.floor(Math.random() * daduParts.two.number.length)
         return daduParts.two.number[pickNumber]
     }
@@ -64,7 +64,7 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         }
         // run player moves with realtime
         // roll the dice
-        const playerDadu = customDadu || 4
+        const playerDadu = customDadu || getDiceNumber()
         // set prices for kota khusus and terkutuk
         pricesForSpecialAndCursed(playerDadu, mods)
         // roll the branch
@@ -249,12 +249,18 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
 }
 
 // ends player turn then send data to server
-function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventData) {
+function playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEventData) {
     // land event data
     // moneyLeft and cities = must have value
     const { moneyLeft, cities, cityOwner, cityTaxAmount, imprisoned, cards } = returnedLandEventData
     // choose next player
-    const nextPlayer = (giliran + 1) % playersTurnId.length
+    const nextPlayer = (()=>{
+        for(let i in playersTurn) {
+            const nextPlayerMoney = checkNextPlayer(giliran, +i)
+            if(nextPlayerMoney[0] >= -mods[0].money_lose) 
+                return nextPlayerMoney[1]
+        }
+    })()
     // payload
     const jsonData = {
         user_id: myGameData.id,
@@ -283,6 +289,15 @@ function playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventDat
     .catch(err => {
         return errorCapsule(err, anErrorOccured)
     })
+}
+
+// the end of the game
+function gameOver(theLastPlayer) {
+    updateGameStatus('done')
+    qS('#pGameSelesai').play();
+    qS('.acakDaduTeks').innerText = 'Selesai'
+    // set game over text
+    qS('.urutanGiliran').innerText = `Orang yang terakhir berdiri:\n${emoji.sweatJoy} ${theLastPlayer} ${emoji.cowboy}`
 }
 
 // data for sending tax to the city owner
@@ -315,7 +330,14 @@ function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney
         }
         // getDiceMove with value 0 to prevent player from moving
         if(playersTurnShape.id == myGameData.username && playersTurn[giliran] == myGameData.username)
-            playerTurnEnd(giliran, getDiceMove(mods, playerPosNow, 0), playerLaps, prisonerData)
+            playerTurnEnd(mods, giliran, getDiceMove(mods, playerPosNow, 0), playerLaps, prisonerData)
         return 'stopMoves'
     }
+}
+
+function checkNextPlayer(giliran, increment = 0) {
+    const tempNextGiliran = (giliran + (1 + increment)) % playersTurnId.length
+    const tempNextPlayerIndex = playersTurnObj.map(v => {return v.username}).indexOf(playersTurn[tempNextGiliran])
+    const tempNextPlayerMoney = playersTurnObj[tempNextPlayerIndex].harta_uang
+    return [tempNextPlayerMoney, tempNextGiliran]
 }

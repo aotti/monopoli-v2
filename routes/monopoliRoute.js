@@ -18,6 +18,7 @@ router
     .post('/moveplayer', validateUUIDv4, Monopoli.playerMoving)
 // patch
 router
+    .patch('/mods', validateUUIDv4, Monopoli.changeModsData)
     .patch('/gamestatus', validateUUIDv4, Monopoli.updateGameStatus)
     .patch('/forcestart', validateUUIDv4, validatePlayerForcing, Monopoli.forceStart)
     .patch('/turnend', validateUUIDv4, validatePlayerData, Monopoli.playerTurnEnd)

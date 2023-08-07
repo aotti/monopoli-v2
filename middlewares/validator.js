@@ -2,7 +2,6 @@ const { newResponse, isVariableAppropriate, isTheLengthAppropriate } = require('
 const stringType = 'string'
 const numberType = 'number'
 const booleanType = 'boolean'
-const objectType = 'object'
 const uuidv4Regex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 
 function validatePlayerJoined(req, res, next) {

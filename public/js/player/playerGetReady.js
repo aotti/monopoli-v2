@@ -216,13 +216,8 @@ function createPlayersAndGetReady(mods, gameStatus) {
             feedbackTurnOn('Orang curang kuburannya di meikarta')
             return feedbackTurnOff()
         }
-        // temp var to decide player turns
-        let tempGiliran = null
-        for(let p in playersTurn) {
-            // set player turn based on array index
-            if(playersTurn[p] == myGameData.username)
-                tempGiliran = +p
-        }
+        // tempGiliran to decide player turns
+        const tempGiliran = playersTurn.indexOf(myGameData.username)
         // payload
         // mods need index 0 to use, ex: mods[0].branch / mods[0].board_shape
         const jsonData = {
@@ -237,6 +232,7 @@ function createPlayersAndGetReady(mods, gameStatus) {
             penjara: false,
             putaran: 1
         }
+        console.log(jsonData);
         // send data to server
         fetcher(`/ready`, 'POST', jsonData)
         .then(result => {
@@ -322,7 +318,7 @@ function gettingReady(readyPlayers, mods) {
                 // set laps text
                 putaranTeks.childNodes[0].nodeValue = `Putaran 1`
                 // enable kocok dadu for the current player
-                kocokDaduToggle(0, mods)
+                kocokDaduToggle(mods, 0)
             }
         }, 1000);
     }

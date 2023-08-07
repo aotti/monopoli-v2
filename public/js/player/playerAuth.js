@@ -43,7 +43,7 @@ function playerRegisterOrLogin(type, targetButton) {
         password: type == 'register' ? qS('#passwordReg') : qS('#passwordLog'),
         confirmPass: type == 'register' ? qS('#confirmPasswordReg') : null
     } 
-    // filter status for error notif
+    // filter status to save if the username and password type is correct/no
     const filterStatus = {
         username: false,
         password: false,
@@ -53,7 +53,7 @@ function playerRegisterOrLogin(type, targetButton) {
     let getFilterStatus = filterRegisterLogin(
         // input data
         filterData, 
-        // regex
+        // regex, array[0] for username (only letter) array[1] for password (letter & number)
         [/^[a-zA-Z]+$/, /^[a-zA-Z0-9]+$/], 
         // label elements
         type == 'register' ? 
@@ -164,6 +164,9 @@ function playerAutoLogin() {
     if(getLocStorage('uuid')) {
         return fetcher('/autologin', 'GET')
         .then(result => {
+            // delete admin setting if player not logged in
+            if(result.status === 404 && myGameData.username === null) 
+                qS('#adminSetting').remove()
             return fetcherResults(result, 'autoLogin')
         })
         .catch(err => {
@@ -184,6 +187,9 @@ function autoLoginHandler(result) {
     qS('.loginSpan').style.display = 'none'
     // turn on notif
     feedbackTurnOn(`[${result.data[0].username}] berhasil login`)
+    // delete admin setting if not admin
+    if(myGameData.username !== 'dengkul')
+        qS('#adminSetting').remove()
     feedbackTurnOff()
 }
 
@@ -222,6 +228,8 @@ function logoutHandler(result) {
         // display grid register and login
         qS('.registerSpan').style.display = 'inline'
         qS('.loginSpan').style.display = 'inline'
+        // delete admin setting after logout
+        qS('#adminSetting').remove()
         return 
     }
 }

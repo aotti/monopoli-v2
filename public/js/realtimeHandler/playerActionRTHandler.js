@@ -23,6 +23,9 @@ function playerTurnEndHandler(payload) {
         // set to true to prevent this function run twice
         oneTimeStatus.turnEnd = true
         console.log('playerTurnEnd');
+        // for saving player lose
+        const playersTurnLose = []
+        // payload from server
         const { playerTurnEnd, mods } = payload
         const { nextPlayerData, otherPlayerData } = playerTurnEnd[0]
         // next player data 
@@ -34,12 +37,16 @@ function playerTurnEndHandler(payload) {
             playersTurnObj[i].harta_uang = otherPlayerData[i].harta_uang
             playersTurnObj[i].harta_kota = otherPlayerData[i].harta_kota
             playersTurnObj[i].kartu = otherPlayerData[i].kartu
+            // check player money
+            if(otherPlayerData[i].harta_uang >= -mods[0].money_lose) 
+                playersTurnLose.push(otherPlayerData[i].user_id.username)
         }
         // update player list money
         for(let i in qSA('.uangPlayer')) {
             const moneyList = qSA('.uangPlayer')
             if(typeof moneyList[i] === 'object' && typeof playersTurnObj[i].harta_uang === 'number') {
                 moneyList[i].innerText = `Rp ${currencyComma(playersTurnObj[i].harta_uang)}`
+                // money gain/lose animation
                 // if player gain money
                 if(playersTurnObj[i].harta_uang > playersPreMoney[i].harta_uang) {
                     moneyList[i].classList.add('plus')
@@ -51,6 +58,10 @@ function playerTurnEndHandler(payload) {
                     setTimeout(() => { moneyList[i].classList.remove('minus') }, 2000);
                 }
             }
+        }
+        // if only 1 player left
+        if(playersTurnLose.length === 1) {
+            return gameOver(playersTurnLose[0])
         }
         // update player cities
         placeHomeAndHotelOnCity(otherPlayerData)

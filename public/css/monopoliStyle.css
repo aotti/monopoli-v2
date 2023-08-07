@@ -398,12 +398,35 @@
   padding: 4px;
 }
 
+.dialog_info > div > span:nth-child(2n+1):after {
+  content: ">";
+  float: right;
+}
+
+.editModsDialog {
+  background: wheat;
+  width: 300px;
+  padding: 5px;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  border: 1px solid;
+}
+
+.editModsDialog > h4 > [class^=editMods] {
+  float: right;
+}
+
+.saveMods {
+  text-align: center;
+}
+
 #closeModsButton, #closePlayerButton, #closeProfilButton, #logoutProfilButton,
-#register, #login, #closeRegLogButton {
+#register, #login, #closeRegLogButton, #closeAdminButton, #saveModsButton {
   margin: 8px auto 0;
 }
 
-#closeModsButton, #closePlayerButton {
+#closeModsButton, #closePlayerButton, #closeAdminButton, #saveModsButton {
   grid-column: 1 / 2 span;
   height: 30px;
   width: 50%;
@@ -412,11 +435,6 @@
 #closeProfilButton, #logoutProfilButton, #register, #login, #closeRegLogButton {
   height: 30px;
   width: 100%;
-}
-
-.dialog_info > div > span:nth-child(2n+1):after {
-  content: ">";
-  float: right;
 }
 
 .setting_mods {
@@ -460,8 +478,8 @@
   position: absolute;
   z-index: 99;
   top: 45%;
-  left: 29.5%;
-  width: 240px;
+  left: 30%;
+  width: 230px;
   text-align: center;
 }
 

@@ -27,6 +27,7 @@ function preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlay
     const cardPick = cardList.cards[cardPickIndex]
     const cardType = cardList.types[cardPickIndex]
     const cardEffect = cardList.effects[cardPickIndex]
+    console.log(cardPick);
     // check card type then activate the effect
     const cardText = `[${cardEventType}]\n${cardPick}`
     const cardsObject = {
@@ -81,6 +82,7 @@ function checkAndActivateCard(cardsObject) {
                 confirmDialog(`${cardText}\n---\nloading..`)
                 // run buy city dialog after 3 secs
                 setTimeout(() => {
+                    const findPlayerCities = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
                     const tempRequiredLandEventData = {
                         mods: mods,
                         giliran: giliran,
@@ -88,7 +90,7 @@ function checkAndActivateCard(cardsObject) {
                         playerDiceMove: tempPlayerPosNow,
                         playerLaps: +qS('.putaranTeks').innerText.match(/\d+/),
                         endTurnMoney: endTurnMoney,
-                        playerCities: playersTurnObj[giliran].harta_kota
+                        playerCities: playersTurnObj[findPlayerCities].harta_kota
                     }
                     // trigger land event from 
                     const outerEvent = {
@@ -264,6 +266,8 @@ function checkAndActivateCard(cardsObject) {
                             button.disabled = true
                         break
                     case 'oneStep':
+                        // create card dialog
+                        confirmDialog(cardText)
                         // set playerDadu 
                         const customDadu = 1
                         // trigger the kocok dadu button
@@ -273,7 +277,7 @@ function checkAndActivateCard(cardsObject) {
                         break
                 }
             }
-            return
+            break
         case 'moveBackward':
             // create card dialog
             confirmDialog(cardText)
@@ -284,7 +288,7 @@ function checkAndActivateCard(cardsObject) {
             // trigger the kocok dadu button
             kocokDaduTrigger(mods, giliran, customDadu)
             qS('.acakDadu').disabled = false
-            return qS('.acakDadu').click()
+            qS('.acakDadu').click()
         case 'specialCard':
             cardsEventData.moneyLeft = endTurnMoney
             // if no changes on city, just make it null
@@ -358,6 +362,7 @@ function checkAndActivateCard(cardsObject) {
                                 // replace the text without buttons
                                 qS('.confirm_box').innerText = `\n${cardText}\n---\nMengambil kartu..`
                                 setTimeout(() => {
+                                    const findPlayerCities = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
                                     const tempRequiredLandEventData = {
                                         mods: mods,
                                         giliran: giliran,
@@ -365,7 +370,7 @@ function checkAndActivateCard(cardsObject) {
                                         playerDiceMove: tempPlayerPosNow,
                                         playerLaps: +qS('.putaranTeks').innerText.match(/\d+/),
                                         endTurnMoney: endTurnMoney,
-                                        playerCities: playersTurnObj[giliran].harta_kota
+                                        playerCities: playersTurnObj[findPlayerCities].harta_kota
                                     }
                                     // trigger land event from 
                                     const outerEvent = {
@@ -421,13 +426,17 @@ function checkAndActivateCard(cardsObject) {
                 }
             })
             .then(tempCardsEventData => {
+                // required data if land event happens
+                const findPlayerCities = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
                 const tempRequiredLandEventData = {
+                    mods: mods,
                     giliran: giliran,
                     playerDiceMove: tempPlayerPosNow,
                     playerLaps: +qS('.putaranTeks').innerText.match(/\d+/)
                 }
+                // if nothing changes on cities, refill the value
                 if(tempCardsEventData.cities === null)
-                    tempCardsEventData.cities = playersTurnObj[giliran].harta_kota
+                    tempCardsEventData.cities = playersTurnObj[findPlayerCities].harta_kota
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
                 landEventHandler(tempRequiredLandEventData, tempCardsEventData)
             })
@@ -455,7 +464,6 @@ function checkAndActivateCard(cardsObject) {
 
 function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
     const tempCardList = {}
-    console.log(chances);
     // chances < 9
     if(chances < 9) {
         switch(cardEventType) {
@@ -539,7 +547,7 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
                 break
             // kesempatan
             case 'Kesempatan':
-                tempCardList.cards = [ 
+                tempCardList.cards = [  
                     'Renovasi rumah, bayar 30% dari total uang',
                     'Anda lari dikejar biawak, mundur 2 langkah',
                     'Pilih maju sampai start atau ambil kartu dana umum',
@@ -554,7 +562,7 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
         }
     }
     // chances >= 51 && chances < 95
-    else if(chances >= 1 && chances < 95) {
+    else if(chances >= 51 && chances < 95) {
         switch(cardEventType) {
             // dana umum
             case 'Dana Umum':

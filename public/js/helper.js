@@ -55,7 +55,7 @@ function playerCityList(giliran, lostCity = null) {
         // find cities
         for(let city of allLands) {
             // if the player username match with any city classlist, insert to container
-            if(city.classList[0].match(lostCity)) 
+            if(city.classList[0].split('_')[1] === lostCity) 
                 allOwnedCities.push(city)
         }
         return allOwnedCities[0]
@@ -344,16 +344,20 @@ function updateGameStatus(newGameStatus) {
 }
 
 const resetter = {
-    get resetGameStatus() {
+    resetGameStatus: function () {
         updateGameStatus('unready')
     },
-    get resetPlayerTable() {
+    resetPlayerTable: function (settingStatusInput) {
         fetcher('/deleteplayers', 'GET')
         .then(result => {
             if(result.status != 200) {
+                settingStatusInput.style.background = 'coral'
+                settingStatusInput.value = 'reset table failed'
                 return errorCapsule(result, anErrorOccured)
             }
             console.log(result);
+            settingStatusInput.style.background = 'limegreen'
+            settingStatusInput.value = 'reset table success'
         })
         .catch(err => {
             return errorCapsule(err, anErrorOccured)

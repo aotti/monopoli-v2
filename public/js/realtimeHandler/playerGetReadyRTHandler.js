@@ -2,9 +2,8 @@
 function playerJoinedHandler(payload) {
     // mods need index 0 to use, ex: mods[0].branch / mods[0].board_shape
     const { playerJoined, mods, gameStatus } = payload
-    playerJoined.forEach((v, i) => {
-        getPlayerJoined[i] = v.player_joined
-        // if the player username is in database, then run the function
+    playerJoined.forEach((v, i) => { 
+        // if the player username is in database, then run the function 
         if(v.player_joined == myGameData.username) 
             return waitingOtherPlayers(playerJoined, mods, gameStatus)
     })

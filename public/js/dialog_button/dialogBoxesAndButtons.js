@@ -74,6 +74,9 @@ function appendGameDialogBoxesOrButtonsToBoard(allowAppendToBoard, secondContain
 
 function insertAttributeAndValue(element, attrType, attr, textValue) {
     switch(attrType) {
+        case 'class-only':
+            element.classList.add(attr)
+            break
         case 'class':
             element.classList.add(attr)
             element.innerText = textValue
@@ -114,6 +117,12 @@ function gameDialogBoxesAndButtons(secondContainer, elTypes, elements, attrTypes
                 break
             case 'password':
                 elements[i].type = 'password'
+                insertAttributeAndValue(elements[i], attrTypes[i], attrs[i], textValues[i])
+                break
+            case 'combox':
+                insertAttributeAndValue(elements[i], attrTypes[i], attrs[i], textValues[i])
+                break
+            case 'range':
                 insertAttributeAndValue(elements[i], attrTypes[i], attrs[i], textValues[i])
                 break
         }

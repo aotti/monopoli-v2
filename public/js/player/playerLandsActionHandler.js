@@ -31,7 +31,7 @@ function landEventHandler(requiredLandEventData, promiseResult = null, outerEven
         })()
         // if player dont get any land event after stop moving
         if(getDataAfterLandEvent == null) 
-            return playerTurnEnd(giliran, playerDiceMove, playerLaps, landEventData)
+            return playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, landEventData)
         // if the player get any land event
         const { buttons, data } = getDataAfterLandEvent
         // if the land event have no buttons
@@ -57,7 +57,7 @@ function landEventHandler(requiredLandEventData, promiseResult = null, outerEven
     })
     // after land event done
     landsAction.then(returnedLandEventData => {
-        playerTurnEnd(giliran, playerDiceMove, playerLaps, returnedLandEventData)
+        playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEventData)
     })
     // INNER FUNCTION 
     // check which event is occured

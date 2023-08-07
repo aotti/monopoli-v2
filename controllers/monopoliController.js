@@ -49,6 +49,14 @@ class Monopoli {
         })
     }
 
+    changeModsData(req, res) {
+        // update mods data
+        MonopoliRepo.changeModsDataRepo(req, res)
+        .then(result => {
+            return newResponse([200, 'success changeModsData'], res, result)
+        })
+    }
+
     playerJoined(req, res) {
         // get all player data who joined the game 
         MonopoliRepo.playerJoinedRepo(req, res)

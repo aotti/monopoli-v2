@@ -33,7 +33,7 @@ function allPlayersLastPos() {
 function gameResume(result) {
     const mods = result.data.mods
     const playersPlaying = result.data.resumePlayer
-    const tempPlayerTurns = []
+    const tempPlayersTurn = []
     const tempPlayerPos = []
     let giliranCounter = null
     // empty urutan text
@@ -60,8 +60,7 @@ function gameResume(result) {
             myPrisonCounter.counter = 1
         }
         // get giliran to refill playersTurn
-        tempPlayerTurns.push(playersPlaying[i].giliran)
-        tempPlayerPos.push(playersPlaying[i].pos)
+        tempPlayersTurn.push(playersPlaying[i].giliran)
         // refill playersTurnObj for playerlist
         playersTurnObj[i] = {
             username: playersPlaying[i].user_id.username,
@@ -77,10 +76,20 @@ function gameResume(result) {
         }
     }
     // sort player turns from lowest giliran -> highest
-    tempPlayerTurns.sort()
+    tempPlayersTurn.sort()
     // refill playersTurn array value
-    for(let i in tempPlayerTurns) {
-        playersTurn.push(playersPlaying[i].user_id.username)
+    for(let i in tempPlayersTurn) {
+        // get player username by giliran
+        const getPlayerTurn = playersPlaying.map(v => {
+            if(v.giliran === tempPlayersTurn[i]) return v.user_id.username
+        }).filter(i=>i)[0]
+        // insert the username to playersTurn
+        playersTurn.push(getPlayerTurn)
+        // get player pos by giliran
+        const getPlayerPos = playersPlaying.map(v => {
+            if(v.giliran === tempPlayersTurn[i]) return v.pos
+        }).filter(i=>i)[0]
+        tempPlayerPos.push(getPlayerPos)
         // set playersTurnId to select nextPlayer on playerTurnEnd
         const adjustPlayerTurnId = playersPlaying.map(v => {return v.user_id.username}).indexOf(playersTurn[i])
         if(adjustPlayerTurnId != -1) {

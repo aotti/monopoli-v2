@@ -97,19 +97,12 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
             for(let splitCity of splitPerCity) {
                 // if city exist in database
                 if(splitCity.split('-')[0] === landName) {
-                    const cityExistObj = {
-                        citiesWithOneRowTax: citiesWithOneRowTax, 
-                        land: land,
-                        landName: landName, 
-                        splitCity: splitCity, 
-                        vUsername: v.user_id.username, 
-                        baseCityPrices: baseCityPrices
-                    }
-                    setHousesAndHotels(cityExistObj)
+                    // insert any city that player bought
+                    doubleCheckOwner.push(landName)
                 }
                 else if(splitCity.split('-')[0] !== landName) {
-                    // to check if any city classlist owner removed
-                    doubleCheckOwner.push(landName)
+                    // // to check if any city classlist owner removed
+                    // doubleCheckOwner.push(landName)
                     // check land type
                     const landType = (()=>{
                         if(land.classList[0].match('area'))
