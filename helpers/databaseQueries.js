@@ -1,19 +1,21 @@
 const supabase = require('./database')
 
-async function selectAll(req, res, queryObject) {
+function selectAll(res, queryObject) {
     if(supabase == null)
-        return res.send('cannot connect to database')
+        return res.status(500).send('cannot connect to database')
     // get all data from supabase
     const selectAllDataFromDB = async () => {
-        const {data, error} = await supabase.from(queryObject.table).select(queryObject.selectColumn).order('id', {ascending: true})
+        const {data, error} = await supabase.from(queryObject.table)
+                            .select(queryObject.selectColumn)
+                            .order('id', {ascending: true})
         return {data: data, error: error}
     }
     return selectAllDataFromDB()
 }
 
-async function selectOne(req, res, queryObject) {
+function selectOne(res, queryObject) {
     if(supabase == null)
-        return res.send('cannot connect to database')
+        return res.status(500).send('cannot connect to database')
     // get specific data from supabase
     const selectOneDataFromDB = async () => {
         // multiple where condition
@@ -35,20 +37,23 @@ async function selectOne(req, res, queryObject) {
     return selectOneDataFromDB()
 }
 
-async function insertDataRow(req, res, queryObject) {
+function insertDataRow(res, queryObject) {
     if(supabase == null)
-        return res.send('cannot connect to database')
+        return res.status(500).send('cannot connect to database')
     const insertDataToDB = async () => {
         // insert player data who joined the game
-        const {data, error} = await supabase.from(queryObject.table).insert([queryObject.insertColumn])
+        const {data, error} = await supabase.from(queryObject.table)
+                            // [] means insert multiple values 
+                            .insert([queryObject.insertColumn])
+                            .select(queryObject.selectColumn)
         return {data: data, error: error}
     }
     return insertDataToDB()
 }
 
-async function updateData(req, res, queryObject) {
+function updateData(res, queryObject) {
     if(supabase == null)
-        return res.send('cannot connect to database')
+        return res.status(500).send('cannot connect to database')
     const updateDataToDB = async () => {
         // multiple where condition
         if(queryObject.multipleWhere === true) {
@@ -56,6 +61,7 @@ async function updateData(req, res, queryObject) {
                                 .update(queryObject.updateColumn)
                                 .eq(queryObject.whereColumn_One, queryObject.whereValue_One)
                                 .eq(queryObject.whereColumn_Two, queryObject.whereValue_Two)
+                                .select(queryObject.selectColumn)
             return {data: data, error: error}
         }
         // only one where condition
@@ -63,17 +69,21 @@ async function updateData(req, res, queryObject) {
             const {data, error} = await supabase.from(queryObject.table)
                                 .update(queryObject.updateColumn)
                                 .eq(queryObject.whereColumn, queryObject.whereValue)
+                                .select(queryObject.selectColumn)
             return {data: data, error: error}
         }
     }
     return updateDataToDB()
 }
 
-async function deleteAll(req, res, queryObject) {
+function deleteAll(res, queryObject) {
     if(supabase == null)
-        return res.send('cannot connect to database')
+        return res.status(500).send('cannot connect to database')
     const deleteDataFromDB = async () => {
-        const {data, error} = await supabase.from(queryObject.table).delete().neq('id', 0)
+        const {data, error} = await supabase.from(queryObject.table)
+                            .delete()
+                            .neq('id', 0)
+                            .select(queryObject.selectColumn)
         return {data: data, error: error}
     }
     return deleteDataFromDB()

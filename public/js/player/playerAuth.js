@@ -35,7 +35,7 @@ function filterRegisterLogin(filterData, regexes, spanElements, textValues, bord
     return tempFilterStatus
 }
 
-// register
+// register and login button
 function playerRegisterOrLogin(type, targetButton) {
     // filter user input
     const filterData = {
@@ -157,6 +157,11 @@ function loginHandler(result) {
     // display none register and login
     qS('.registerSpan').style.display = 'none'
     qS('.loginSpan').style.display = 'none'
+    // start pubnub client
+    startPubNub()
+    // delete admin setting if theres adminSetting && username is not admin
+    if(qS('#adminSetting') && myGameData.username !== 'dengkul')
+        qS('#adminSetting').remove()
 }
 
 function playerAutoLogin() {
@@ -187,6 +192,8 @@ function autoLoginHandler(result) {
     qS('.loginSpan').style.display = 'none'
     // turn on notif
     feedbackTurnOn(`[${result.data[0].username}] berhasil login`)
+    // start pubnub client
+    startPubNub()
     // delete admin setting if not admin
     if(myGameData.username !== 'dengkul')
         qS('#adminSetting').remove()
@@ -228,8 +235,11 @@ function logoutHandler(result) {
         // display grid register and login
         qS('.registerSpan').style.display = 'inline'
         qS('.loginSpan').style.display = 'inline'
+        // close pubnub client because uuid is removed
+        startPubNub()
         // delete admin setting after logout
-        qS('#adminSetting').remove()
+        if(qS('#adminSetting'))
+            qS('#adminSetting').remove()
         return 
     }
 }

@@ -19,6 +19,7 @@ function playerMovingHandler(payload) {
 
 // realtime handler for playerTurnEnd
 function playerTurnEndHandler(payload) {
+    // oneTimeStatus prevent this function to run more than 1x
     if(oneTimeStatus.turnEnd === false) {
         // set to true to prevent this function run twice
         oneTimeStatus.turnEnd = true
@@ -49,13 +50,13 @@ function playerTurnEndHandler(payload) {
                 // money gain/lose animation
                 // if player gain money
                 if(playersTurnObj[i].harta_uang > playersPreMoney[i].harta_uang) {
-                    moneyList[i].classList.add('plus')
-                    setTimeout(() => { moneyList[i].classList.remove('plus') }, 2000);
+                    moneyList[i].classList.toggle('plus')
+                    setTimeout(() => { moneyList[i].classList.toggle('plus') }, 2000);
                 }
                 // if player loss money
                 else if(playersTurnObj[i].harta_uang < playersPreMoney[i].harta_uang) {
-                    moneyList[i].classList.add('minus')
-                    setTimeout(() => { moneyList[i].classList.remove('minus') }, 2000);
+                    moneyList[i].classList.toggle('minus')
+                    setTimeout(() => { moneyList[i].classList.toggle('minus') }, 2000);
                 }
             }
         }

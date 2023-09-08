@@ -110,7 +110,7 @@ function waitingOtherPlayers(otherPlayers, mods, gameStatus) {
                     // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
                     if(timer == 6) {
                         // update game status to ready
-                        updateGameStatus('ready')
+                        updateGameStatus('ready', 'system')
                         gameStatus[0].status = 'ready'
                     }
                     // display force start countdown
@@ -135,7 +135,7 @@ function waitingOtherPlayers(otherPlayers, mods, gameStatus) {
             // disable paksaMulai button
             qS('.paksaMulai').disabled = true
             // update game status to ready
-            updateGameStatus('ready')
+            updateGameStatus('ready', 'system')
             gameStatus[0].status = 'ready'
             // insert username to playerTurns 
             playersTurnPush()
@@ -232,7 +232,6 @@ function createPlayersAndGetReady(mods, gameStatus) {
             penjara: false,
             putaran: 1
         }
-        console.log(jsonData);
         // send data to server
         fetcher(`/ready`, 'POST', jsonData)
         .then(result => {
@@ -295,7 +294,7 @@ function gettingReady(readyPlayers, mods) {
             // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
             if(timer == 4) {
                 // update game status
-                updateGameStatus('playing')
+                updateGameStatus('playing', 'system')
             }
             // display game start countdown
             urutanGiliran.innerText = `game dimulai dalam . . ${timer}`

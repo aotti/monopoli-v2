@@ -289,6 +289,7 @@ function checkAndActivateCard(cardsObject) {
             kocokDaduTrigger(mods, giliran, customDadu)
             qS('.acakDadu').disabled = false
             qS('.acakDadu').click()
+            break
         case 'specialCard':
             cardsEventData.moneyLeft = endTurnMoney
             // if no changes on city, just make it null

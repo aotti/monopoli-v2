@@ -603,8 +603,7 @@ function interactWithButtons(mods, gameStatus = null) {
                 settingStatusInput.style.background = 'lightblue'
                 settingStatusInput.value = 'loading..'
                 // reset function
-                resetter.resetGameStatus()
-                // ==============
+                resetter.resetGameStatus(settingStatusInput, myGameData.username)
                 const startInterval = setInterval(() => {
                     if(qS('#gameStatus').style.background === 'lightgrey') {
                         clearInterval(startInterval)
@@ -618,7 +617,7 @@ function interactWithButtons(mods, gameStatus = null) {
                 settingStatusInput.style.background = 'lightblue'
                 settingStatusInput.value = 'loading..'
                 // reset function
-                return resetter.resetPlayerTable(settingStatusInput)
+                return resetter.resetPlayerTable(settingStatusInput, myGameData.username)
             }
         }
     }
@@ -707,6 +706,14 @@ function interactWithButtons(mods, gameStatus = null) {
                     [null, 'registerRegDiv', 'register', 'closeRegLogButton'],
                     [null, null, 'Register', 'Tutup']
                 )
+                // auto focus on username input
+                usernameRegLog.focus()
+                // press ENTER key event listener
+                dialogInfo.addEventListener('keydown', (ev) => {
+                    if(ev.which === 13) {
+                        registerLoginButton.click()
+                    }
+                })
             }
             // login dialog
             else if(ev.target.classList[0] == 'login') {
@@ -748,6 +755,14 @@ function interactWithButtons(mods, gameStatus = null) {
                     [null, 'registerLoginDiv', 'login', 'closeRegLogButton'],
                     [null, null, 'Login', 'Tutup']
                 )
+                // auto focus on username input
+                usernameRegLog.focus()
+                // press ENTER key event listener
+                dialogInfo.addEventListener('keydown', (ev) => {
+                    if(ev.which === 13) {
+                        registerLoginButton.click()
+                    }
+                })
             }
             // close dialog
             closeRegLogButton.onclick = () => {

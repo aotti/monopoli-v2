@@ -199,6 +199,8 @@ function imprisonedEvent(endTurnMoney, data) {
     imprisonedData.cities = null
     // prison status true
     imprisonedData.imprisoned = data.penjara
+    // set (local) prison status to true
+    myPrisonCounter.status = data.penjara
     // remove fine from local storage
     getLocStorage('fineAmount') ? localStorage.removeItem('fineAmount') : null
     return imprisonedData

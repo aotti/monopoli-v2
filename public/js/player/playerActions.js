@@ -73,7 +73,8 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         if(myBranchChance.status === false)
             myBranchChance.chance = mathBranch
         // prison counter
-        myPrisonCounter.counter += playerDadu
+        if(myPrisonCounter.status === true)
+            myPrisonCounter.counter += playerDadu
         // payload
         const jsonData = {
             user_id: playersTurnId[giliran],
@@ -176,12 +177,14 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
     qS('.acakGiliranTeks').innerText = `Cabang: ${branchChance}`
     // check if player is imprisoned or not
     if(playerImprisoned === true) {
+        console.log(myPrisonCounter);
         const holdMoves = getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps)
         // if player doesnt meet req to be free
         if(holdMoves == 'stopMoves') return
         // if player can moves 
-        if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username)
+        if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username) {
             myPrisonCounter.counter = 0
+        }
     }
     // my pos after roll dice
     const playerDiceMove = getDiceMove(mods, playerPosNow, playerDadu)
@@ -255,34 +258,64 @@ function playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEv
     const { moneyLeft, cities, cityOwner, cityTaxAmount, imprisoned, cards } = returnedLandEventData
     // choose next player
     const nextPlayer = (()=>{
+        // alive = giliran, lost = player id(s)
+        const nextPlayerObj = {alive: null, lost: []}
+        // find next player alive
         for(let i in playersTurn) {
             const nextPlayerMoney = checkNextPlayer(giliran, +i)
-            if(nextPlayerMoney[0] >= -mods[0].money_lose) 
-                return nextPlayerMoney[1]
+            // if the next player money >= -50_000
+            if(nextPlayerMoney[0] >= -mods[0].money_lose) {
+                // insert next player giliran (alive)
+                nextPlayerObj.alive = nextPlayerMoney[1]
+                break
+            }
         }
+        // find all lost players
+        for(let i in playersTurn) {
+            const nextPlayerMoney = checkNextPlayer(giliran, +i)
+            // if the player has lost
+            if(nextPlayerMoney[0] < -mods[0].money_lose) {
+                // insert next player giliran (lost)
+                const playerLostId = playersTurnId[nextPlayerMoney[1]]
+                nextPlayerObj.lost.push(playerLostId)
+            }
+        }
+        return nextPlayerObj
     })()
     // payload
     const jsonData = {
+        // send (recent) player id to update the database
         user_id: myGameData.id,
+        // player position after all the action
         pos: `${playerDiceMove}`,
+        // moneyLeft (returnedLandEventData) must always have value
         harta_uang: moneyLeft,
+        // cities (returnedLandEventData) must always have value
         harta_kota: cities,
+        // if cards (returnedLandEventData) not null, use the value
         kartu: cards ? cards : '',
+        // will always false on turn end
         jalan: false,
+        // if imprisoned (returnedLandEventData) not null, use the value
         penjara: imprisoned ? imprisoned : false,
+        // if player walkthrough start = plus 1, else do nothing
         putaran: oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps,
-        next_player: playersTurnId[nextPlayer],
-        // tax payment
+        // nextPlayer must always have value
+        next_player: playersTurnId[nextPlayer.alive],
+        // all players id who have already lost
+        lost_players: nextPlayer.lost,
+        // pay taxes if the player steps on city that isnt belong to him/hers
         tax_payment: 
             cityOwner && cityTaxAmount ? {
                 target_owner: targetOwner(cityOwner),
                 target_money: taxPaidOff(cityOwner, cityTaxAmount)
             } : null
     }
+    console.log(jsonData);
     // send data to server
     fetcher(`/turnend`, 'PATCH', jsonData)
     .then(result => {
-        // set back value to false
+        // set back walkthrough start value to false
         oneTimeStatus.throughStart = false
         return fetcherResults(result)
     })
@@ -293,7 +326,7 @@ function playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEv
 
 // the end of the game
 function gameOver(theLastPlayer) {
-    updateGameStatus('done')
+    updateGameStatus('done', 'system')
     qS('#pGameSelesai').play();
     qS('.acakDaduTeks').innerText = 'Selesai'
     // set game over text
@@ -315,6 +348,9 @@ function taxPaidOff(cityOwner, cityTaxAmount) {
 function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps) {
     // if prisonCounter = 1 OR more/equal than 7, player continue walking
     if(prisonCounter === 1 || prisonCounter >= 7) {
+        // set (local) prison status to false
+        if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username)
+            myPrisonCounter.status = false
         feedbackTurnOn(`counter: ${prisonCounter}, Anda bebas`)
         feedbackTurnOff()
         return 'continueMoves'
@@ -329,15 +365,20 @@ function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney
             imprisoned: true
         }
         // getDiceMove with value 0 to prevent player from moving
-        if(playersTurnShape.id == myGameData.username && playersTurn[giliran] == myGameData.username)
+        if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username)
             playerTurnEnd(mods, giliran, getDiceMove(mods, playerPosNow, 0), playerLaps, prisonerData)
         return 'stopMoves'
     }
 }
 
 function checkNextPlayer(giliran, increment = 0) {
+    // get next player giliran
     const tempNextGiliran = (giliran + (1 + increment)) % playersTurnId.length
+    console.log(`tempNextGiliran ${tempNextGiliran}`);
+    // find the player with username
     const tempNextPlayerIndex = playersTurnObj.map(v => {return v.username}).indexOf(playersTurn[tempNextGiliran])
+    // get the next player money
     const tempNextPlayerMoney = playersTurnObj[tempNextPlayerIndex].harta_uang
+    // return money and giliran
     return [tempNextPlayerMoney, tempNextGiliran]
 }

@@ -8,7 +8,6 @@ const { validateUUIDv4,
 // get
 router
     .get('/gamestatus', Monopoli.getGameStatus)
-    .get('/deleteplayers', validateUUIDv4, Monopoli.deletePlayerRows)
     .get('/mods', Monopoli.getModsData)
     .get('/gameresume', validateUUIDv4, Monopoli.gameResume)
 // post
@@ -22,5 +21,8 @@ router
     .patch('/gamestatus', validateUUIDv4, Monopoli.updateGameStatus)
     .patch('/forcestart', validateUUIDv4, validatePlayerForcing, Monopoli.forceStart)
     .patch('/turnend', validateUUIDv4, validatePlayerData, Monopoli.playerTurnEnd)
+// delete
+router
+    .delete('/deleteplayers', validateUUIDv4, Monopoli.deletePlayerRows)
 
 module.exports = router

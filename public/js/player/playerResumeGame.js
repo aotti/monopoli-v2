@@ -58,6 +58,7 @@ function gameResume(result) {
             // set myPrisonCounter
             myPrisonCounter.username = playersPlaying[i].user_id.username
             myPrisonCounter.counter = 1
+            myPrisonCounter.status = playersPlaying[i].penjara
         }
         // get giliran to refill playersTurn
         tempPlayersTurn.push(playersPlaying[i].giliran)

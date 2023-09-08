@@ -18,13 +18,13 @@ class MonopoliRepo {
             whereValue: 1
         }
         // get status data for the game state
-        return newPromise(selectOne(req, res, queryObject))
+        return newPromise(selectOne(res, queryObject))
         .catch(err => catchResponse(res, err, 'Monopoli.getGameStatusRepo'))
     }
 
     updateGameStatusRepo(req, res) {
         // TABLE = games
-        const { gameStatus } = req.body
+        const { username, gameStatus } = req.body
         // required data for query
         const queryObject = {}
         Object.defineProperties(queryObject, {
@@ -40,30 +40,45 @@ class MonopoliRepo {
                 } 
             }}
         })
-        // get status data for the game state
-        return newPromise(updateData(req, res, queryObject))
-        .then(() => {
-            // get all player data
-            return newPromise(selectOne(req, res, queryObject))
-            .catch(err => catchResponse(res, err, 'Monopoli.updateGameStatusRepo 2'))
-        })
-        .catch(err => catchResponse(res, err, 'Monopoli.updateGameStatusRepo 1'))
+        if(username === 'dengkul' || username === 'system') {
+            // update and get status data for the game state
+            return newPromise(updateData(res, queryObject))
+            .catch(err => catchResponse(res, err, 'Monopoli.updateGameStatusRepo 1'))
+        }
+        // find which player is trying to updateGameStatus 
+        // if the player username != dengkul OR null, stop
+        else {
+            const preventUpdateGameStatus = new Promise((resolve, reject) => {
+                resolve({data: {statusCode: 401, errorMessage: 'unauthorized', data: null}})
+            })
+            return newPromise(preventUpdateGameStatus)
+        }
     }
 
     deletePlayerRowsRepo(req, res) {
-        // TABLE = players, prepares
+        const { username } = req.body
         // required data for query
         const queryObject = {
-            table: 'players'
+            table: 'players',
+            selectColumn: 'id, user_id(username)'
         }
         const  queryObject2 = {
-            table: 'prepares'
+            table: 'prepares',
+            selectColumn: 'id, player_joined'
+        }
+        // find which player is trying to delete 
+        // if the player username != dengkul, stop
+        if(username !== 'dengkul') {
+            const preventDeletePlayerRows = new Promise((resolve, reject) => {
+                resolve({data: {statusCode: 401, errorMessage: 'unauthorized', data: null}})
+            })
+            return newPromise(preventDeletePlayerRows)
         }
         // delete all data from players
-        return newPromise(deleteAll(req, res, queryObject))
+        return newPromise(deleteAll(res, queryObject))
         .then(() => {
             // delete all data from prepares
-            return newPromise(deleteAll(req, res, queryObject2))
+            return newPromise(deleteAll(res, queryObject2))
             .catch(err => catchResponse(res, err, 'Monopoli.deletePlayerRowsRepo 2'))
         })
         .catch(err => catchResponse(res, err, 'Monopoli.deletePlayerRowsRepo 1'))
@@ -81,7 +96,7 @@ class MonopoliRepo {
             whereValue: 1
         }
         // get mods data for board 
-        return newPromise(selectOne(req, res, queryObject))
+        return newPromise(selectOne(res, queryObject))
         .catch(err => catchResponse(res, err, 'Monopoli.getModsDataRepo'))
     }
 
@@ -91,6 +106,7 @@ class MonopoliRepo {
         // required data for query
         const queryObject = {
             table: 'mods',
+            selectColumn: 'board_shape, money_start, money_lose, curse_min, curse_max, branch',
             // multiple where
             multipleWhere: false,
             whereColumn: 'id',
@@ -107,15 +123,13 @@ class MonopoliRepo {
         }
         // if non admin player trying to change mods, return error
         if(username !== 'dengkul') {
-            return catchResponse(res, 'this user is not admin', 'Monopoli.changeModsDataRepo 1')
+            const preventChangeMods = new Promise((resolve, reject) => {
+                resolve({data: {statusCode: 401, errorMessage: 'unauthorized', data: null}})
+            })
+            return newPromise(preventChangeMods)
         }
-        // update mods data
-        return newPromise(updateData(req, res, queryObject))
-        .then(() => {
-            // get all player data
-            return newPromise(selectOne(req, res, queryObject))
-            .catch(err => catchResponse(res, err, 'Monopoli.changeModsDataRepo 3'))
-        })
+        // update and get mods data
+        return newPromise(updateData(res, queryObject))
         .catch(err => catchResponse(res, err, 'Monopoli.changeModsDataRepo 2'))
     }
 
@@ -137,10 +151,10 @@ class MonopoliRepo {
             }}
         })
         // insert player data when joined 
-        return newPromise(insertDataRow(req, res, queryObject))
+        return newPromise(insertDataRow(res, queryObject))
         .then(() => {
             // get all player data who joined
-            return newPromise(selectAll(req, res, queryObject))
+            return newPromise(selectAll(res, queryObject))
             .catch(err => catchResponse(res, err, 'Monopoli.playerJoinedRepo 2'))
         })
         .catch(err => catchResponse(res, err, 'Monopoli.playerJoinedRepo 1'))
@@ -165,16 +179,16 @@ class MonopoliRepo {
             }}
         })
         // update player_forcing: true
-        return newPromise(updateData(req, res, queryObject))
+        return newPromise(updateData(res, queryObject))
         .then(() => {
             // get all player data
-            return newPromise(selectAll(req, res, queryObject))
+            return newPromise(selectAll(res, queryObject))
             .catch(err => catchResponse(res, err, 'Monopoli.forceStartRepo 2'))
         })
         .catch(err => catchResponse(res, err, 'Monopoli.forceStartRepo 1'))
     }
 
-    readyRepo(req, res) {
+    readyRepo(req, res) {username
         // TABLE = prepares
         const { user_id, username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, putaran } = req.body
         const queryObject = {}
@@ -212,13 +226,13 @@ class MonopoliRepo {
             }}
         })
         // update player_ready: true
-        return newPromise(updateData(req, res, queryObject))
+        return newPromise(updateData(res, queryObject))
         .then(() => {
             // insert data to players table
-            return newPromise(insertDataRow(req, res, queryObject2))
+            return newPromise(insertDataRow(res, queryObject2))
             .then(() => {
                 // get all player data from players table
-                return newPromise(selectAll(req, res, queryObject2))
+                return newPromise(selectAll(res, queryObject2))
                 .catch(err => catchResponse(res, err, 'Monopoli.readyRepo 3'))
             })
             .catch(err => catchResponse(res, err, 'Monopoli.readyRepo 2'))
@@ -240,7 +254,7 @@ class MonopoliRepo {
             whereValue: {enumerable: true, value: user_id}
         })
         // get player data that is moving
-        return newPromise(selectOne(req, res, queryObject))
+        return newPromise(selectOne(res, queryObject))
         .then(result => {
             if(result.length == 0)
                 return newResponse(404, res, `player tidak ditemukan`)
@@ -251,7 +265,14 @@ class MonopoliRepo {
 
     playerTurnEndRepo(req, res) {
         // TABLE = players
-        const { user_id, pos, harta_uang, harta_kota, kartu, jalan, penjara, putaran, next_player, tax_payment } = req.body
+        const { 
+            user_id, pos, 
+            harta_uang, harta_kota, 
+            kartu, jalan, 
+            penjara, putaran, 
+            next_player, lost_players, 
+            tax_payment 
+        } = req.body
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
@@ -302,32 +323,50 @@ class MonopoliRepo {
                 }}
             })
             // update player data whom gets money from taxes
-            newPromise(updateData(req, res, queryObject3))
-            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 1'))
+            newPromise(updateData(res, queryObject3))
+            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 4'))
+        }
+        else if(lost_players) {
+            // loser = user_id
+            for(let loser of lost_players) {
+                // required data
+                const queryObject4 = {
+                    table: 'players',
+                    selectColumn: '*',
+                    multipleWhere: false,
+                    whereColumn: 'user_id',
+                    whereValue: loser,
+                    get updateColumn() {
+                        return {
+                            harta_kota: ''
+                        }
+                    }
+                }
+                // update harta_kota for losers
+                newPromise(updateData(res, queryObject4))
+                .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 5'))
+            }
         }
         // update current player data
-        newPromise(updateData(req, res, queryObject))
-        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 2'))
+        newPromise(updateData(res, queryObject))
+        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 1'))
         // update next player jalan to TRUE
-        return newPromise(updateData(req, res, queryObject2))
-        .then(() => {
+        return newPromise(updateData(res, queryObject2))
+        .then(resultOne => {
             // get only next player data from players table
-            return newPromise(selectOne(req, res, queryObject2))
-            .then(resultOne => {
-                if(resultOne.length == 0)
-                    return  newResponse(404, res, 'user tidak ditemukan')
-                // get other player data from players table
-                return newPromise(selectAll(req, res, queryObject2))
-                .then(resultAll => {
-                    if(resultAll.length == 0)
-                        return  newResponse(404, res, 'user tidak ditemukan')
-                    return [{ nextPlayerData: resultOne, otherPlayerData: resultAll }]
-                })
-                .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 5'))
+            console.log(resultOne);
+            if(resultOne.length == 0)
+                return  newResponse(404, res, 'user(one) tidak ditemukan')
+            // get other player data from players table
+            return newPromise(selectAll(res, queryObject2))
+            .then(resultAll => {
+                if(resultAll.length == 0)
+                    return  newResponse(404, res, 'user(all) tidak ditemukan')
+                return [{ nextPlayerData: resultOne, otherPlayerData: resultAll }]
             })
-            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 4'))
+            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 3'))
         })
-        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 3'))
+        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 2'))
     }
 
     gameResumeRepo(req, res) {
@@ -339,7 +378,7 @@ class MonopoliRepo {
             selectColumn: {enumerable: true, value: 'user_id(id, username), pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, putaran'}
         })
         // get all players 
-        return newPromise(selectAll(req, res, queryObject))
+        return newPromise(selectAll(res, queryObject))
         .catch(err => catchResponse(res, err, 'Monopoli.gameResumeRepo'))
     }
 }

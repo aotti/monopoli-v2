@@ -49,7 +49,8 @@ let prisonCounter = 0
 // private prison counter
 const myPrisonCounter = {
     username: null,
-    counter: null
+    counter: 0,
+    status: false
 }
 gameStatusCounter = 0
 const gameStatusInterval = setInterval(() => {

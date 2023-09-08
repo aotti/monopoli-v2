@@ -2,8 +2,11 @@ const { newResponse, isVariableAppropriate, isTheLengthAppropriate } = require('
 const stringType = 'string'
 const numberType = 'number'
 const booleanType = 'boolean'
+const objectType = 'object'
 const uuidv4Regex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 
+// ### GABUNG VALIDATOR JOINED & FORCING
+// this validator is used only 1 route
 function validatePlayerJoined(req, res, next) {
     const { randNumber, username } = req.body
     // check var types
@@ -17,26 +20,37 @@ function validatePlayerJoined(req, res, next) {
     next()
 }
 
+// this validator is used only 1 route
 function validatePlayerForcing(req, res, next) {
     const { username } = req.body
     // check var types
     switch(true) {
         case username == null:
-            return newResponse(400, res, 'playerForcing cannot be null')
+            return newResponse(400, res, 'validate playerForcing cannot be null')
         case isVariableAppropriate(username, stringType):
-            return newResponse(400, res, 'playerForcing type is invalid')
+            return newResponse(400, res, 'validate playerForcing type is invalid')
     }
     next()
 }
 
+// this validator is used for multiple routes
 function validatePlayerData(req, res, next) {
-    const { user_id, username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, next_player } = req.body
-    // check var exists
+    const { 
+        user_id, username, 
+        pos, harta_uang, 
+        harta_kota, kartu, 
+        giliran, jalan, 
+        penjara, next_player, 
+        lost_players, tax_payment 
+    } = req.body
+    // check var exists and types 
     switch(true) {
-        case next_player && isVariableAppropriate(next_player, numberType):
-        case giliran && isVariableAppropriate(giliran, numberType):
         case username && isVariableAppropriate(username, stringType):
-            return newResponse(400, res, 'player exist is invalid')
+        case giliran && isVariableAppropriate(giliran, numberType):
+        case next_player && isVariableAppropriate(next_player, numberType):
+        case lost_players && isVariableAppropriate(lost_players, objectType):
+        case tax_payment && isVariableAppropriate(tax_payment, objectType):
+            return newResponse(400, res, 'validate player exist is invalid')
     }
     // check var types
     switch(true) {
@@ -47,7 +61,7 @@ function validatePlayerData(req, res, next) {
         case isVariableAppropriate(kartu, stringType):
         case isVariableAppropriate(jalan, booleanType):
         case isVariableAppropriate(penjara, booleanType):
-            return newResponse(400, res, 'player type is invalid')
+            return newResponse(400, res, 'validate player type is invalid')
     }
     next()
 }

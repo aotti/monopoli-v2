@@ -15,29 +15,38 @@ class Monopoli {
             if(result.length > 0) {
                 return newResponse([200, 'success getGameStatus'], res, result)
             }
-            if(result.statusCode != 200) return
+            if(result.statusCode !== 200) return
         })
     }
 
     updateGameStatus(req, res) {
         // get mods data 
         MonopoliRepo.updateGameStatusRepo(req, res)
-        .then(result => {
-            if(result.length > 0) {
+        .then(resultUpdateGameStatus => {
+            const { statusCode, errorMessage } = resultUpdateGameStatus
+            if(resultUpdateGameStatus.length > 0) {
                 // send realtime data
                 // pubnub 
-                return pubnubPublish('gameStatus', result, res, 'success updateGameStatus') 
+                return pubnubPublish('gameStatus', resultUpdateGameStatus, res, 'success updateGameStatus') 
                 // ably
-                // ablyPublish('gameStatus', result, newResponse(200, res, 'game status updated'))
+                // ablyPublish('gameStatus', resultUpdateGameStatus, newResponse(200, res, 'game status updated'))
             }
-            if(result.statusCode != 200) return
+            if(statusCode !== 200) 
+                return newResponse(statusCode, res, errorMessage)
         })
     }
 
     deletePlayerRows(req, res) {
         MonopoliRepo.deletePlayerRowsRepo(req, res)
-        .then(result => {
-            return newResponse([200, 'success deletePlayerRows'], res, result)
+        .then(resultDeletePlayer => {
+            const { statusCode, errorMessage } = resultDeletePlayer
+            // "resultDeletePlayer = null" means delete success
+            if(resultDeletePlayer.length > 0)
+                return newResponse([200, 'success deletePlayerRows'], res, resultDeletePlayer)
+            // if theres statusCode 401, it means non admin player trying to delete
+            else if(statusCode !== 200) {
+                return newResponse(statusCode, res, errorMessage)
+            }
         })
     }
 
@@ -52,8 +61,12 @@ class Monopoli {
     changeModsData(req, res) {
         // update mods data
         MonopoliRepo.changeModsDataRepo(req, res)
-        .then(result => {
-            return newResponse([200, 'success changeModsData'], res, result)
+        .then(resultChangeMods => {
+            const { statusCode, errorMessage } = resultChangeMods
+            if(resultChangeMods.length > 0)
+                return newResponse([200, 'success changeModsData'], res, resultChangeMods)
+            else if(statusCode !== 200) 
+                return newResponse(statusCode, res, errorMessage)
         })
     }
 
@@ -80,10 +93,10 @@ class Monopoli {
                             // ablyPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
                         })
                     }
-                    if(resultMods.statusCode != 200) return
+                    if(resultMods.statusCode !== 200) return
                 })
             }
-            if(resultJoined.statusCode != 200) return
+            if(resultJoined.statusCode !== 200) return
         })
     }
 
@@ -110,10 +123,10 @@ class Monopoli {
                             // ablyPublish('playerForcing', result, newResponse(200, res, `updated`))
                         })
                     }
-                    if(resultMods.statusCode != 200) return
+                    if(resultMods.statusCode !== 200) return
                 })
             }
-            if(resultForcing.statusCode != 200) return
+            if(resultForcing.statusCode !== 200) return
         })
     }
     
@@ -136,7 +149,7 @@ class Monopoli {
                     // ablyPublish('playerReady', resultReady, newResponse(200, res, `ready`))
                 })
             }
-            if(resultReady.statusCode != 200) return
+            if(resultReady.statusCode !== 200) return
         })
     }
 
@@ -169,7 +182,7 @@ class Monopoli {
                     // ably
                     // ablyPublish('playerMoving', jsonData, newResponse(200, res, `player moving`))
                 }
-                if(resultMods.statusCode != 200) return
+                if(resultMods.statusCode !== 200) return
             })
         })
     }
@@ -194,7 +207,7 @@ class Monopoli {
                     // ablyPublish('playerTurnEnd', resultTurnEnd, newResponse(200, res, `turn end`))
                 })
             }
-            if(resultTurnEnd.statusCode != 200) return
+            if(resultTurnEnd.statusCode !== 200) return
         })
     }
 
@@ -212,7 +225,7 @@ class Monopoli {
                     return newResponse([200, 'success gameResume'], res, payload)
                 })
             }
-            if(result.statusCode != 200) return
+            if(result.statusCode !== 200) return
         })
     }
     

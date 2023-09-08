@@ -225,14 +225,6 @@ function feedbackTurnOff() {
     }, 3e3);
 }
 
-/**
- * an error notification with exclamation mark
- * @param {String} errorMessage - error message (string)
- */
-function errorNotification(errorMessage) {
-    feedbackTurnOn(`[${emoji.warning}] ${errorMessage}`)
-}
-
 function removeDialog(dialogWrapper, dialogContainer) {
     dialogWrapper.remove()
     dialogContainer.remove()
@@ -253,8 +245,16 @@ function inputFilterError(inputElement, inputPlaceholder) {
     setTimeout(() => {
         inputElement.placeholder = inputPlaceholder;
         inputElement.style.border = '1px solid grey';
-    }, 2000);
+    }, 5000);
     return 
+}
+
+/**
+ * an error notification with exclamation mark
+ * @param {String} errorMessage - error message (string)
+ */
+function errorNotification(errorMessage) {
+    feedbackTurnOn(`[${emoji.warning}] ${errorMessage}`)
 }
 
 /**
@@ -332,10 +332,19 @@ function getGameStatus(fetching = true, gameStatus = null) {
     }
 }
 
-function updateGameStatus(newGameStatus) {
+function updateGameStatus(newGameStatus, username = null, settingStatusInput = null) {
     // update game status 
-    fetcher(`/gamestatus`, 'PATCH', {gameStatus: newGameStatus})
+    const jsonData = {
+        gameStatus: newGameStatus,
+        username: username
+    }
+    fetcher(`/gamestatus`, 'PATCH', jsonData)
     .then(result => {
+        if(result.status !== 200) {
+            settingStatusInput.style.background = 'coral'
+            settingStatusInput.value = result.errorMessage
+            return errorCapsule(result, anErrorOccured)
+        }
         return fetcherResults(result, 'gameStatus')
     })
     .catch(err => {
@@ -344,15 +353,20 @@ function updateGameStatus(newGameStatus) {
 }
 
 const resetter = {
-    resetGameStatus: function () {
-        updateGameStatus('unready')
+    resetGameStatus: function (settingStatusInput, username) {
+        if(username === myGameData.username)
+            updateGameStatus('unready', username, settingStatusInput)
+        else {
+            settingStatusInput.style.background = 'coral'
+            return settingStatusInput.value = 'unable to reset status'
+        }
     },
-    resetPlayerTable: function (settingStatusInput) {
-        fetcher('/deleteplayers', 'GET')
+    resetPlayerTable: function (settingStatusInput, username) {
+        fetcher('/deleteplayers', 'DELETE', {username: username})
         .then(result => {
             if(result.status != 200) {
                 settingStatusInput.style.background = 'coral'
-                settingStatusInput.value = 'reset table failed'
+                settingStatusInput.value = result.errorMessage
                 return errorCapsule(result, anErrorOccured)
             }
             console.log(result);
@@ -383,6 +397,7 @@ function fetcher(endpoint, method, jsonData) {
             }).then(data => {return data.json()})
         case 'POST':
         case 'PATCH':
+        case 'DELETE':
             return fetch(`${url}/api/${endpoint}?` + requireUUID, {
                 method: method,
                 headers: {

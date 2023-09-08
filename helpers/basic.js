@@ -24,15 +24,21 @@ function newResponse(codeAndMessage, res, data) {
             })
         case 400: case 401: case 403: case 404: case 500:
             const errorMessage = (() => {
+                // error message container
                 let errMsg = null
+                // if errorMessage key exists
                 if(data.errorMessage) {
+                    // if inside errorMessage have another object
                     if(typeof data.errorMessage == 'object')
                         errMsg = `status: ${data.statusCode}\n${data.errorMessage.message}`
+                    // only string message
                     else
                         errMsg = `status: ${data.statusCode}\n${data.errorMessage}`
                 }
+                // if message key exists
                 else if(data.message) 
                     errMsg = data.message
+                // no object in error
                 else
                     errMsg = data
                 return errMsg
