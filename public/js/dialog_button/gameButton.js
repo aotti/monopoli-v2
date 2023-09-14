@@ -203,7 +203,7 @@ function interactWithButtons(mods, gameStatus = null) {
             dialogInfo,
             cE('div'), 'joinedPlayer',
             cE('span'), cE('span'),
-            'Joined Player', (playersTurn.length > 0 ? playersTurn.join(', ') : 'login untuk melihat player')
+            'Player In-game', (playersTurn.length > 0 ? playersTurn.join('\n') : 'game belum dimulai')
         )
         // div bentuk player
         dialogBoxSpanChild(
@@ -790,6 +790,7 @@ function interactWithButtons(mods, gameStatus = null) {
     if(gameStatus == 'playing') {
         // setting button
         qS('.setting_button').onclick = ()=>{
+            // display menu item
             if(qS('.setting_menu').style.display == 'none' || qS('.setting_menu').style.display == '') {
                 qS('.setting_menu').style.display = 'block';
                 qS('.setting_arrow').style.display = 'block';
@@ -801,6 +802,24 @@ function interactWithButtons(mods, gameStatus = null) {
                 while(qS('.myCityBox').firstChild && qS('.myCityBox').firstChild.classList != null && qS('.myCityBox').firstChild.classList[0] != 'myCityButton')
                     qS('.myCityBox').removeChild(qS('.myCityBox').firstChild);
             }
+        }
+        // menu items
+        const menuItems = {
+            awtoKocokDadu: qS('#awtoKocokDadu')
+        }
+        // - awto kocok dadu
+        if(getLocStorage('awtoKocokDadu') && getLocStorage('awtoKocokDadu') === 'true') {
+            // set input to check if localStorage 'awtoKocokDadu' exists
+            menuItems.awtoKocokDadu.checked = true
+        }
+        // -- set awto kocok dadu on/off
+        menuItems.awtoKocokDadu.onclick = (ev)=>{
+            // set on
+            if(ev.target.checked) 
+                setLocStorage('awtoKocokDadu', true)
+            // set off
+            else
+                setLocStorage('awtoKocokDadu', false)
         }
         // cards hover
         for(let cardHover of qSA('.kartuBuffDebuff')) {

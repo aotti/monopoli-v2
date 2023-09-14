@@ -42,6 +42,9 @@ function kocokDaduToggle(mods, giliran) {
             qS('.acakDaduTeks').innerText = 'Giliran Anda'
             // roll the dice
             kocokDaduTrigger(mods, giliran)
+            // when auto roll dice is checked
+            if(qS('#awtoKocokDadu').checked)
+                qS('.acakDadu').click()
         }
         // else disable it
         else {
@@ -64,7 +67,7 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         }
         // run player moves with realtime
         // roll the dice
-        const playerDadu = customDadu || getDiceNumber()
+        const playerDadu = customDadu || 8
         // set prices for kota khusus and terkutuk
         pricesForSpecialAndCursed(playerDadu, mods)
         // roll the branch
@@ -223,7 +226,7 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
                         case steps%28 >= 0 && steps%28 < 3:
                             myBranchChance.status = true
                             break
-                        // set to false if outside branch lands
+                        // set to false (stop reset) if outside branch lands
                         default:
                             myBranchChance.status = false
                             break
@@ -284,6 +287,8 @@ function playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEv
     })()
     // payload
     const jsonData = {
+        // to check if current end player is losing then empty the harta_kota
+        money_lose_mods: mods[0].money_lose,
         // send (recent) player id to update the database
         user_id: myGameData.id,
         // player position after all the action

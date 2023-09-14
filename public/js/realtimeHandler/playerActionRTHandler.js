@@ -43,29 +43,28 @@ function playerTurnEndHandler(payload) {
                 playersTurnLose.push(otherPlayerData[i].user_id.username)
         }
         // update player list money
-        for(let i in qSA('.uangPlayer')) {
-            const moneyList = qSA('.uangPlayer')
-            if(typeof moneyList[i] === 'object' && typeof playersTurnObj[i].harta_uang === 'number') {
-                moneyList[i].innerText = `Rp ${currencyComma(playersTurnObj[i].harta_uang)}`
+        for(let i in playersMoneyEl) {
+            if(typeof playersTurnObj[i].harta_uang === 'number') {
+                playersMoneyEl[i].innerText = `Rp ${currencyComma(playersTurnObj[i].harta_uang)}`
                 // money gain/lose animation
                 // if player gain money
                 if(playersTurnObj[i].harta_uang > playersPreMoney[i].harta_uang) {
-                    moneyList[i].classList.toggle('plus')
-                    setTimeout(() => { moneyList[i].classList.toggle('plus') }, 2000);
+                    playersMoneyEl[i].classList.toggle('plus')
+                    setTimeout(() => { playersMoneyEl[i].classList.toggle('plus') }, 2000);
                 }
                 // if player loss money
                 else if(playersTurnObj[i].harta_uang < playersPreMoney[i].harta_uang) {
-                    moneyList[i].classList.toggle('minus')
-                    setTimeout(() => { moneyList[i].classList.toggle('minus') }, 2000);
+                    playersMoneyEl[i].classList.toggle('minus')
+                    setTimeout(() => { playersMoneyEl[i].classList.toggle('minus') }, 2000);
                 }
             }
         }
+        // update player cities
+        placeHomeAndHotelOnCity(otherPlayerData)
         // if only 1 player left
         if(playersTurnLose.length === 1) {
             return gameOver(playersTurnLose[0])
         }
-        // update player cities
-        placeHomeAndHotelOnCity(otherPlayerData)
         setTimeout(() => {
             // update player pre money 
             for(let i in otherPlayerData)

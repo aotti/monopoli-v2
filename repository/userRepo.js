@@ -28,10 +28,10 @@ class UserRepo {
             }}
         })
         // insert user data  
-        return newPromise(insertDataRow(req, res, queryObject))
+        return newPromise(insertDataRow(res, queryObject))
         .then(() => {
             // get the inserted data
-            return newPromise(selectOne(req, res, queryObject))
+            return newPromise(selectOne(res, queryObject))
             // error on selectOne
             .catch(err => catchResponse(res, err, 'User.registerRepo 2'))
         })
@@ -61,16 +61,16 @@ class UserRepo {
             }}
         })
         // get user data by username and password
-        return newPromise(selectOne(req, res, queryObject))
+        return newPromise(selectOne(res, queryObject))
         .then(user => {
             // if user data doesnt match with the database
             if(user.length == 0)
                 return newResponse(400, res, `username/password salah`)
             // get the updated data
-            return newPromise(updateData(req, res, queryObject))
+            return newPromise(updateData(res, queryObject))
             .then(() => {
                 // get user data after update
-                return newPromise(selectOne(req, res, queryObject))
+                return newPromise(selectOne(res, queryObject))
                 // error on selectOne
                 .catch(err => catchResponse(res, err, 'User.loginRepo 3'))
             })
@@ -95,7 +95,7 @@ class UserRepo {
             whereValue: {enumerable: true, value: uuid}
         })
         // get user data by username and password
-        return newPromise(selectOne(req, res, queryObject))
+        return newPromise(selectOne(res, queryObject))
         .then(result => {
             // if user data doesnt match with the database
             if(result.length == 0)
@@ -127,7 +127,7 @@ class UserRepo {
             }}
         })
         // get user data by username and password
-        return newPromise(selectOne(req, res, queryObject))
+        return newPromise(selectOne(res, queryObject))
         .then(result => {
             // if the user trying to logout but not even login
             if(result[0].status == 'logout') 
@@ -136,10 +136,10 @@ class UserRepo {
             else if(result.length == 0)
                 return newResponse(404, res, `Anda ini hekel darimana?`)
             // when theres no more error, update user status
-            return newPromise(updateData(req, res, queryObject))
+            return newPromise(updateData(res, queryObject))
             .then(() => {
                 // get data after successful logout
-                return newPromise(selectOne(req, res, queryObject))
+                return newPromise(selectOne(res, queryObject))
                 // error on selectOne
                 .catch(err => catchResponse(res, err, 'User.logoutRepo 3'))
             })

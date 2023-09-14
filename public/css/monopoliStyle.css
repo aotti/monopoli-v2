@@ -63,6 +63,31 @@
   padding: 10px;
 }
 
+.waitingPlayersContainer {
+  display: inline-block;
+  position: relative;
+  top: -4px;
+  background-color: black;
+  padding: 2px;
+}
+
+#waitingPlayers {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 2px;
+}
+
+#waitingPlayers > span {
+  width: 7px;
+  min-height: 7px;
+  padding: 0 3px;
+  background-color: lightgrey;
+}
+
+#waitingPlayers > span:first-child {
+  grid-row: span 2;
+}
+
 #papan_game {
   /* display: table-cell; */
   width: 615px;

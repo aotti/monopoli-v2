@@ -78,6 +78,7 @@ function checkAndActivateCard(cardsObject) {
                 confirmDialog(`${cardText}\n---\n${splitEffect[0]}`)
                 return cardsEventData
             }
+            // array length 2
             else if(splitEffect.length === 2) {
                 confirmDialog(`${cardText}\n---\nloading..`)
                 // run buy city dialog after 3 secs
@@ -161,6 +162,11 @@ function checkAndActivateCard(cardsObject) {
                         const customDadu = (destinationPos > tempPlayerPosNow 
                                         ? destinationPos - tempPlayerPosNow 
                                         : (destinationPos + 28) - tempPlayerPosNow)
+                        // delete buttons
+                        for(let children of qS('.confirm_box').children) {
+                            if(children.nodeName == 'INPUT')
+                                children.remove()
+                        }
                         // add confirm_box text
                         setTimeout(() => {
                             qS('.confirm_box').firstChild.innerText += `\n---\nMenuju ke petak ${destinationPos}`
@@ -496,14 +502,14 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
         }
     }
     // chances >= 9 && chances < 25
-    else if(chances >= 9 && chances < 25) {
+    else if(chances >= 9 && chances < 99) {
         switch(cardEventType) {
             // dana umum
             case 'Dana Umum':
                 tempCardList.cards = [
                     'Bayar rumah sakit 50.000',
                     'Preman pinjol datang ke rumah, bayar hutang 60.000',
-                    `Gilang si belok memberi anda uang 5.000 ${emoji.sweatJoy}`,
+                    `Gilang memberi anda uang 5.000 ${emoji.sweatJoy}`,
                     `Kartu anti pajak ${emoji.sunglas}`,
                     'Pilih kota anda yang ingin dituju'
                 ]
@@ -558,7 +564,7 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
                 // card types
                 tempCardList.types = ['loseMoney', 'moveBackward', 'miniGame', 'specialCard', 'buyCity']
                 // card effects
-                tempCardList.effects = [(endTurnMoney * .3), -2, 'move_or_draw', 'dadu-gaming', getRandomCity(giliran, 'buy')]
+                tempCardList.effects = [Math.floor(endTurnMoney * .3), -2, 'move_or_draw', 'dadu-gaming', getRandomCity(giliran, 'buy')]
                 break
         }
     }
@@ -611,7 +617,7 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
 
 function getRandomCity(giliran, condition) {
     // find city for the card effect 
-    const findCities = playerCityList(giliran)
+    const findCities = playerCityList(giliran, null, true)
     const randomCityObj = {}
     if(findCities.length > 0) {
         const cityIndex = Math.floor(Math.random() * findCities.length)
@@ -648,8 +654,16 @@ function getDestroyTarget() {
     const destroyTarget = Math.floor(Math.random() * splitPerCity.length)
     const splitPerProp = splitPerCity[destroyTarget].split(',')
     const destroyObj = {
-        city: splitPerProp[0].split('-')[0],
-        prop: splitPerProp[splitPerProp.length-1] === 'tanah' ? null : splitPerProp[splitPerProp.length-1]
+        // if the city name includes 'khusus', make it null
+        city: splitPerProp[0].split('-')[0].match(/khusus/) 
+            ? null : splitPerProp[0].split('-')[0],
+        // if the city prop includes 'special', make it null
+        prop: splitPerProp[splitPerProp.length-1] === 'tanah' || splitPerProp[splitPerProp.length-1].match(/special/)
+            ? null : splitPerProp[splitPerProp.length-1]
     }
+    // if the player doesnt have any city
+    if((destroyObj.city === null && destroyObj.prop === null) || (destroyObj.city === '' && destroyObj.prop === ''))
+        return `Orang misqueen tidak bisa kena azab ${emoji.sunglas}`
+    // if the player have atlest 1 city
     return destroyObj.prop === null ? 'Tanah hungkul nya.. kumaha atuh nteu tiasa' : `${destroyObj.city}-${destroyObj.prop}`
 }

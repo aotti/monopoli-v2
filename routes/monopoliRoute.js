@@ -10,6 +10,7 @@ router
     .get('/gamestatus', Monopoli.getGameStatus)
     .get('/mods', Monopoli.getModsData)
     .get('/gameresume', validateUUIDv4, Monopoli.gameResume)
+    .get('/waiting', validateUUIDv4, Monopoli.getWaitingPlayers)
 // post
 router
     .post('/prepare', validateUUIDv4, validatePlayerJoined, Monopoli.playerJoined)

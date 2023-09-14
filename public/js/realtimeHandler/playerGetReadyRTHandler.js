@@ -1,3 +1,20 @@
+// realtime handler for waitingPlayers
+function waitingPlayersHandler(payload) {
+    const { waitingPlayers } = payload
+    // ### BUAT KONDISI AGAR HANYA JALAN 1X PER PLAYER
+    // get waitingPlayers element
+    const waitingPlayersEl = qS('#waitingPlayers')
+    // reset background color
+    for(let children of waitingPlayersEl) {
+        children.style.backgroundColor = 'lightgrey'
+    }
+    // set 'gold' background color if theres any player
+    for(let i=0; i<waitingPlayers; i++) {
+        waitingPlayersEl.children[i].style.backgroundColor = 'gold'
+    }
+    return
+}
+
 // realtime handler for playerJoined
 function playerJoinedHandler(payload) {
     // mods need index 0 to use, ex: mods[0].branch / mods[0].board_shape

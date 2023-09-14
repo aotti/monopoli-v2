@@ -22,6 +22,10 @@ function realtimeListener(getMessage) {
             const gameStatus = getMessage.payload[0].status
             getGameStatus(false, gameStatus)
             break
+        case 'waitingPlayers':
+            console.log('waitingPlayers');
+            waitingPlayersHandler(getMessage.payload)
+            break
         case 'playerJoined':
             console.log('playerJoined');
             playerJoinedHandler(getMessage.payload)

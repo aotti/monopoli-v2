@@ -1,11 +1,25 @@
-// by clicking Kocok Giliran, player get random number
-// higher number = first turn
+// count the players whose waiting after 'kocok giliran'
+function getWaitingPlayers() {
+    if(getLocStorage('uuid')) {
+        return fetcher('/waiting', 'GET')
+        .then(result => {
+            // '.then' is needed for realtime to work
+            // if only catch, the realtime waiting player wont work
+            return
+        })
+        .catch(err => {
+            return errorCapsule(err, anErrorOccured)
+        })
+    }
+}
+
+// get game status onclick 'kocok giliran'
 function checkGameStatus() {
     const acakGiliranButton = qS('.acakGiliran')
     acakGiliranButton.onclick = () => {
         fetcher('/gamestatus', 'GET')
         .then(result => {
-            // deciding the turn for each player
+            // check the game status then decide the turn for each player
             decidePlayersTurn(result.data[0].status)
         })
         .catch(err => {
@@ -29,6 +43,7 @@ function decidePlayersTurn(gameStatus) {
         feedbackTurnOn('anda belum login')
         return feedbackTurnOff()
     }
+    // disable 'kocok giliran' if no more errors
     qS('.acakGiliran').disabled = true;
     userName.style.boxShadow = '0 0 10px blue';
     // generate rand number
@@ -40,6 +55,9 @@ function decidePlayersTurn(gameStatus) {
     // send data to server
     fetcher(`/prepare`, 'POST', jsonData)
     .then(result => {
+        // get number of waiting players
+        getWaitingPlayers()
+        // player joined result
         return fetcherResults(result)
     })
     .catch(err => {
@@ -274,6 +292,8 @@ function createPlayerList() {
         playerList.appendChild(listSpan_1);
         playerList.appendChild(listSpan_2);
         playerList.appendChild(listSpan_3);
+        // insert money elements
+        playersMoneyEl.push(listSpan_2)
     }
 }
 

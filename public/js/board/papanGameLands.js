@@ -13,7 +13,6 @@ function pricesForSpecialAndCursed(playerDadu, mods) {
     const rumusKutukan3 = rumusKutukan1 * (randKutukan / 100)
     const hargaKutukan = Math.floor(rumusKutukan1 + rumusKutukan2 + rumusKutukan3)
     // set the price for kotaKhusus
-    // laps > 6 == 12_000
     const hargaKhusus = (getPlayerLaps > 6 ? 4000 * playerDadu : 2000 * playerDadu)
     for(let land of specialAndCursedLands) {
         // check if any special area is already bought
@@ -23,7 +22,7 @@ function pricesForSpecialAndCursed(playerDadu, mods) {
         const getClassPrice = land.classList.toString().match(/\d{2,}/)
         const classTextRegex = new RegExp(`.*(?=${getClassPrice})`)
         const getClassText = land.classList.toString().match(classTextRegex)
-        // ### REGEX UNTUK AMBIL HARGA TEXT = innerText.match(/Rp \d.\d{2,}/)
+        // ### REGEX UNTUK AMBIL HARGA TEXT = innerText.match(/Rp \d+.\d+/)
         // get innertext without price
         const getContentPrice = land.innerText.match(/Rp \d+.\d+/)
         const contentTextRegex = specialOwner ? new RegExp(`.*(?=\\s\\W)`) : new RegExp(`.*(?=${getContentPrice})`)

@@ -11,11 +11,11 @@ class Monopoli {
     getGameStatus(req, res) {
         // get mods data 
         MonopoliRepo.getGameStatusRepo(req, res)
-        .then(result => {
-            if(result.length > 0) {
-                return newResponse([200, 'success getGameStatus'], res, result)
+        .then(resultGetGameStatus => {
+            if(resultGetGameStatus.length > 0) {
+                return newResponse([200, 'success getGameStatus'], res, resultGetGameStatus)
             }
-            if(result.statusCode !== 200) return
+            if(resultGetGameStatus.statusCode !== 200) return
         })
     }
 
@@ -43,6 +43,8 @@ class Monopoli {
             // "resultDeletePlayer = null" means delete success
             if(resultDeletePlayer.length > 0)
                 return newResponse([200, 'success deletePlayerRows'], res, resultDeletePlayer)
+            else if(resultDeletePlayer.length === 0)
+                return newResponse([200, 'success deletePlayerRows'], res, 'table is empty')
             // if theres statusCode 401, it means non admin player trying to delete
             else if(statusCode !== 200) {
                 return newResponse(statusCode, res, errorMessage)
@@ -67,6 +69,23 @@ class Monopoli {
                 return newResponse([200, 'success changeModsData'], res, resultChangeMods)
             else if(statusCode !== 200) 
                 return newResponse(statusCode, res, errorMessage)
+        })
+    }
+
+    getWaitingPlayers(req, res) {
+        // get all waiting players
+        MonopoliRepo.getWaitingPlayersRepo(req, res)
+        .then(resultGetWaitingPlayers => {
+            MonopoliRepo.getGameStatusRepo(req, res)
+            .then(resultGetGameStatus => {
+                // only run the realtime if the game state is unready
+                if(resultGetGameStatus[0].status == 'unready') {
+                    // check type data then send realtime data
+                    if(typeof resultGetWaitingPlayers === 'object') 
+                        return pubnubPublish('waitingPlayers', resultGetWaitingPlayers, res, `success getWaitingPlayers`)
+                    if(resultGetWaitingPlayers.statusCode !== 200) return
+                }
+            })
         })
     }
 

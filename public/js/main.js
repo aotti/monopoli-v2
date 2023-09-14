@@ -24,8 +24,9 @@ const myGameData = {
     uuid: null,
     username: null
 }
-// for saving other player money/cards
+// for saving all players money/cards
 const playersTurnObj = []
+const playersMoneyEl = []
 const playersPreMoney = []
 // player turns
 const playersTurn = []
@@ -33,7 +34,8 @@ const playersTurnId = []
 // to prevent codes run 2x
 const oneTimeStatus = {
     turnEnd: false,
-    throughStart: false
+    throughStart: false,
+    waitingPlayers: false
 }
 // for branch map
 // global branch, to display the private branch chance to other player
@@ -70,6 +72,8 @@ const gameStatusInterval = setInterval(() => {
         // check game status before deciding the turn 
         // for each player and set up the game
         checkGameStatus()
+        // get number of waiting players
+        getWaitingPlayers()
         // resume the game if a player need to reload the page
         allPlayersLastPos()
         return

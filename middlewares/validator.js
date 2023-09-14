@@ -36,6 +36,7 @@ function validatePlayerForcing(req, res, next) {
 // this validator is used for multiple routes
 function validatePlayerData(req, res, next) {
     const { 
+        money_lose_mods,
         user_id, username, 
         pos, harta_uang, 
         harta_kota, kartu, 
@@ -45,6 +46,7 @@ function validatePlayerData(req, res, next) {
     } = req.body
     // check var exists and types 
     switch(true) {
+        case money_lose_mods && isVariableAppropriate(money_lose_mods, numberType):
         case username && isVariableAppropriate(username, stringType):
         case giliran && isVariableAppropriate(giliran, numberType):
         case next_player && isVariableAppropriate(next_player, numberType):

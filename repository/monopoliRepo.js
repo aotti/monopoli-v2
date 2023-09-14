@@ -130,7 +130,30 @@ class MonopoliRepo {
         }
         // update and get mods data
         return newPromise(updateData(res, queryObject))
-        .catch(err => catchResponse(res, err, 'Monopoli.changeModsDataRepo 2'))
+        .catch(err => catchResponse(res, err, 'Monopoli.changeModsDataRepo 1'))
+    }
+
+    getWaitingPlayersRepo(req, res) {
+        // TABLE = prepares
+        // required data for query
+        const queryObject = {
+            table: 'prepares',
+            selectColumn: '*'
+        }
+        // get all waiting players data
+        return newPromise(selectAll(res, queryObject))
+        .then(resultAll => {
+            const numberOfPlayers = resultAll.length
+            // return only the number
+            if(resultAll.length > 0) {
+                // players count
+                return { waitingPlayers: numberOfPlayers }
+            }
+            else if(resultAll.length === 0) {
+                return { waitingPlayers: numberOfPlayers }
+            }
+        })
+        .catch(err => catchResponse(res, err, 'Monopoli.getWaitingPlayersRepo 1'))
     }
 
     playerJoinedRepo(req, res) {
@@ -188,7 +211,7 @@ class MonopoliRepo {
         .catch(err => catchResponse(res, err, 'Monopoli.forceStartRepo 1'))
     }
 
-    readyRepo(req, res) {username
+    readyRepo(req, res) {
         // TABLE = prepares
         const { user_id, username, pos, harta_uang, harta_kota, kartu, giliran, jalan, penjara, putaran } = req.body
         const queryObject = {}
@@ -266,6 +289,7 @@ class MonopoliRepo {
     playerTurnEndRepo(req, res) {
         // TABLE = players
         const { 
+            money_lose_mods,
             user_id, pos, 
             harta_uang, harta_kota, 
             kartu, jalan, 
@@ -273,6 +297,12 @@ class MonopoliRepo {
             next_player, lost_players, 
             tax_payment 
         } = req.body
+        // temp harta_kota value to anticipate if current player is losing
+        let hartaKotaFiltered = harta_kota
+        // check if current end player is losing or not
+        if(harta_uang < -money_lose_mods) {
+            hartaKotaFiltered = ''
+        }
         const queryObject = {}
         // required data for query
         Object.defineProperties(queryObject, {
@@ -285,7 +315,7 @@ class MonopoliRepo {
                 return {
                     pos: pos,
                     harta_uang: harta_uang,
-                    harta_kota: harta_kota,
+                    harta_kota: hartaKotaFiltered,
                     kartu: kartu,
                     jalan: jalan,
                     penjara: penjara,
@@ -348,25 +378,26 @@ class MonopoliRepo {
             }
         }
         // update current player data
-        newPromise(updateData(res, queryObject))
-        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 1'))
-        // update next player jalan to TRUE
-        return newPromise(updateData(res, queryObject2))
-        .then(resultOne => {
-            // get only next player data from players table
-            console.log(resultOne);
-            if(resultOne.length == 0)
-                return  newResponse(404, res, 'user(one) tidak ditemukan')
-            // get other player data from players table
-            return newPromise(selectAll(res, queryObject2))
-            .then(resultAll => {
-                if(resultAll.length == 0)
-                    return  newResponse(404, res, 'user(all) tidak ditemukan')
-                return [{ nextPlayerData: resultOne, otherPlayerData: resultAll }]
+        return newPromise(updateData(res, queryObject))
+        .then(() => {
+            // update next player jalan to TRUE
+            return newPromise(updateData(res, queryObject2))
+            .then(resultOne => {
+                // get only next player data from players table
+                if(resultOne.length == 0)
+                    return  newResponse(404, res, 'user(one) tidak ditemukan')
+                // get other player data from players table
+                return newPromise(selectAll(res, queryObject2))
+                .then(resultAll => {
+                    if(resultAll.length == 0)
+                        return  newResponse(404, res, 'user(all) tidak ditemukan')
+                    return [{ nextPlayerData: resultOne, otherPlayerData: resultAll }]
+                })
+                .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 3'))
             })
-            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 3'))
+            .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 2'))
         })
-        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 2'))
+        .catch(err => catchResponse(res, err, 'Monopoli.playerTurnEndRepo 1'))
     }
 
     gameResumeRepo(req, res) {
