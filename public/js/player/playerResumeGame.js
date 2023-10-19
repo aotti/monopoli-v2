@@ -59,6 +59,8 @@ function gameResume(result) {
             myPrisonCounter.username = playersPlaying[i].user_id.username
             myPrisonCounter.counter = 1
             myPrisonCounter.status = playersPlaying[i].penjara
+            // set sell city
+            oneTimeStatus.sellCity = playersPlaying[i].sell_city
         }
         // get giliran to refill playersTurn
         tempPlayersTurn.push(playersPlaying[i].giliran)
@@ -68,7 +70,8 @@ function gameResume(result) {
             pos: playersPlaying[i].pos,
             harta_uang: playersPlaying[i].harta_uang,
             harta_kota: playersPlaying[i].harta_kota,
-            kartu: playersPlaying[i].kartu
+            kartu: playersPlaying[i].kartu,
+            color: playersColor(playersPlaying[i].giliran)
         }
         // refill player pre money
         playersPreMoney[i] = {
@@ -107,12 +110,12 @@ function gameResume(result) {
     createPlayerList()
     // if no player, then stop right here
     if(playersTurn.length == 0) return
-    // create player characters
-    createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[0], cE('img'), 'img/bulet.png', 'stick1', tempPlayerPos[0])
-    createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[1], cE('img'), 'img/kotak.png', 'stick2', tempPlayerPos[1])
-    playersTurn[2] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[2], cE('img'), 'img/segitiga.png', 'stick3', tempPlayerPos[2])
-    playersTurn[3] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4', tempPlayerPos[3])
-    playersTurn[4] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5', tempPlayerPos[4])
+    // put player characters
+    putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[0], cE('img'), 'img/bulet.png', 'stick1', tempPlayerPos[0])
+    putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[1], cE('img'), 'img/kotak.png', 'stick2', tempPlayerPos[1])
+    playersTurn[2] == null ? null : putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[2], cE('img'), 'img/segitiga.png', 'stick3', tempPlayerPos[2])
+    playersTurn[3] == null ? null : putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4', tempPlayerPos[3])
+    playersTurn[4] == null ? null : putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5', tempPlayerPos[4])
     // create player home and hotels
     placeHomeAndHotelOnCity(playersPlaying)
     // run infoButton

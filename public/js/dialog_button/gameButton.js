@@ -181,16 +181,7 @@ function interactWithButtons(mods, gameStatus = null) {
         dialogWrapper.appendChild(dialogInfo)
         papanGame.appendChild(dialogWrapper)
         // create title dialog
-        const titleModsDiv = cE('div')
-        const titleModsSpan = cE('h3')
-        appendGameDialogBoxesOrButtonsToBoard(
-            false, true,
-            ['div', 'div', 'span'],
-            [dialogInfo, titleModsDiv, titleModsSpan],
-            [null, 'class', 'none'],
-            [null, 'dialogTitle', null],
-            [null, null, 'Player Ingfo']
-        )
+        dialogBoxTitle(dialogInfo, 'Player Ingfo')
         // div max player
         dialogBoxSpanChild(
             dialogInfo,
@@ -241,16 +232,7 @@ function interactWithButtons(mods, gameStatus = null) {
         dialogWrapper.appendChild(dialogInfo)
         papanGame.appendChild(dialogWrapper)
         // create title dialog
-        const titleModsDiv = cE('div')
-        const titleModsSpan = cE('h3')
-        appendGameDialogBoxesOrButtonsToBoard(
-            false, true,
-            ['div', 'div', 'span'],
-            [dialogInfo, titleModsDiv, titleModsSpan],
-            [null, 'class', 'none'],
-            [null, 'dialogTitle', null],
-            [null, null, 'Mods Ingfo']
-        )
+        dialogBoxTitle(dialogInfo, 'Mods Ingfo')
         // div bentuk papan
         dialogBoxSpanChild(
             dialogInfo,
@@ -314,16 +296,8 @@ function interactWithButtons(mods, gameStatus = null) {
         // append wrapper and dialog container
         dialogWrapper.appendChild(dialogInfo)
         papanGame.appendChild(dialogWrapper)
-        const titleProfilDiv = cE('div')
-        const titleProfilSpan = cE('h3')
-        appendGameDialogBoxesOrButtonsToBoard(
-            false, true,
-            ['div', 'div', 'span'],
-            [dialogInfo, titleProfilDiv, titleProfilSpan],
-            [null, 'class', 'none'],
-            [null, 'dialogTitle', null],
-            [null, null, 'Profil']
-        )
+        // profil title
+        dialogBoxTitle(dialogInfo, 'User Profil')
         // div uuid
         dialogBoxSpanChild(
             dialogInfo,
@@ -342,6 +316,7 @@ function interactWithButtons(mods, gameStatus = null) {
         const profilButtonsDiv = cE('div')
         const closeProfilButton = cE('input')
         const logoutProfilButton = cE('input')
+        // if player has login, active the logout button
         logoutProfilButton.disabled = myGameData.uuid == null ? true : false
         appendGameDialogBoxesOrButtonsToBoard(
             false, true,
@@ -364,12 +339,12 @@ function interactWithButtons(mods, gameStatus = null) {
                 return feedbackTurnOff()
             }
             // check if player is not surrender/lose yet
-            const findSurrender = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
+            const findLogouter = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
             // player exist
-            if(findSurrender > -1) {
-                const surrendMoney = playersTurnObj[findSurrender].harta_uang
+            if(findLogouter > -1) {
+                const logouterMoney = playersTurnObj[findLogouter].harta_uang
                 // if the player money still doesnt meet req for surrend/lose
-                if(surrendMoney > -mods[0].money_lose) {
+                if(logouterMoney > -mods[0].money_lose) {
                     removeDialog(dialogWrapper, dialogInfo)
                     errorNotification('Klik [udahan dulu lah] di setting kalo mau logout')
                     return feedbackTurnOff()
@@ -395,18 +370,9 @@ function interactWithButtons(mods, gameStatus = null) {
             papanGame.appendChild(dialogWrapper)
             // admin elements
             // admin title
-            const titleModsDiv = cE('div')
-            const titleModsSpan = cE('h3')
-            appendGameDialogBoxesOrButtonsToBoard(
-                false, true,
-                ['div', 'div', 'span'],
-                [dialogInfo, titleModsDiv, titleModsSpan],
-                [null, 'class', 'none'],
-                [null, 'dialogTitle', null],
-                [null, null, 'Admin Setting']
-            )
+            dialogBoxTitle(dialogInfo, 'Admin Setting')
             // change mods button
-            const editModsSpan = cE('div')
+            const editModsDiv = cE('div')
             const editModsTeks = cE('span')
             const editModsButton = cE('input')
             appendGameDialogBoxesOrButtonsToBoard(
@@ -415,16 +381,16 @@ function interactWithButtons(mods, gameStatus = null) {
                 // element types
                 ['div', 'div', 'span', 'button'],
                 // elements (1st element must be a container, 2nd optional)
-                [dialogInfo, editModsSpan, editModsTeks, editModsButton],
+                [dialogInfo, editModsDiv, editModsTeks, editModsButton],
                 // attribute types
                 [null, 'class', 'class', 'class'],
                 // attribute values
-                [null, 'editModsSpan', 'editModsTeks', 'editModsButton'],
+                [null, 'editModsDiv', 'editModsTeks', 'editModsButton'],
                 // innerText
                 [null, null, 'Edit Mods', 'Edit']
             )
             // reset game status button
-            const gameStatusSpan = cE('div')
+            const gameStatusDiv = cE('div')
             const gameStatusTeks = cE('span')
             const gameStatusButton = cE('input')
             appendGameDialogBoxesOrButtonsToBoard(
@@ -433,16 +399,16 @@ function interactWithButtons(mods, gameStatus = null) {
                 // element types
                 ['div', 'div', 'span', 'button'],
                 // elements (1st element must be a container, 2nd optional)
-                [dialogInfo, gameStatusSpan, gameStatusTeks, gameStatusButton],
+                [dialogInfo, gameStatusDiv, gameStatusTeks, gameStatusButton],
                 // attribute types
                 [null, 'class', 'class', 'class'],
                 // attribute values
-                [null, 'gameStatusSpan', 'gameStatusTeks', 'gameStatusButton'],
+                [null, 'gameStatusDiv', 'gameStatusTeks', 'gameStatusButton'],
                 // innerText
                 [null, null, 'Game Status', 'Reset to unready']
             )
             // reset table player data
-            const playerTableSpan = cE('div')
+            const playerTableDiv = cE('div')
             const playerTableTeks = cE('span')
             const playerTableButton = cE('input')
             appendGameDialogBoxesOrButtonsToBoard(
@@ -451,16 +417,16 @@ function interactWithButtons(mods, gameStatus = null) {
                 // element types
                 ['div', 'div', 'span', 'button'],
                 // elements (1st element must be a container, 2nd optional)
-                [dialogInfo, playerTableSpan, playerTableTeks, playerTableButton],
+                [dialogInfo, playerTableDiv, playerTableTeks, playerTableButton],
                 // attribute types
                 [null, 'class', 'class', 'class'],
                 // attribute values
-                [null, 'playerTableSpan', 'playerTableTeks', 'playerTableButton'],
+                [null, 'playerTableDiv', 'playerTableTeks', 'playerTableButton'],
                 // innerText
                 [null, null, 'Player Table', 'Reset the table']
             )
             // setting status
-            const settingStatusSpan = cE('div')
+            const settingStatusDiv = cE('div')
             const settingStatusTeks = cE('span')
             const settingStatusInput = cE('input')
             settingStatusInput.readOnly = true
@@ -470,11 +436,11 @@ function interactWithButtons(mods, gameStatus = null) {
                 // element types
                 ['div', 'div', 'span', 'text'],
                 // elements (1st element must be a container, 2nd optional)
-                [dialogInfo, settingStatusSpan, settingStatusTeks, settingStatusInput],
+                [dialogInfo, settingStatusDiv, settingStatusTeks, settingStatusInput],
                 // attribute types
                 [null, 'class', 'class', 'class'],
                 // attribute values
-                [null, 'settingStatusSpan', 'settingStatusTeks', 'settingStatusInput'],
+                [null, 'settingStatusDiv', 'settingStatusTeks', 'settingStatusInput'],
                 // innerText
                 [null, null, 'Setting Status', 'none']
             )
@@ -789,51 +755,7 @@ function interactWithButtons(mods, gameStatus = null) {
 
     if(gameStatus == 'playing') {
         // setting button
-        qS('.setting_button').onclick = ()=>{
-            // display menu item
-            if(qS('.setting_menu').style.display == 'none' || qS('.setting_menu').style.display == '') {
-                qS('.setting_menu').style.display = 'block';
-                qS('.setting_arrow').style.display = 'block';
-            }
-            else {
-                qS('.myCityBox').style.display = 'none';
-                qS('.setting_menu').style.display = 'none';
-                qS('.setting_arrow').style.display = 'none';
-                while(qS('.myCityBox').firstChild && qS('.myCityBox').firstChild.classList != null && qS('.myCityBox').firstChild.classList[0] != 'myCityButton')
-                    qS('.myCityBox').removeChild(qS('.myCityBox').firstChild);
-            }
-        }
-        // menu items
-        const menuItems = {
-            awtoKocokDadu: qS('#awtoKocokDadu')
-        }
-        // - awto kocok dadu
-        if(getLocStorage('awtoKocokDadu') && getLocStorage('awtoKocokDadu') === 'true') {
-            // set input to check if localStorage 'awtoKocokDadu' exists
-            menuItems.awtoKocokDadu.checked = true
-        }
-        // -- set awto kocok dadu on/off
-        menuItems.awtoKocokDadu.onclick = (ev)=>{
-            // set on
-            if(ev.target.checked) 
-                setLocStorage('awtoKocokDadu', true)
-            // set off
-            else
-                setLocStorage('awtoKocokDadu', false)
-        }
-        // cards hover
-        for(let cardHover of qSA('.kartuBuffDebuff')) {
-            cardHover.onmouseover = (ev)=>{
-                if(!ev.target.classList.toString().match(/kartuBuffDebuff/)) return
-                if(ev.target.classList.toString().match(/kartuBuffDebuffList/)) return
-                ev.target.firstChild.style.display = 'block'
-            }
-            cardHover.onmouseout = (ev)=>{
-                if(!ev.target.classList.toString().match(/kartuBuffDebuff/)) return
-                if(ev.target.classList.toString().match(/kartuBuffDebuffList/)) return
-                ev.target.firstChild.style.display = 'none'
-            }
-        }
+        settingButton(mods)
     }
     else {
         window.onclick = (ev)=>{

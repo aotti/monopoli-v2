@@ -35,7 +35,8 @@ const playersTurnId = []
 const oneTimeStatus = {
     turnEnd: false,
     throughStart: false,
-    waitingPlayers: false
+    transfer: false,
+    sellCity: false
 }
 // for branch map
 // global branch, to display the private branch chance to other player
@@ -55,27 +56,27 @@ const myPrisonCounter = {
     status: false
 }
 gameStatusCounter = 0
-const gameStatusInterval = setInterval(() => {
+const gameStatusInterval = setInterval(async () => {
     if(gameStatusCounter < 1) {
         // get game status
-        getGameStatus()
+        await getGameStatus()
     }
     else if(gameStatusCounter >= 1) {
         clearInterval(gameStatusInterval)
         delete gameStatusCounter
         // create monopoly board
-        createBoard()
+        await createBoard()
         // create game buttons
-        gameButtons()
+        await gameButtons()
         // auto login if uuid still in localStorage
-        playerAutoLogin()
+        await playerAutoLogin()
         // check game status before deciding the turn 
         // for each player and set up the game
-        checkGameStatus()
+        await checkGameStatus()
         // get number of waiting players
-        getWaitingPlayers()
+        await getWaitingPlayers()
         // resume the game if a player need to reload the page
-        allPlayersLastPos()
+        await allPlayersLastPos()
         return
     }
     gameStatusCounter++

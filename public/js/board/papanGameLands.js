@@ -71,6 +71,26 @@ function findOneRowCity(allPlayersCities) {
     return citiesThatAreOneRow
 }
 
+/**
+ * @param {Array<object>} allPlayersCities 
+ * @returns new array[object] for set houses/hotels
+ */
+function setPlayersCities(allPlayersCities) {
+    const newPlayersCities = []
+    for(let PC of allPlayersCities) {
+        const cities = PC.harta_kota.split(';')
+        for(let city of cities) {
+            newPlayersCities.push({
+                // if the data from selling city use PC.username
+                // else the data from other action use PC.user_id.username
+                username: PC.username ? PC.username : PC.user_id.username,
+                splitCity: city
+            })
+        }
+    }
+    return newPlayersCities
+}
+
 // run this ONLY on playerEndTurnHandler and gameResume
 function placeHomeAndHotelOnCity(allPlayersCities) { 
     const allLands = qSA('[class^=kota], [class*=special]')
@@ -84,66 +104,56 @@ function placeHomeAndHotelOnCity(allPlayersCities) {
     ]
     // cities that are one row
     const citiesWithOneRowTax = findOneRowCity(allPlayersCities)
+    // set new array[object] for allPlayersCities
+    const playersCitiesObj = setPlayersCities(allPlayersCities)
     // start loop allLands
     for(let land of allLands) {
         // land name that we lookin for 
         const landName = land.classList[0].split('_')[1]
-        // looking for all lands that have been bought by players
-            const doubleCheckOwner = []
-        allPlayersCities.forEach(v => {
-            // turn string (data from db) into array
-            const splitPerCity = v.harta_kota.split(';')
-            for(let splitCity of splitPerCity) {
-                // if city exist in database
-                if(splitCity.split('-')[0] === landName) {
-                    // insert any city that player bought
-                    doubleCheckOwner.push(landName)
-                }
-                else if(splitCity.split('-')[0] !== landName) {
-                    // // to check if any city classlist owner removed
-                    // doubleCheckOwner.push(landName)
-                    // check land type
-                    const landType = (()=>{
-                        if(land.classList[0].match('area'))
-                            return 'special'
-                        else if(land.classList[0].match('kota'))
-                            return 'kota'
-                    })()
-                    // get land base price
-                    const landBasePrice = (()=>{
-                        for(let land of baseCityPrices) {
-                            if(land.city === landName)
-                                return land.price
-                        }
-                    })()
-                    // remove current classList and add the new one
-                    land.classList.remove(land.classList[0])
-                    // for special area
-                    if(landType === 'special') 
-                        land.classList.add(`area_${landName}_special_${landBasePrice}`)
-                    // for normal city
-                    else if(landType === 'kota') 
-                        land.classList.add(`kota_${landName}_tanah_${landBasePrice}`)
-                    land.removeAttribute('data-owner')
-                    land.innerText = `Kota ${cityNameFirstLetter(landName)} Rp ${currencyComma(+landBasePrice)}` 
-                }
-            }
-        })
-        // if theres a city that already bought but the classlist and text are gone
-        if(doubleCheckOwner.length === 1) {
-            // get username and harta_kota
-            const myHartaKota = getMyHartaKota(allPlayersCities, doubleCheckOwner[0])
+        const matchCityName = playersCitiesObj.map(v => {return v.splitCity.split('-')[0]}).indexOf(landName)
+        if(matchCityName !== -1) {
             // data required to rebuild the lost city
             const cityExistObj = {
                 citiesWithOneRowTax: citiesWithOneRowTax, 
-                land: playerCityList(null, doubleCheckOwner[0]),
-                landName: doubleCheckOwner[0], 
-                splitCity: myHartaKota.splitCity, 
-                vUsername: myHartaKota.username, 
+                land: land,
+                landName: landName, 
+                splitCity: playersCitiesObj[matchCityName].splitCity, 
+                vUsername: playersCitiesObj[matchCityName].username, 
                 baseCityPrices: baseCityPrices
             }
             // rebuild the lost city
             setHousesAndHotels(cityExistObj)
+        }
+        // if doesnt exist in database
+        else if(matchCityName === -1) {
+            // check land type
+            const landType = (()=>{
+                if(land.classList[0].match('area'))
+                    return 'special'
+                else if(land.classList[0].match('kota'))
+                    return 'kota'
+            })()
+            // get land base price
+            const landBasePrice = (()=>{
+                for(let land of baseCityPrices) {
+                    if(land.city === landName)
+                        return land.price
+                }
+            })()
+            // remove current classList and add the new one
+            land.classList.remove(land.classList[0])
+            // for special area
+            if(landType === 'special') 
+                land.classList.add(`area_${landName}_special_${landBasePrice}`)
+            // for normal city
+            else if(landType === 'kota') 
+                land.classList.add(`kota_${landName}_tanah_${landBasePrice}`)
+            // remove owner and tag price 
+            land.removeAttribute('data-owner')
+            // reset the city text
+            land.innerText = `Kota ${cityNameFirstLetter(landName)} Rp ${currencyComma(+landBasePrice)}` 
+            // remove the city color
+            land.style.boxShadow = ''
         }
     }
 }
@@ -211,21 +221,14 @@ function setHousesAndHotels(cityExistObj) {
     // for normal city
     else 
         land.classList.add(`kota_${landName}_${nextPropType}_${nextPropPrice}_${vUsername}`)
-    // ### ATTR data-owner MUNGKIN KEPAKE NANTI BUAT JUAL KOTA
+    // for display city owner and price 
+    // because the owner and price will be hidden after bought a house
     land.setAttribute('data-owner', `${vUsername} - Rp ${nextPropPrice}`)
+    // change the city display text
     land.innerText = `Kota ${cityNameFirstLetter(landName)} \n${propText}` 
-}
-
-function getMyHartaKota(allPlayersCities, theLostCity) {
-    for(let player of allPlayersCities) {
-        // get the harta kota
-        const splitPerCity = player.harta_kota.split(';')
-        for(let splitCity of splitPerCity) {
-            // get the lost city
-            if(splitCity.split('-')[0] === theLostCity) {
-                // return the username and the lost city
-                return {username: player.user_id.username, splitCity: splitCity}
-            }
-        }
-    }
+    // set color for the city
+    const getColor = playersTurnObj.map(v => {
+        if(v.username == vUsername) return v.color
+    }).filter(i => i)[0]
+    land.style.boxShadow = `0 0 7px ${getColor} inset`
 }

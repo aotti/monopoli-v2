@@ -32,6 +32,13 @@ function fillTheElementsForDialog(value, loopLength = null, customValue = false)
     return arrayElements
 }
 
+/**
+ * @param {String} type determine what value is gonna be created (button / text only)
+ * @param {Boolean} parking true = for free parking event, false = other event
+ * @param {Array<String|Number>} customArray for custom button name
+ * @param {String} prefix for custom className, ex: koin_1, koin_2 
+ * @returns array with button / text values
+ */
 function createButtonsOrTextValue(type, parking, customArray = null, prefix = null) {
     const tempArray = []
     if(parking === true) {
@@ -48,13 +55,14 @@ function createButtonsOrTextValue(type, parking, customArray = null, prefix = nu
     return tempArray
 }
 
-function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
+function steppedOnAnyLand(playersTurnShape, playerLaps, landEventDataCards, outerEventData = null) {
     // regex for lands
     const regexBuyCity = new RegExp('.*tanah.\\d+.|.*1rumah.\\d+.'+myGameData.username+'|.*2rumah.\\d+.'+myGameData.username+'|.*2rumah1hotel.\\d+.'+myGameData.username)
     const regexTaxCity = new RegExp('.*1rumah.\\d+.*|.*2rumah.\\d+.*|.*2rumah1hotel.\\d+.*|.*komplek.\\d+.*')
     // get land element
     const prevSib = playersTurnShape ? playersTurnShape.previousSibling : null
     const prevSibObj = {}
+    // if player element exist, find what land is the player step on
     if(prevSib) {
         Object.defineProperties(prevSibObj,{
             pSib : {enumerable: true, value: prevSib},
@@ -75,14 +83,13 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
     const stepOnCards = (outerEventData && outerEventData.type == 'kartu_danaUmum' ? outerEventData.elements : null) || 
                         getTheLandElement(Object.values(prevSibObj), 'kartu')
     // === start lands event ===
+    const playerCards = landEventDataCards
     // remove any confirm box after playerMoves done
     if(qS('.confirm_box'))
         qS('.confirm_box').remove()
     // if stepOnCity has value AND stepOnCity[0] not null, 
     // it means the player is on the right land to buy city 
     if((stepOnCity || stepOnSpecial) && (stepOnCity[0] || stepOnSpecial[0]) && playerLaps > 1) {
-        // step sound
-        qS('#pMasukLokasi').play();
         // setting for buying text
         const land = (stepOnSpecial ? stepOnSpecial[1] : null) || stepOnCity[1]
         // only city name, ex: Jakarta
@@ -101,12 +108,16 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
         if(cityName.match(/khusus/)) {
             // if the special city is still available
             if(land.classList[0].split('_')[4] == null) {
+                // step sound
+                qS('#pMasukLokasi').play();
                 // text when player gonna buy city
                 normalOrSpecialText = `Apakah Anda ingin membeli ${landName} dengan harga Rp ${currencyComma(landPrice)}?`
                 eventType = 'buyingCity'
             }
             // if the special city owner is step on its city
             else if(land.classList[0].split('_')[4] == myGameData.username) {
+                // step sound
+                qS('#pKhususBuff').play();
                 // text when player gonna pay special tax
                 normalOrSpecialText = `Anda mendapat uang dari ${landName} sebesar Rp ${currencyComma(landPrice)} ${emoji.sunglas}`
                 eventType = 'specialCity'
@@ -114,6 +125,8 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
             }
             // if other player is step on someone special city
             else if(land.classList[0].split('_')[4] != myGameData.username) {
+                // step sound
+                qS('#pKhususDebuff').play();
                 // text when player gonna pay special tax
                 normalOrSpecialText = `Anda terkena pajak di ${landName} sebesar Rp ${currencyComma(landPrice)} ${emoji.catShock}`
                 eventType = 'specialCity'
@@ -122,6 +135,8 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
         }
         // if step on city
         else {
+            // step sound
+            qS('#pMasukLokasi').play();
             // text when player gonna buy city
             normalOrSpecialText = `Apakah Anda ingin membeli ${propertyType == '2rumah1hotel' ? '1hotel' : propertyType} di ${landName} dengan harga Rp ${currencyComma(landPrice)}?`
             eventType = 'buyingCity'
@@ -163,13 +178,24 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
     }
     // if the player stepped on city but it belongs to someone else, pay money to them
     else if(stepOnTax && stepOnTax[0] && playerLaps > 1) {
+        // step sound
+        qS('#pMasukPajak').play();
         const land = stepOnTax[1]
         // city that player stepped on
         const cityName = land.innerText.split(/\W/)[1]
         // tax amount
-        const cityTaxAmount = +land.classList[0].split('_')[3]
+        let cityTaxAmount = +land.classList[0].split('_')[3]
         // used to send the money to the right player
         const cityOwner = land.classList[0].split('_')[4]
+        // check anti / nerf pajak card
+        const pajakCards = playerCards.match(/anti-pajak|nerf-pajak/)
+        if(pajakCards) {
+            // process the card
+            const pajakCardsResults = specialCardsHandler('pajak-cards', {cards: playerCards, taxAmount: cityTaxAmount})
+            // return value after card processed
+            cityTaxAmount = pajakCardsResults.tempTaxAmount
+            landEventDataCards = pajakCardsResults.tempCardsOwned
+        }
         // text when player pay taxes
         const taxText = `Anda terkena pajak di Kota ${cityName} sebesar Rp ${currencyComma(cityTaxAmount)} ${emoji.catShock}`
         // create city tax dialog
@@ -182,19 +208,28 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
             data: {
                 event: 'taxCity',
                 cityOwner: cityOwner,
-                cityTaxAmount: cityTaxAmount
+                cityTaxAmount: cityTaxAmount,
+                // ### TAMBAH DATA UNTUK CARD USED
+                pajakCards: landEventDataCards
             }
         }
         return landData
     }
     // free parking, move to other land according to player choice
     else if(stepOnParking && stepOnParking[0] && playerLaps > 1) {
+        // step sound
+        qS('#pMasukParkir').play();
         // text when player choosing parking number
         const parkingText = `Pilih nomor tujuan... `
+        // check if the player has nerf parkir card 
+        const nerfParkir = playerCards.match(/nerf-parkir/)
         // player only can pick 26 parking numbers (cant pick jail or parking) 
         // parking button
-        const parkingButtons = createButtonsOrTextValue('button', true)
+        const parkingButtons = nerfParkir === null 
+                            ? createButtonsOrTextValue('button', true) 
+                            : specialCardsHandler('nerf-parkir')
         const parkingNumbers = createButtonsOrTextValue('number', true)
+        // required dialog elements 
         const { types, buttons, attributes, classes, text } = {
             types: fillTheElementsForDialog('button', 28),
             buttons: fillTheElementsForDialog(parkingButtons, null, true),
@@ -217,6 +252,8 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
     }
     // player going to jail and cant move
     else if(stepOnJail && stepOnJail[0] && playerLaps > 1) {
+        // step sound
+        qS('#pMasukPenjara').play();
         // text when player going to jail
         const jailText = `Semoga Anda mendapat hidayah ${emoji.pray} tapi kena azab dulu ${emoji.sunglas}`
         // create going to jail dialog
@@ -235,6 +272,8 @@ function steppedOnAnyLand(playersTurnShape, playerLaps, outerEventData = null) {
     }
     // only to deplete player money
     else if(stepOnCurse && stepOnCurse[0] && playerLaps > 1) {
+        // step sound
+        qS('#pKutukan').play();
         const land = stepOnCurse[1]
         const cursePrice = +land.classList[0].split('_')[3]
         const curseText = `Anda terkena kutukan sebesar Rp ${currencyComma(cursePrice)} ${emoji.sweatJoy} ${emoji.pray}`

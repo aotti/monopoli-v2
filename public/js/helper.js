@@ -45,21 +45,14 @@ function cityNameFirstLetter(cityName) {
 
 /**
  * @param {Number} giliran player's turn number 
+ * @param {String} lostCity city name that already bought but owner name isnt in the classList 
+ * @param {Boolean} noSpecial true = only find cities | false = find cities and special cities 
  * @returns all cities owned by the player
  */
-function playerCityList(giliran, lostCity = null, noSpecial = false) {
+function playerCityList(giliran, noSpecial = false) {
     const allLands = noSpecial === true ? qSA('[class^=kota]') : qSA('[class^=kota], [class*=special]') 
     // array to contain cities
     const allOwnedCities = []
-    if(lostCity) {
-        // find cities
-        for(let city of allLands) {
-            // if the player username match with any city classlist, insert to container
-            if(city.classList[0].split('_')[1] === lostCity) 
-                allOwnedCities.push(city)
-        }
-        return allOwnedCities[0]
-    }
     // find cities
     for(let city of allLands) {
         const ownedCityRegex = new RegExp(playersTurn[giliran])
@@ -72,8 +65,8 @@ function playerCityList(giliran, lostCity = null, noSpecial = false) {
 
 /**
  * @param {String} cityName the name of the city to be purchased  
- * @param {String} cityProp the kind of property to be purchased 
- * @param {String} condition the condition on filtering the cities 
+ * @param {String} cityProp the kind of property to be purchased, ex: tanah/1rumah/etc | if condtion is 'sell', set value null
+ * @param {String} condition buy = buy city | sell = sell city | disaster = destroy city property
  * @returns all cities after being bought or remove the sold city
  */
 function manageCities(cityName, cityProp, condition) {
@@ -138,6 +131,7 @@ function manageCities(cityName, cityProp, condition) {
 
 /**
  * @param {String} card the card name
+ * @param {Boolean} used false = get all cards | true = remove a card
  * @returns all cards once obtained or remove a card after use
  */
 function manageCards(card, used = false) {
@@ -153,7 +147,7 @@ function manageCards(card, used = false) {
             default:
                 if(used === false) {
                     const splitPerCard = yourCards.split(';')
-                    // indexOf(card) is possible cuz the map value is the same as card value
+                    // indexOf(card) is possible cuz the map value (array string) is the same as card (string) value
                     const findPerCard = splitPerCard.map(v => {return v}).indexOf(card)
                     // if you dont have the card yet, then push to array
                     if(findPerCard === -1) 
@@ -163,7 +157,7 @@ function manageCards(card, used = false) {
                 }
                 else if(used === true) {
                     // split data to per card
-                    const splitPerCard = yourCities.split(';') 
+                    const splitPerCard = yourCards.split(';') 
                     // find card that player just used 
                     const findPerCard = splitPerCard.map(v => {return v}).indexOf(card)
                     if(findPerCard === -1) {
@@ -177,6 +171,29 @@ function manageCards(card, used = false) {
                 }
         }
     }
+}
+
+/**
+ * @returns update money in player list
+ */
+function updatePlayerListMoney() {
+    // update player list money
+    for(let i in playersMoneyEl) { 
+        if(typeof playersTurnObj[i].harta_uang === 'number') { 
+            playersMoneyEl[i].innerText = `Rp ${currencyComma(playersTurnObj[i].harta_uang)}`
+            // money gain/lose animation
+            // if player gain money 
+            if(playersTurnObj[i].harta_uang > playersPreMoney[i].harta_uang) {
+                playersMoneyEl[i].classList.toggle('plus')
+                setTimeout(() => { playersMoneyEl[i].classList.toggle('plus') }, 2000);
+            }
+            // if player loss money
+            else if(playersTurnObj[i].harta_uang < playersPreMoney[i].harta_uang) {
+                playersMoneyEl[i].classList.toggle('minus')
+                setTimeout(() => { playersMoneyEl[i].classList.toggle('minus') }, 2000);
+            }
+        }
+    } 
 }
 
 /**
@@ -194,11 +211,29 @@ function shuffle(customArray) {
 }
 
 /**
- * @event display message to feedback box
+ * @param {Number} giliran player's giliran
+ * @returns color that gonna be used for owned city
+ */
+function playersColor(giliran) {
+    switch(giliran) {
+        case 0: return 'crimson'
+        case 1: return 'darkorchid'
+        case 2: return 'deeppink'
+        case 3: return 'dodgerblue'
+        case 4: return 'orangered'
+    }
+}
+
+/**
+ * @returns display message to feedback box
  */
 function feedbackTurnOn(text) {
+    // notif sounds
+    qS('#pNotification').play()
+    // notif message
     qS('.feedback_box').style.opacity = 1;
     qS('.feedback_box').children[0].innerText += text + '\n';
+    // auto clean notif
     let timer = 10
     const startInterval = setInterval(() => {
         if(timer < 0) {
@@ -216,13 +251,13 @@ function feedbackTurnOn(text) {
 }
 
 /**
- * @event set feedback box to its initial state after 3 seconds
+ * @returns set feedback box to its initial state after 5 seconds
  */
 function feedbackTurnOff() {
     setTimeout(() => {
         qS('.feedback_box').style.opacity = .3;
         qS('.feedback_box').children[0].innerText = "";
-    }, 3e3);
+    }, 5e3);
 }
 
 function removeDialog(dialogWrapper, dialogContainer) {
@@ -382,7 +417,7 @@ const resetter = {
 /**
  * @param {String} endpoint - api endpoint (string)
  * @param {String} method - http method GET/POST/PATCH/DELETE (string)
- * @param {{key: string|number}} jsonData - payload data (object)
+ * @param {{key: string|number}} jsonData - required payload data (object) for all method except GET
  */
 function fetcher(endpoint, method, jsonData) {
     // when user have uuid in localStorage, the user gonna run autoLogin to continue the game

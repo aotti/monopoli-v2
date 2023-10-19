@@ -6,7 +6,8 @@ const objectType = 'object'
 const uuidv4Regex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 
 // ### GABUNG VALIDATOR JOINED & FORCING
-// this validator is used only 1 route
+// ### GABUNG VALIDATOR JOINED & FORCING
+// validate players after click 'kocok giliran'
 function validatePlayerJoined(req, res, next) {
     const { randNumber, username } = req.body
     // check var types
@@ -20,7 +21,7 @@ function validatePlayerJoined(req, res, next) {
     next()
 }
 
-// this validator is used only 1 route
+// validate players after click 'paksa mulai'
 function validatePlayerForcing(req, res, next) {
     const { username } = req.body
     // check var types
@@ -33,7 +34,7 @@ function validatePlayerForcing(req, res, next) {
     next()
 }
 
-// this validator is used for multiple routes
+// validate players when starting the game and ending their turn
 function validatePlayerData(req, res, next) {
     const { 
         money_lose_mods,
@@ -41,10 +42,13 @@ function validatePlayerData(req, res, next) {
         pos, harta_uang, 
         harta_kota, kartu, 
         giliran, jalan, 
-        penjara, next_player, 
-        lost_players, tax_payment 
+        penjara, putaran, 
+        transfer, sell_city,
+        next_player, lost_players, 
+        tax_payment 
     } = req.body
     // check var exists and types 
+    // null value wont be checked
     switch(true) {
         case money_lose_mods && isVariableAppropriate(money_lose_mods, numberType):
         case username && isVariableAppropriate(username, stringType):
@@ -63,11 +67,15 @@ function validatePlayerData(req, res, next) {
         case isVariableAppropriate(kartu, stringType):
         case isVariableAppropriate(jalan, booleanType):
         case isVariableAppropriate(penjara, booleanType):
+        case isVariableAppropriate(putaran, numberType):
+        case isVariableAppropriate(transfer, booleanType):
+        case isVariableAppropriate(sell_city, booleanType):
             return newResponse(400, res, 'validate player type is invalid')
     }
     next()
 }
 
+// validate players when register/login
 function validateRegisterLogin(req, res, next) {
     const { uuid, username, password } = req.body
     let action = 'login'
@@ -89,6 +97,43 @@ function validateRegisterLogin(req, res, next) {
     next()
 }
 
+// validate players when sell/upgrade city
+function validateCityChanges(req, res, next) {
+    const { user_id, 
+        city_for_sale, cities_after_sale, money_after_sale, sell_city,
+        city_for_upgrade, cities_after_upgrade, money_after_upgrade, cards_after_upgrade } = req.body
+    switch(true) {
+        case isVariableAppropriate(user_id, numberType):
+        // check if exist
+        // null value wont be checked
+        // city
+        case city_for_sale && isVariableAppropriate(city_for_sale, stringType):
+        case cities_after_sale && isVariableAppropriate(cities_after_sale, stringType):
+        case money_after_sale && isVariableAppropriate(money_after_sale, numberType):
+        case sell_city && isVariableAppropriate(sell_city, booleanType):
+        // upgrade
+        case city_for_upgrade && isVariableAppropriate(city_for_upgrade, stringType):
+        case cities_after_upgrade && isVariableAppropriate(cities_after_upgrade, stringType):
+        case money_after_upgrade && isVariableAppropriate(money_after_upgrade, numberType):
+        case cards_after_upgrade && isVariableAppropriate(cards_after_upgrade, stringType):
+            return newResponse(400, res, 'validate city changes type doesnt exist/invalid')
+    }
+    next()
+}
+
+function validateSurrender(req, res, next) {
+    const { user_id, harta_uang, harta_kota, kartu } = req.body
+    switch(true) {
+        case isVariableAppropriate(user_id, numberType):
+        case isVariableAppropriate(harta_uang, numberType):
+        case isVariableAppropriate(harta_kota, stringType):
+        case isVariableAppropriate(kartu, stringType):
+            return newResponse(400, res, 'validate surrender type invalid')
+    }
+    next()
+}
+
+// validate UUID version
 function validateUUIDv4(req, res, next) {
     const { uuid } = req.query
     // check if UUID is version 4
@@ -102,5 +147,7 @@ module.exports = {
     validatePlayerJoined, 
     validatePlayerForcing, 
     validatePlayerData,
-    validateRegisterLogin
+    validateRegisterLogin,
+    validateCityChanges,
+    validateSurrender
 }

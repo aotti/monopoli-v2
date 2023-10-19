@@ -36,6 +36,24 @@ function getDiceNumber() {
 function kocokDaduToggle(mods, giliran) {
     if(myGameData.username != null) {
         console.log(`giliranCounter: ${giliran}`);
+        // play sounds
+        switch (giliran) {
+            case 0:
+                qS('#pTurnOne').play()
+                break
+            case 1:
+                qS('#pTurnTwo').play()
+                break
+            case 2:
+                qS('#pTurnThree').play()
+                break
+            case 3:
+                qS('#pTurnFour').play()
+                break
+            case 4:
+                qS('#pTurnFive').play()
+                break
+        }
         // check whose turn is it now and enable the kocok dadu button
         if(myGameData.username === playersTurn[giliran]) {
             qS('.acakDadu').disabled = false
@@ -67,7 +85,7 @@ function kocokDaduTrigger(mods, giliran, customDadu = null) {
         }
         // run player moves with realtime
         // roll the dice
-        const playerDadu = customDadu || 8
+        const playerDadu = customDadu || 3
         // set prices for kota khusus and terkutuk
         pricesForSpecialAndCursed(playerDadu, mods)
         // roll the branch
@@ -108,7 +126,7 @@ function alterPlayerMoney(baseMoney, alterMoney) {
 }
 
 // move player to other lands
-function movePlayerToOtherLand(mods, giliran, branchChance, steps, steps2, playersTurnShape, playerLaps) {
+function movePlayerToOtherLand(mods, giliran, branchChance, steps, steps2, playersTurnShape, playerLaps, playerCards) {
     for(let land of qSA('[class^=petak]')) {
         if(mods[0].board_shape == 'bercabangDua') {
             // if the next land number == our next pos
@@ -130,7 +148,16 @@ function movePlayerToOtherLand(mods, giliran, branchChance, steps, steps2, playe
     // when player walk past land no.1
     if((steps % 28) + steps2 == 1 + steps2 && playersTurnShape.id == myGameData.username && playersTurn[giliran] == myGameData.username) {
         oneTimeStatus.throughStart = true
+        // sell city allowed 
+        oneTimeStatus.sellCity = false
+        // increment the laps
         qS('.putaranTeks').childNodes[0].nodeValue = `Putaran ${++playerLaps}`
+        // if player have penghambat rezeki card
+        const penghambatRezeki = playerCards.indexOf('penghambat-rezeki')
+        if(penghambatRezeki !== -1)
+            specialCardsHandler('penghambat-rezeki', {cardStatus: true, cond: 'walking'})
+        else if(penghambatRezeki === -1)
+            specialCardsHandler('penghambat-rezeki', {cardStatus: false, cond: 'walking'})
     }
 }
 
@@ -150,9 +177,13 @@ function getDiceMove(mods, playerPosNow, playerDadu) {
 }
 
 // player realtime moving
-function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, playerCities, playerLaps, playerImprisoned) {
+function playerMoves(mods, giliran, playerDadu, playersTurnShape, moneyCitiesCards, playerLaps, playerImprisoned) {
+    const { playerMoney, playerCities, playerCards } = moneyCitiesCards
     // my pos right now
     const playerPosNow = +playersTurnShape.parentElement.classList[0].match(/\d+/)
+    // player money and cards
+    let endTurnMoney = playerMoney
+    let cardsOwned = playerCards
     // dice animation
     const daduAnimasi = qS('#dice1')
     // display dice roll number if the number is <= 6
@@ -174,16 +205,32 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
         }
     }
     // if dice number > 6 only display text
-    else
+    else {
         qS('.acakDaduTeks').innerText = `Angka Dadu: ${playerDadu}`
+    }
+    // check if any dadu gaming card is exists
+    const daduGamingCards = cardsOwned.match(/dadu-gaming|nerf-dadu-gaming|sad-dadu-gaming/)
+    if(daduGamingCards) {
+        // process the dadu gaming card 
+        // const daduGamingResults = daduGamingHandler(daduGamingCards, endTurnMoney, playerDadu)
+        const daduGamingResults = specialCardsHandler(
+            'dadu-gamings', {cards: daduGamingCards, money: endTurnMoney, dice: playerDadu}
+        )
+        // re-assign the value of endTurnMoney and cardsOwned
+        endTurnMoney = daduGamingResults.tempEndTurnMoney
+        cardsOwned = daduGamingResults.tempCardsOwned
+    }
     // display branch number
     qS('.acakGiliranTeks').innerText = `Cabang: ${branchChance}`
     // check if player is imprisoned or not
     if(playerImprisoned === true) {
-        console.log(myPrisonCounter);
-        const holdMoves = getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps)
+        const holdMoves = getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, moneyCitiesCards, playerLaps)
         // if player doesnt meet req to be free
         if(holdMoves == 'stopMoves') return
+        // if player have bebas penjara card
+        else if(holdMoves == 'bebasPenjaraCard') {
+            cardsOwned = manageCards('bebas-penjara', true)
+        }
         // if player can moves 
         if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username) {
             myPrisonCounter.counter = 0
@@ -204,12 +251,14 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
         // for lands in branch
         let steps2 = null
         // move player to other lands
-        movePlayerToOtherLand(mods, giliran, branchChance, steps, steps2, playersTurnShape, playerLaps)
+        movePlayerToOtherLand(mods, giliran, branchChance, steps, steps2, playersTurnShape, playerLaps, playerCards)
         // the stepsCounter value is 0
         stepsCounter++
-        // loop stops and the stepsCounter value is 1
+        // stepsCounter value is increment by 1
+        // --------------------
+        // stop the interval if stepsCounter value === playerDadu (dice number)
         // Math.abs required to prevent infinity backward steps, because the dice is negative number
-        if(stepsCounter == Math.abs(playerDadu)) {
+        if(stepsCounter === Math.abs(playerDadu)) {
             // player turn end
             clearInterval(startInterval)
             // ONLY PLAYER IN TURN THAT CAN FETCH
@@ -232,17 +281,33 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
                             break
                     }
                 }
-                // player money 
-                let endTurnMoney = playerMoney
                 // player money if walkthrough start
-                if(oneTimeStatus.throughStart === true)
-                    endTurnMoney = playerMoney + 25_000
+                if(oneTimeStatus.throughStart === true) {
+                    const penghambatRezeki = playerCards.indexOf('penghambat-rezeki')
+                    // if penghambat rezeki card exists
+                    if(penghambatRezeki !== -1) {
+                        const penghambatRezekiResults = specialCardsHandler(
+                            'penghambat-rezeki', {cardStatus: true, cond: 'stopWalking', money: endTurnMoney}
+                        )
+                        endTurnMoney = penghambatRezekiResults.tempEndTurnMoney
+                        cardsOwned = penghambatRezekiResults.tempCardsOwned
+                    }
+                    // if penghambat rezeki doesnt exists
+                    else if(penghambatRezeki === -1) {
+                        const penghambatRezekiResults = specialCardsHandler(
+                            'penghambat-rezeki', {cardStatus: false, cond: 'stopWalking', money: endTurnMoney}
+                        )
+                        endTurnMoney = penghambatRezekiResults.tempEndTurnMoney
+                        cardsOwned = penghambatRezekiResults.tempCardsOwned
+                    }
+                }
                 // required data if land event happens
                 const requiredLandEventData = {
                     mods: mods,
                     giliran: giliran,
                     endTurnMoney: endTurnMoney,
                     playerCities: playerCities,
+                    playerCards: cardsOwned,
                     playersTurnShape: playersTurnShape,
                     playerDiceMove: playerDiceMove,
                     playerLaps: playerLaps
@@ -258,7 +323,24 @@ function playerMoves(mods, giliran, playerDadu, playersTurnShape, playerMoney, p
 function playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEventData) {
     // land event data
     // moneyLeft and cities = must have value
-    const { moneyLeft, cities, cityOwner, cityTaxAmount, imprisoned, cards } = returnedLandEventData
+    const { moneyLeft, cities, cards, cityOwner, cityTaxAmount, imprisoned } = returnedLandEventData
+    // temp special cards
+    console.log('endturn cards', cards);
+    const tempCards = (()=>{
+        if(getLocStorage('removeNerfParkir')) {
+            const tempSplitPerCard = cards.split(';')
+            // check if nerf parkir is used
+            const removeCard = tempSplitPerCard.indexOf(getLocStorage('removeNerfParkir'))
+            if(removeCard !== -1) {
+                // remove the card from array 
+                localStorage.removeItem('removeNerfParkir')
+                tempSplitPerCard.splice(removeCard, 1)
+                // turn it back into string
+                return tempSplitPerCard.join(';')
+            }
+        }
+        return cards
+    })()
     // choose next player
     const nextPlayer = (()=>{
         // alive = giliran, lost = player id(s)
@@ -298,13 +380,17 @@ function playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEv
         // cities (returnedLandEventData) must always have value
         harta_kota: cities,
         // if cards (returnedLandEventData) not null, use the value
-        kartu: cards ? cards : '',
+        kartu: cards ? tempCards : '',
         // will always false on turn end
         jalan: false,
         // if imprisoned (returnedLandEventData) not null, use the value
         penjara: imprisoned ? imprisoned : false,
         // if player walkthrough start = plus 1, else do nothing
         putaran: oneTimeStatus.throughStart === true ? ++playerLaps : playerLaps,
+        // transfer money status
+        transfer: oneTimeStatus.transfer,
+        // selling city status
+        sell_city: false,
         // nextPlayer must always have value
         next_player: playersTurnId[nextPlayer.alive],
         // all players id who have already lost
@@ -313,7 +399,7 @@ function playerTurnEnd(mods, giliran, playerDiceMove, playerLaps, returnedLandEv
         tax_payment: 
             cityOwner && cityTaxAmount ? {
                 target_owner: targetOwner(cityOwner),
-                target_money: taxPaidOff(cityOwner, cityTaxAmount)
+                target_money: moneyLeft + cityTaxAmount
             } : null
     }
     console.log(jsonData);
@@ -343,16 +429,22 @@ function targetOwner(cityOwner) {
     const getTargetOwner = playersTurn.map(v => {return v}).indexOf(cityOwner)
     return playersTurnId[getTargetOwner]
 }
-function taxPaidOff(cityOwner, cityTaxAmount) {
-    const getTargetMoney = playersTurnObj.map(v => {return v.username}).indexOf(cityOwner)
-    const taxPaidOff = playersTurnObj[getTargetMoney].harta_uang + cityTaxAmount 
-    return taxPaidOff
-}
 
 // prison
-function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney, playerCities, playerLaps) {
+function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, moneyCitiesCards, playerLaps) {
+    const { playerMoney, playerCities, playerCards } = moneyCitiesCards
+    // if bebas penjara card exists
+    const bebasPenjara = playerCards.indexOf('bebas-penjara')
+    if(bebasPenjara !== -1) {
+        // set (local) prison status to false
+        if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username)
+            myPrisonCounter.status = false
+        feedbackTurnOn(`kartu bebas penjara terpakai, Anda bebas`)
+        feedbackTurnOff()
+        return specialCardsHandler('bebas-penjara')
+    }
     // if prisonCounter = 1 OR more/equal than 7, player continue walking
-    if(prisonCounter === 1 || prisonCounter >= 7) {
+    else if(prisonCounter === 1 || prisonCounter >= 7) {
         // set (local) prison status to false
         if(playersTurnShape.id == myPrisonCounter.username && playersTurn[giliran] == myPrisonCounter.username)
             myPrisonCounter.status = false
@@ -367,6 +459,7 @@ function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney
         const prisonerData = {
             moneyLeft: playerMoney,
             cities: playerCities,
+            cards: playerCards,
             imprisoned: true
         }
         // getDiceMove with value 0 to prevent player from moving
@@ -376,14 +469,159 @@ function getOutOfJail(mods, giliran, playersTurnShape, playerPosNow, playerMoney
     }
 }
 
+// check and get next player id
 function checkNextPlayer(giliran, increment = 0) {
     // get next player giliran
     const tempNextGiliran = (giliran + (1 + increment)) % playersTurnId.length
-    console.log(`tempNextGiliran ${tempNextGiliran}`);
     // find the player with username
     const tempNextPlayerIndex = playersTurnObj.map(v => {return v.username}).indexOf(playersTurn[tempNextGiliran])
     // get the next player money
     const tempNextPlayerMoney = playersTurnObj[tempNextPlayerIndex].harta_uang
     // return money and giliran
     return [tempNextPlayerMoney, tempNextGiliran]
+}
+
+// update special card box for each players
+function updateCardBox(otherPlayerData) {
+    const listKartu = qSA('.kartuBuffDebuffList')
+    // loop all card box container (reset card box)
+    for(let LK of listKartu) {
+        // remove all child <li> before append new <li> elements
+        while(LK.lastChild && LK.lastChild.nodeName == 'LI')
+            LK.removeChild(LK.lastChild)
+    }
+    // loop all card box container (update card box)
+    for(let LK of listKartu) {
+        // find player index
+        const playerIndex = otherPlayerData.map(v => {return v.user_id.username}).indexOf(LK.dataset.name)
+        // match the card box data-name by player username
+        if(playerIndex !== -1) {
+            // get the special cards and split into array
+            const tempPlayerCards = otherPlayerData[playerIndex].kartu.split(';')
+            // loop the special cards
+            for(let card of tempPlayerCards) {
+                // create element and input the card
+                const li = cE('li')
+                li.innerText = card
+                // append the element
+                LK.appendChild(li)
+            }
+        }
+    }
+}
+
+function specialCardsHandler(cardName, specialCardData = null) {
+    switch (cardName) {
+        // in steppedOnAnyLand function > stepOnParking condition
+        case 'nerf-parkir':
+            const tempParkingButtons = createButtonsOrTextValue('button', true)
+            const tempParkingNumbers = createButtonsOrTextValue('number', true)
+            // determine number that gonna be disabled (nerf half buttons)
+            const disabledNumbers = []
+            for(let i=0; i<14; i++) {
+                const DN = Math.floor(Math.random() * 28) + 1
+                disabledNumbers.push(DN)
+            }
+            // disable the buttons
+            for(let DN of disabledNumbers) {
+                // match the parking numbers with disabled numbers value
+                const PN_index = tempParkingNumbers.indexOf(DN)
+                // disable the button 
+                if(PN_index !== -1) {
+                    tempParkingButtons[PN_index].disabled = true
+                }
+            }
+            // set the card to local storage for remove later
+            setLocStorage('removeNerfParkir', 'nerf-parkir')
+            return tempParkingButtons
+        // in playerMoves function > after display dice number
+        case 'dadu-gamings':
+            const daduGamingData = specialCardData
+            const daduGamingObj = {
+                tempEndTurnMoney: null,
+                tempCardsOwned: null
+            }
+            // use Math.abs to prevent negative playerDadu 
+            // if sad dadu gaming exists, use it first
+            const sadDaduGaming = daduGamingData.cards.indexOf('sad-dadu-gaming')
+            if(sadDaduGaming !== -1) {
+                daduGamingObj.tempEndTurnMoney = daduGamingData.money - (daduGamingData.dice * 5000)
+                daduGamingObj.tempCardsOwned = manageCards('sad-dadu-gaming', true)
+                feedbackTurnOn('kartu sad dadu gaming terpakai')
+            }
+            // sad dadu gaming doesnt exists
+            else if(sadDaduGaming === -1) { 
+                // if nerf dadu gaming is exists, use it second
+                const nerfDaduGaming = daduGamingData.cards.indexOf('nerf-dadu-gaming')
+                if(nerfDaduGaming !== -1) {
+                    daduGamingObj.tempEndTurnMoney = daduGamingData.money + (daduGamingData.dice * 5000)
+                    daduGamingObj.tempCardsOwned = manageCards('nerf-dadu-gaming', true)
+                    feedbackTurnOn('kartu nerf dadu gaming terpakai')
+                }
+                // and dadu gaming third
+                else if(nerfDaduGaming === -1) {
+                    daduGamingObj.tempEndTurnMoney = daduGamingData.money + (daduGamingData.dice * 10_000)
+                    daduGamingObj.tempCardsOwned = manageCards('dadu-gaming', true)
+                    feedbackTurnOn('kartu dadu gaming terpakai')
+                }
+            }
+            feedbackTurnOff()
+            return daduGamingObj
+        // in getOutOfJail function
+        case 'bebas-penjara':
+            return 'bebasPenjaraCard'
+        // in movePlayerToOtherLand and playerMoves (after stepsCounter ends) function
+        case 'penghambat-rezeki':
+            if(specialCardData.cond == 'walking') {
+                if(specialCardData.cardStatus === true) {
+                    // notify player for getting 5k when walk through start
+                    feedbackTurnOn(`Anda baru saja lewat start dan mendapatkan Rp 5.000`)
+                    feedbackTurnOff()
+                }
+                else if(specialCardData.cardStatus === false) {
+                    // notify player for getting 25k when walk through start
+                    feedbackTurnOn(`Anda baru saja lewat start dan mendapatkan Rp 25.000`)
+                    feedbackTurnOff()
+                }
+            }
+            else if(specialCardData.cond == 'stopWalking') {
+                const penghambatRezekiObj = {
+                    tempEndTurnMoney: null,
+                    tempCardsOwned: null
+                }
+                // penghambat rezeki exists, add money 5000 and remove the card
+                if(specialCardData.cardStatus === true) {
+                    penghambatRezekiObj.tempEndTurnMoney =  specialCardData.money + 5_000
+                    penghambatRezekiObj.tempCardsOwned = manageCards('penghambat-rezeki', true)
+                }
+                // penghambat rezeki doesnt exists, add money 25000 and remove nothing
+                else if(specialCardData.cardStatus === false) {
+                    penghambatRezekiObj.tempEndTurnMoney =  specialCardData.money + 25_000
+                    penghambatRezekiObj.tempCardsOwned = manageCards('penghambat-rezeki')
+                }
+                return penghambatRezekiObj
+            }
+            break
+        case 'pajak-cards':
+            const pajakCardsData = specialCardData
+            const pajakCardsObj = {
+                tempTaxAmount: null
+            }
+            // only check anti pajak because already filtered in playersLandAction > stepOnTax
+            const antiPajak = pajakCardsData.cards.indexOf('anti-pajak')
+            // if anti pajak card exists
+            if(antiPajak !== -1) {
+                pajakCardsObj.tempTaxAmount = pajakCardsData.taxAmount * 0
+                pajakCardsObj.tempCardsOwned = manageCards('anti-pajak', true)
+                feedbackTurnOn('kartu anti pajak terpakai')
+            }
+            // if nerf pajak card exists
+            else if(antiPajak === -1) {
+                pajakCardsObj.tempTaxAmount = pajakCardsData.taxAmount - (pajakCardsData.taxAmount * .3)
+                pajakCardsObj.tempCardsOwned = manageCards('nerf-pajak', true)
+                feedbackTurnOn(`kartu nerf pajak terpakai\nnerf: Rp ${currencyComma(pajakCardsData.taxAmount * .3)}`)
+            }
+            feedbackTurnOff()
+            return pajakCardsObj
+    }
 }

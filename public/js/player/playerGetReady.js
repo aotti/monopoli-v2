@@ -1,11 +1,11 @@
 // count the players whose waiting after 'kocok giliran'
 function getWaitingPlayers() {
     if(getLocStorage('uuid')) {
-        return fetcher('/waiting', 'GET')
+        fetcher('/waiting', 'GET')
         .then(result => {
             // '.then' is needed for realtime to work
             // if only catch, the realtime waiting player wont work
-            return
+            return fetcherResults(result)
         })
         .catch(err => {
             return errorCapsule(err, anErrorOccured)
@@ -39,7 +39,7 @@ function decidePlayersTurn(gameStatus) {
         return feedbackTurnOff()
     }
     // if the player hasnt login
-    if(myGameData.uuid == null) {
+    if(myGameData.uuid === null) {
         feedbackTurnOn('anda belum login')
         return feedbackTurnOff()
     }
@@ -75,7 +75,7 @@ function waitingOtherPlayers(otherPlayers, mods, gameStatus) {
             // if the rand number is exists 
             const adjustPlayerTurn = otherPlayers.map(v => {return v.player_rand}).indexOf(v)
             // insert username to playerTurns 
-            if(adjustPlayerTurn != -1)
+            if(adjustPlayerTurn !== -1)
                 playersTurn.push(otherPlayers[adjustPlayerTurn].player_joined)
         }
     }
@@ -116,6 +116,11 @@ function waitingOtherPlayers(otherPlayers, mods, gameStatus) {
             qS('.paksaMulai').onclick = (ev) => {
                 // disable after click
                 ev.target.disabled = true
+                // check game status
+                if(gameStatus[0].status != 'unready') {
+                    feedbackTurnOn('Semoga dilambatkan rezeki')
+                    return feedbackTurnOff()
+                }
                 // if the player data who forced is exist in database
                 const theOtherPlayer = otherPlayers.map(v => {return v.player_joined}).indexOf(myGameData.username)
                 // then that player allowed to force start
@@ -176,7 +181,7 @@ function forceStartGame(theOtherPlayer) {
 }
 
 // create the player characters
-function createPlayerShape(mods, playerDiv, playerDivClass, username, playerShape, imgSource, imgClass, resumePos = null) {
+function putPlayerShape(mods, playerDiv, playerDivClass, username, playerShape, imgSource, imgClass, resumePos = null) {
     // get all lands
     const getLands = qSA('[class^=petak]');
     // set img attributes
@@ -209,12 +214,14 @@ function createPlayerShape(mods, playerDiv, playerDivClass, username, playerShap
 function createPlayersAndGetReady(mods, gameStatus) {
     // if no player, then stop right here
     if(playersTurn.length == 0) return
+    // play ready sounds
+    qS('#pGameReady').play()
     // create player characters
-    createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[0], cE('img'), 'img/bulet.png', 'stick1')
-    createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[1], cE('img'), 'img/kotak.png', 'stick2')
-    playersTurn[2] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[2], cE('img'), 'img/segitiga.png', 'stick3')
-    playersTurn[3] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4')
-    playersTurn[4] == null ? null : createPlayerShape(mods, cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5')
+    putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[0], cE('img'), 'img/bulet.png', 'stick1')
+    putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[1], cE('img'), 'img/kotak.png', 'stick2')
+    playersTurn[2] == null ? null : putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[2], cE('img'), 'img/segitiga.png', 'stick3')
+    playersTurn[3] == null ? null : putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[3], cE('img'), 'img/diamond.png', 'stick4')
+    playersTurn[4] == null ? null : putPlayerShape(mods, cE('div'), 'pdiv', playersTurn[4], cE('img'), 'img/tabung.png', 'stick5')
     // set up the game
     const urutanGiliran = qS('.urutanGiliran')
     // set text for player order list
@@ -248,11 +255,15 @@ function createPlayersAndGetReady(mods, gameStatus) {
             giliran: tempGiliran,
             jalan: (tempGiliran == 0 ? true : false),
             penjara: false,
-            putaran: 1
+            putaran: 1,
+            transfer: false,
+            sell_city: false
         }
         // send data to server
         fetcher(`/ready`, 'POST', jsonData)
         .then(result => {
+            // manual update gameStatus value
+            gameStatus[0].status = 'playing'
             return fetcherResults(result)
         })
         .catch(err => {
@@ -283,22 +294,26 @@ function createPlayerList() {
         // player list cards
         listSpan_3.classList.add('kartuBuffDebuff')
         cardBox.classList.add('kartuBuffDebuffList')
+        cardBox.setAttribute('data-name', playersTurnObj[i].username)
         for(let card of playersTurnObj[i].kartu.split(';')) {
             const li = cE('li')
             li.innerText = card 
             cardBox.appendChild(li)
         }
         listSpan_3.appendChild(cardBox)
+        // append span elements to player list container
         playerList.appendChild(listSpan_1);
         playerList.appendChild(listSpan_2);
         playerList.appendChild(listSpan_3);
         // insert money elements
         playersMoneyEl.push(listSpan_2)
+        // insert pre money
+        playersPreMoney.push(playersTurnObj[i].harta_uang)
     }
 }
 
 // waiting other player to click Mulai button
-function gettingReady(readyPlayers, mods) {
+function gettingReady(playerReady, mods) {
     // waiting other player to get ready
     const urutanGiliran = qS('.urutanGiliran')
     const putaranTeks = qS('.putaranTeks')
@@ -306,9 +321,9 @@ function gettingReady(readyPlayers, mods) {
     for(let i in playersTurn) 
         urutanTeks += `\n#${+i + 1} - ${playersTurn[i]}`
     // display how many player are ready
-    urutanGiliran.innerText = `${urutanTeks}\n${readyPlayers.length} player sudah siap..`
+    urutanGiliran.innerText = `${urutanTeks}\n${playerReady.length} player sudah siap..`
     // if all player is ready, start the game
-    if(playersTurn.length == readyPlayers.length) {
+    if(playersTurn.length == playerReady.length) {
         let timer = 4
         const startInterval = setInterval(() => {
             // ONLY SEND ONCE, TO PREVENT REALTIME LIMIT USAGE
@@ -327,9 +342,9 @@ function gettingReady(readyPlayers, mods) {
                 createPlayerList()
                 // set playersTurnId to select nextPlayer on playerTurnEnd
                 for(let v of playersTurn) {
-                    const adjustPlayerTurnId = readyPlayers.map(v => {return v.user_id.username}).indexOf(v)
+                    const adjustPlayerTurnId = playerReady.map(v => {return v.user_id.username}).indexOf(v)
                     if(adjustPlayerTurnId != -1) {
-                        playersTurnId.push(readyPlayers[adjustPlayerTurnId].user_id.id)
+                        playersTurnId.push(playerReady[adjustPlayerTurnId].user_id.id)
                     }
                 }
                 // empty urutan text

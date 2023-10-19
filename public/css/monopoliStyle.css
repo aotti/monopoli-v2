@@ -220,49 +220,8 @@
 }
 
 .player_info > .dropdown > .setting_menu > div > label {
-/*   border: 1px solid; */
   padding: 6px 18px 6px 0px;
   margin: 0 -20px 0 0;
-}
-
-.myCityBox {
-  display: none;
-  position: absolute;
-  background: wheat;
-  border: 2px solid;
-  padding: 4px;
-  bottom: 0px;
-  left: -10px;
-  width: 280px;
-  height: 350px;
-  cursor: auto;
-}
-
-.myCityBox > div:nth-last-child(1n+2) {
-  padding: 3px 0 3px 0;
-}
-
-.myCityBox > div:nth-child(1n+2) {
-  border-top: 1px solid;
-}
-
-.myCityBox > div:nth-last-child(1n+2):hover {
-  background: yellowgreen;
-}
-
-.myCityButton {
-  display: flex;
-  justify-content: space-between;
-}
-
-.myCityButton > button, .transferButton > button {
-  margin-top: 14px;
-  padding: 5px 15px;
-}
-
-.myCityBox > .myCityItem {
-  display: grid;
-  grid-template-columns: auto auto 50px;
 }
 
 .transferBox {
@@ -395,15 +354,27 @@
   height: 92%;
 }
 
-.dialog_info {
+.dialog_info, .dialog_info_side {
   position: absolute;
-  top: 20%;
-  left: 35%;
   z-index: 999;
-  background: MediumSeaGreen;
-  padding: 0 8px 8px;
   border: 1px solid;
   line-height: 20px;
+}
+
+.dialog_info {
+  top: 20%;
+  left: 35%;
+  background: MediumSeaGreen;
+  padding: 0 8px 8px;
+}
+
+.dialog_info_side {
+  display: none;
+  top: 20%;
+  left: 65%;
+  background-color: lightblue;
+  padding: 5px;
+  width: 200px;
 }
 
 .dialog_info > div {
@@ -447,17 +418,20 @@
 }
 
 #closeModsButton, #closePlayerButton, #closeProfilButton, #logoutProfilButton,
-#register, #login, #closeRegLogButton, #closeAdminButton, #saveModsButton {
+#register, #login, #closeRegLogButton, #closeAdminButton, #saveModsButton,
+#upgradeCityListButton, #sellCityListButton, #closeCityListButton {
   margin: 8px auto 0;
 }
 
-#closeModsButton, #closePlayerButton, #closeAdminButton, #saveModsButton {
-  grid-column: 1 / 2 span;
+#closeModsButton, #closePlayerButton, #closeAdminButton, #saveModsButton,
+#closeCityListButton {
+  grid-column: 2 span;
   height: 30px;
   width: 50%;
 }
 
-#closeProfilButton, #logoutProfilButton, #register, #login, #closeRegLogButton {
+#closeProfilButton, #logoutProfilButton, #register, #login, #closeRegLogButton,
+#upgradeCityListButton, #sellCityListButton {
   height: 30px;
   width: 100%;
 }
@@ -522,7 +496,7 @@
   z-index: 100;
   top: 40%;
   left: 28%;
-  padding: 8px 0;
+  padding: 8px 3px;
   background: lightskyblue;
   border: 1px solid;
   border-radius: 7px;
@@ -643,13 +617,12 @@
   border-radius: 50px;
 }
 
-[class^=kota][title]:hover::after, [class^=area][title]:hover::after {
-  content: attr(title);
+[class^=kota]:hover::after, [class^=area]:hover::after {
+  content: attr(data-owner);
   position: absolute;
-  top: -60%;
+  top: 0;
   left: 0;
-  right: 0;
-  background: yellow;
+  background: lightblue;
 }
 
 [class*=danaUmum] {

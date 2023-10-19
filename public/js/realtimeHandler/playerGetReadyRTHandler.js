@@ -1,11 +1,10 @@
 // realtime handler for waitingPlayers
 function waitingPlayersHandler(payload) {
     const { waitingPlayers } = payload
-    // ### BUAT KONDISI AGAR HANYA JALAN 1X PER PLAYER
     // get waitingPlayers element
     const waitingPlayersEl = qS('#waitingPlayers')
     // reset background color
-    for(let children of waitingPlayersEl) {
+    for(let children of waitingPlayersEl.children) {
         children.style.backgroundColor = 'lightgrey'
     }
     // set 'gold' background color if theres any player
@@ -47,7 +46,8 @@ function playerReadyHandler(payload) {
             pos: v.pos,
             harta_uang: v.harta_uang,
             harta_kota: v.harta_kota,
-            kartu: v.kartu
+            kartu: v.kartu,
+            color: playersColor(v.giliran)
         }
         // if the player username is in database, then run the function
         if(v.user_id.username == myGameData.username) {

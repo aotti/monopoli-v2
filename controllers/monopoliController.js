@@ -15,6 +15,7 @@ class Monopoli {
             if(resultGetGameStatus.length > 0) {
                 return newResponse([200, 'success getGameStatus'], res, resultGetGameStatus)
             }
+            // do nothing if theres an error, the error has been handled in repo
             if(resultGetGameStatus.statusCode !== 200) return
         })
     }
@@ -31,6 +32,7 @@ class Monopoli {
                 // ably
                 // ablyPublish('gameStatus', resultUpdateGameStatus, newResponse(200, res, 'game status updated'))
             }
+            // send error response if theres an error
             if(statusCode !== 200) 
                 return newResponse(statusCode, res, errorMessage)
         })
@@ -67,6 +69,7 @@ class Monopoli {
             const { statusCode, errorMessage } = resultChangeMods
             if(resultChangeMods.length > 0)
                 return newResponse([200, 'success changeModsData'], res, resultChangeMods)
+            // send error response if theres an error
             else if(statusCode !== 200) 
                 return newResponse(statusCode, res, errorMessage)
         })
@@ -83,6 +86,7 @@ class Monopoli {
                     // check type data then send realtime data
                     if(typeof resultGetWaitingPlayers === 'object') 
                         return pubnubPublish('waitingPlayers', resultGetWaitingPlayers, res, `success getWaitingPlayers`)
+                    // do nothing if theres an error, the error has been handled in repo
                     if(resultGetWaitingPlayers.statusCode !== 200) return
                 }
             })
@@ -112,16 +116,18 @@ class Monopoli {
                             // ablyPublish('playerJoined', result, newResponse(200, res, `${result.player_joined} joining the game`))
                         })
                     }
+                    // do nothing if theres an error, the error has been handled in repo
                     if(resultMods.statusCode !== 200) return
                 })
             }
+            // do nothing if theres an error, the error has been handled in repo
             if(resultJoined.statusCode !== 200) return
         })
     }
 
-    forceStart(req, res) {
+    playerForceStart(req, res) {
         // get all player data who forced the game 
-        MonopoliRepo.forceStartRepo(req, res)
+        MonopoliRepo.playerForceStartRepo(req, res)
         .then(resultForcing => {
             if(resultForcing.length > 0) {
                 // get mods data 
@@ -142,16 +148,18 @@ class Monopoli {
                             // ablyPublish('playerForcing', result, newResponse(200, res, `updated`))
                         })
                     }
+                    // do nothing if theres an error, the error has been handled in repo
                     if(resultMods.statusCode !== 200) return
                 })
             }
+            // do nothing if theres an error, the error has been handled in repo
             if(resultForcing.statusCode !== 200) return
         })
     }
     
-    ready(req, res) {
+    playerReady(req, res) {
         // get all player data who ready to play
-        MonopoliRepo.readyRepo(req, res)
+        MonopoliRepo.playerReadyRepo(req, res)
         .then(resultReady => {
             if(resultReady.length > 0) {
                 // get mods data 
@@ -168,6 +176,7 @@ class Monopoli {
                     // ablyPublish('playerReady', resultReady, newResponse(200, res, `ready`))
                 })
             }
+            // do nothing if theres an error, the error has been handled in repo
             if(resultReady.statusCode !== 200) return
         })
     }
@@ -179,7 +188,9 @@ class Monopoli {
             MonopoliRepo.getModsDataRepo(req, res)
             .then(resultMods => {
                 if(resultMods.length > 0) {
+                    // from kocok dadu trigger
                     const { playerDadu, username, branch, prison } = req.body
+                    // data for current player moving
                     const jsonData = {
                         username: username, 
                         playerDadu: playerDadu, 
@@ -187,10 +198,12 @@ class Monopoli {
                         prison: prison,
                         harta_uang: resultMoving[0].harta_uang,
                         harta_kota: resultMoving[0].harta_kota,
+                        kartu: resultMoving[0].kartu,
                         putaran: resultMoving[0].putaran,
                         giliran: resultMoving[0].giliran,
                         penjara: resultMoving[0].penjara
                     }
+                    // simplify it as payload then send to client side
                     const payload = {
                         playerMoving: jsonData,
                         mods: resultMods
@@ -201,6 +214,7 @@ class Monopoli {
                     // ably
                     // ablyPublish('playerMoving', jsonData, newResponse(200, res, `player moving`))
                 }
+                // do nothing if theres an error, the error has been handled in repo
                 if(resultMods.statusCode !== 200) return
             })
         })
@@ -226,6 +240,7 @@ class Monopoli {
                     // ablyPublish('playerTurnEnd', resultTurnEnd, newResponse(200, res, `turn end`))
                 })
             }
+            // do nothing if theres an error, the error has been handled in repo
             if(resultTurnEnd.statusCode !== 200) return
         })
     }
@@ -244,10 +259,57 @@ class Monopoli {
                     return newResponse([200, 'success gameResume'], res, payload)
                 })
             }
+            // do nothing if theres an error, the error has been handled in repo
             if(result.statusCode !== 200) return
         })
     }
     
+    getCitiesAndCards(req, res) {
+        MonopoliRepo.getCitiesAndCardsRepo(req, res)
+        .then(resultCitiesAndCards => {
+            // check data length then send fetch data
+            if(resultCitiesAndCards.length === 1) 
+                return newResponse([200, 'success getCitiesAndCards'], res, resultCitiesAndCards[0])
+            // do nothing if theres an error, the error has been handled in repo
+            if(resultCitiesAndCards.statusCode !== 200) return
+        })
+    }
+
+    playerSellCity(req, res) {
+        MonopoliRepo.playerSellCityRepo(req, res)
+        .then(resultPlayerSellCity => {
+            // check data length then send fetch data
+            if(resultPlayerSellCity.length === 1) 
+                return pubnubPublish('playerSellCity', resultPlayerSellCity, res, `success playerSellCity`)
+            // do nothing if theres an error, the error has been handled in repo
+            if(resultPlayerSellCity.statusCode !== 200) return
+        })
+    }
+
+    playerUpgradeCity(req, res) {
+        MonopoliRepo.playerUpgradeCityRepo(req, res)
+        .then(resultPlayerUpgradeCity => {
+            // check data length then send fetch data
+            if(resultPlayerUpgradeCity.length === 1) 
+                return pubnubPublish('playerUpgradeCity', resultPlayerUpgradeCity, res, `success playerUpgradeCity`)
+            // do nothing if theres an error, the error has been handled in repo
+            if(resultPlayerUpgradeCity.statusCode !== 200) return
+        })
+    }
+
+    playerSurrender(req, res) {
+        MonopoliRepo.playerSurrenderRepo(req, res)
+        .then(resultPlayerSurrender => {
+            // check data length then send fetch data
+            if(resultPlayerSurrender.length > 0) {
+                if(resultPlayerSurrender[0].errorMessage)
+                    return newResponse([200, 'failed playerSurrender'], res, resultPlayerSurrender[0])
+                return pubnubPublish('playerSurrender', resultPlayerSurrender, res, `success playerSurrender`)
+            }
+            // do nothing if theres an error, the error has been handled in repo
+            if(resultPlayerSurrender.statusCode !== 200) return
+        })
+    }
 }
 
 module.exports = Monopoli

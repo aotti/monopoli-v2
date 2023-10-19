@@ -17,8 +17,8 @@ function pubnubPublish(messageType, result, res, resMessage) {
     }, function (status, response) {
         // send response after realtime data sent
         // return apiResponse
-        // ### STATUS, RESPONSE LOG
-        console.log(status);
+        // ### ACTION TYPE, STATUS LOG
+        console.log(messageType, status);
         return newResponse([200, resMessage], res, result)
     })
 }

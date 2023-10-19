@@ -149,3 +149,16 @@ function dialogBoxSpanChild(mainDialog, container, classContainer, spanTitle, sp
         [null, null, textTitle, textValue]
     )
 }
+
+function dialogBoxTitle(dialogInfo, titleText) {
+    const titleDiv = cE('div')
+    const titleSpan = cE('h3')
+    appendGameDialogBoxesOrButtonsToBoard(
+        false, true,
+        ['div', 'div', 'span'],
+        [dialogInfo, titleDiv, titleSpan],
+        [null, 'class', 'none'],
+        [null, 'dialogTitle', null],
+        [null, null, titleText]
+    )
+}

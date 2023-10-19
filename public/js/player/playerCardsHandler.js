@@ -1,23 +1,28 @@
-function cardsEvent(mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney, data) {
+function cardsEvent(data, mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData) {
     if(data.cardType == 'kartu_danaUmum') {
-        return danaUmumCards('Dana Umum', mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
+        return danaUmumCards('Dana Umum', mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData)
     }
     else if(data.cardType == 'kartu_kesempatan') {
-        return kesempatanCards('Kesempatan', mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
+        return kesempatanCards('Kesempatan', mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData)
     }
 }
 
-function danaUmumCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney) {
+function danaUmumCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData) {
     qS('#pDanaUmum').play();
-    return preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
+    return preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData)
 }
 
-function kesempatanCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney) {
+function kesempatanCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData) {
     qS('#pKesempatan').play();
-    return preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney)
+    return preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData)
 }
 
-function preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney) {
+function preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlayerPosNow, landEventData) {
+    const { endTurnMoney, playerCities, playerCards } = {
+        endTurnMoney: landEventData.moneyLeft,
+        playerCities: landEventData.cities,
+        playerCards: landEventData.cards
+    }
     // random number to pick cards
     const chances = Math.random() * 100
     // pick cards and put into container
@@ -37,6 +42,8 @@ function preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlay
         playersTurnShape: playersTurnShape,
         tempPlayerPosNow: tempPlayerPosNow,
         endTurnMoney: endTurnMoney,
+        playerCities: playerCities,
+        playerCards: playerCards,
         cardType: cardType,
         cardEffect: cardEffect,
         cardText: cardText
@@ -46,11 +53,19 @@ function preparingCards(cardEventType, mods, giliran, playersTurnShape, tempPlay
 
 function checkAndActivateCard(cardsObject) {
     // retrieve data
-    const { mods, giliran, playersTurnShape, tempPlayerPosNow, endTurnMoney, cardType, cardEffect, cardText } = cardsObject
+    const { 
+        mods, giliran, playersTurnShape, 
+        tempPlayerPosNow, endTurnMoney, 
+        playerCities, playerCards, 
+        cardType, cardEffect, cardText 
+    } = cardsObject
     const cardsEventData = {}
     const splitEffect = (()=>{
+        // card with number effect (gain/lose money)
         if(typeof cardEffect === 'number') return cardEffect 
+        // card with effect and condition (sell city)
         else if(typeof cardEffect === 'string') return cardEffect.split('-')
+        // card with multiple values (buy city)
         else if(Array.isArray(cardEffect)) return cardEffect
     })()
     // check card type
@@ -70,6 +85,7 @@ function checkAndActivateCard(cardsObject) {
             confirmDialog(cardText)
             return cardsEventData
         case 'buyCity':
+            // doesnt meet req to buy city
             if(splitEffect.length === 1) {
                 cardsEventData.moneyLeft = endTurnMoney
                 // if no changes on city, just make it null
@@ -78,12 +94,12 @@ function checkAndActivateCard(cardsObject) {
                 confirmDialog(`${cardText}\n---\n${splitEffect[0]}`)
                 return cardsEventData
             }
-            // array length 2
+            // meet req to buy city 
             else if(splitEffect.length === 2) {
                 confirmDialog(`${cardText}\n---\nloading..`)
                 // run buy city dialog after 3 secs
                 setTimeout(() => {
-                    const findPlayerCities = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
+                    // required data to buy city
                     const tempRequiredLandEventData = {
                         mods: mods,
                         giliran: giliran,
@@ -91,13 +107,15 @@ function checkAndActivateCard(cardsObject) {
                         playerDiceMove: tempPlayerPosNow,
                         playerLaps: +qS('.putaranTeks').innerText.match(/\d+/),
                         endTurnMoney: endTurnMoney,
-                        playerCities: playersTurnObj[findPlayerCities].harta_kota
+                        playerCities: playerCities,
+                        playerCards: playerCards
                     }
-                    // trigger land event from 
+                    // trigger land event from card event
                     const outerEvent = {
                         cond: 'stepOnCity',
                         data: {
                             type: 'buyCity',
+                            endturn: true,
                             elements: splitEffect
                         }
                     }
@@ -163,10 +181,8 @@ function checkAndActivateCard(cardsObject) {
                                         ? destinationPos - tempPlayerPosNow 
                                         : (destinationPos + 28) - tempPlayerPosNow)
                         // delete buttons
-                        for(let children of qS('.confirm_box').children) {
-                            if(children.nodeName == 'INPUT')
-                                children.remove()
-                        }
+                        while(qS('.confirm_box').lastChild && qS('.confirm_box').lastChild.nodeName == 'INPUT')
+                            qS('.confirm_box').removeChild(qS('.confirm_box').lastChild)
                         // add confirm_box text
                         setTimeout(() => {
                             qS('.confirm_box').firstChild.innerText += `\n---\nMenuju ke petak ${destinationPos}`
@@ -214,9 +230,6 @@ function checkAndActivateCard(cardsObject) {
                         }
                         // prison
                         else if(freeOrJail >= 51 && freeOrJail < 100) {
-                            // set fine
-                            const fineAmount = endTurnMoney * .90
-                            setLocStorage('fineAmount', fineAmount)
                             // start moving 
                             gambleFreeOrJail(10, tempPlayerPosNow, mods, giliran)
                         }
@@ -300,6 +313,7 @@ function checkAndActivateCard(cardsObject) {
             cardsEventData.moneyLeft = endTurnMoney
             // if no changes on city, just make it null
             cardsEventData.cities = null
+            // insert cards data
             cardsEventData.cards = manageCards(cardEffect)
             // create card dialog
             confirmDialog(cardText)
@@ -328,8 +342,10 @@ function checkAndActivateCard(cardsObject) {
                             const choosenCoin = +ev.target.classList[0].match(/\d/)
                             ev.target.value = choosenCoin
                             cardsEventData.moneyLeft = endTurnMoney + (20_000 * choosenCoin)
-                            // if no changes on city, just make it null
-                            cardsEventData.cities = null
+                            // if no changes on city, just make it default
+                            cardsEventData.cities = playerCities
+                            // if no card used, just make it default
+                            cardsEventData.cards = playerCards
                             return resolve(cardsEventData)
                         }
                     }
@@ -377,13 +393,15 @@ function checkAndActivateCard(cardsObject) {
                                         playerDiceMove: tempPlayerPosNow,
                                         playerLaps: +qS('.putaranTeks').innerText.match(/\d+/),
                                         endTurnMoney: endTurnMoney,
-                                        playerCities: playersTurnObj[findPlayerCities].harta_kota
+                                        playerCities: playerCities,
+                                        playerCards: playerCards
                                     }
                                     // trigger land event from 
                                     const outerEvent = {
                                         cond: 'drawCard',
                                         data: {
                                             type: 'kartu_danaUmum',
+                                            endturn: true,
                                             elements: [true, qS('.kartu_danaUmum')]
                                         }
                                     }
@@ -413,8 +431,10 @@ function checkAndActivateCard(cardsObject) {
                                 // replace the text without buttons
                                 qS('.confirm_box').innerText = `\n${cardText}\n---\nHaram nian lanang ko..`
                                 cardsEventData.moneyLeft = endTurnMoney + 50_000
-                                // if no changes on city, just make it null
-                                cardsEventData.cities = null
+                                // if no changes on city, just make it default
+                                cardsEventData.cities = playerCities
+                                // if no card used, just make it default
+                                cardsEventData.cards = playerCards
                                 return resolve(cardsEventData)
                             }
                             // jika iman anda kuat
@@ -434,16 +454,12 @@ function checkAndActivateCard(cardsObject) {
             })
             .then(tempCardsEventData => {
                 // required data if land event happens
-                const findPlayerCities = playersTurnObj.map(v => {return v.username}).indexOf(myGameData.username)
                 const tempRequiredLandEventData = {
                     mods: mods,
                     giliran: giliran,
                     playerDiceMove: tempPlayerPosNow,
                     playerLaps: +qS('.putaranTeks').innerText.match(/\d+/)
                 }
-                // if nothing changes on cities, refill the value
-                if(tempCardsEventData.cities === null)
-                    tempCardsEventData.cities = playersTurnObj[findPlayerCities].harta_kota
                 setTimeout(() => { qS('.confirm_box').remove() }, 3000);
                 landEventHandler(tempRequiredLandEventData, tempCardsEventData)
             })
@@ -502,7 +518,7 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
         }
     }
     // chances >= 9 && chances < 25
-    else if(chances >= 9 && chances < 99) {
+    else if(chances >= 9 && chances < 25) {
         switch(cardEventType) {
             // dana umum
             case 'Dana Umum':
@@ -616,22 +632,47 @@ function choosingCard(cardEventType, chances, giliran, endTurnMoney) {
 }
 
 function getRandomCity(giliran, condition) {
-    // find city for the card effect 
-    const findCities = playerCityList(giliran, null, true)
     const randomCityObj = {}
-    if(findCities.length > 0) {
-        const cityIndex = Math.floor(Math.random() * findCities.length)
-        randomCityObj.name = findCities[cityIndex].classList[0].split('_')[1]
-        randomCityObj.prop = findCities[cityIndex].classList[0].split('_')[2]
-        randomCityObj.price = +findCities[cityIndex].classList[0].split('_')[3]
-        randomCityObj.resultSell = `${randomCityObj.name}-${randomCityObj.price}`
-        randomCityObj.resultBuy = [true, findCities[cityIndex]]
+    // get all cities but not special cities
+    const findCities = playerCityList(giliran, true)
+    // regex for lands
+    const regexBuyCity = new RegExp('.*tanah.\\d+.|.*1rumah.\\d+.'+myGameData.username+'|.*2rumah.\\d+.'+myGameData.username+'|.*2rumah1hotel.\\d+.'+myGameData.username)
+    // buy(upgrade) one of your city by random pick
+    if(condition == 'buy') {
+        const filteredCities = []
+        for(let city of findCities) {
+            // filter all cities that have max prop (komplek)
+            if(city.classList[0].match(regexBuyCity))
+                filteredCities.push(city)
+        }
+        // pick random city from filtered cities
+        if(filteredCities.length > 0) {
+            // random number for city
+            const cityIndex = Math.floor(Math.random() * filteredCities.length)
+            // result for card event
+            randomCityObj.resultBuy = [true, filteredCities[cityIndex]]
+        }
+        else if(filteredCities.length === 0) {
+            randomCityObj.resultBuy = `Anda belum punya kota ${emoji.joy}`
+        }
+        return randomCityObj.resultBuy
     }
-    else if(findCities.length === 0) {
-        randomCityObj.resultSell = `Anda belum punya kota ${emoji.joy}`
-        randomCityObj.resultBuy = `Anda belum punya kota ${emoji.joy}`
+    // sell one of your city by random pick
+    else if(condition == 'sell') {
+        if(findCities.length > 0) {
+            // random number for city
+            const cityIndex = Math.floor(Math.random() * findCities.length)
+            // pick random city
+            randomCityObj.name = findCities[cityIndex].classList[0].split('_')[1]
+            randomCityObj.price = +findCities[cityIndex].classList[0].split('_')[3]
+            // result for card event
+            randomCityObj.resultSell = `${randomCityObj.name}-${randomCityObj.price}`
+        }
+        else if(findCities.length === 0) {
+            randomCityObj.resultSell = `Anda belum punya kota ${emoji.joy}`
+        }
+        return randomCityObj.resultSell
     }
-    return condition === 'sell' ? randomCityObj.resultSell : randomCityObj.resultBuy
 }
 
 function gambleFreeOrJail(destinationPos, tempPlayerPosNow, mods, giliran) {

@@ -10,6 +10,21 @@ function newPromise(data) {
     })
 }
 
+/**
+ * @param {Array|Number} codeAndMessage 
+ * input array for success response, input number for any error.
+ * example success: [200, message] | example fail: 400
+ * @param {*} res pass res parameter 
+ * @param {*} data payload to send to client
+ * @returns status code, message and payload from server
+ * @description 
+ * - 200: success, even if the payload empty
+ * - 400: bad request / wrong input
+ * - 401: unauthorized
+ * - 403: forbidden
+ * - 404: not found
+ * - 500: database error
+ */
 function newResponse(codeAndMessage, res, data) {
     // if the status code type is number, change 
     // the codeAndMessage type to array to prevent error
@@ -69,10 +84,22 @@ function isTheLengthAppropriate(data) {
         return false
 }
 
+/**
+ * @param {Array<String>} strArray array with string values
+ * @returns concatenated string from all elements in the array
+ */
+function multipleConcat(strArray) {
+    if(Array.isArray(strArray))
+        return strArray.join(', ')
+    else
+        return null
+}
+
 module.exports = {
     newPromise, 
     newResponse, 
     catchResponse,
     isVariableAppropriate, 
-    isTheLengthAppropriate
+    isTheLengthAppropriate,
+    multipleConcat
 }

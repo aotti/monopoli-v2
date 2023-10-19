@@ -64,7 +64,7 @@ class UserRepo {
         return newPromise(selectOne(res, queryObject))
         .then(user => {
             // if user data doesnt match with the database
-            if(user.length == 0)
+            if(user.length === 0)
                 return newResponse(400, res, `username/password salah`)
             // get the updated data
             return newPromise(updateData(res, queryObject))
@@ -98,7 +98,7 @@ class UserRepo {
         return newPromise(selectOne(res, queryObject))
         .then(result => {
             // if user data doesnt match with the database
-            if(result.length == 0)
+            if(result.length === 0)
                 return newResponse(404, res, `user tidak ditemukan`)
             // if user found, return promise result
             return result
@@ -129,11 +129,11 @@ class UserRepo {
         // get user data by username and password
         return newPromise(selectOne(res, queryObject))
         .then(result => {
-            // if the user trying to logout but not even login
+            // if the user trying to logout but not login yet
             if(result[0].status == 'logout') 
                 return newResponse(403, res, 'Apapula belum login uda logout..')
             // if someone trying to logout but theres no data matched
-            else if(result.length == 0)
+            else if(result.length === 0)
                 return newResponse(404, res, `Anda ini hekel darimana?`)
             // when theres no more error, update user status
             return newPromise(updateData(res, queryObject))
