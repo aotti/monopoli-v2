@@ -27,3 +27,11 @@ Backend - express js
 - [ ] fitur reset game dari awal tanpa reload page 
 - [x] display daftar harga tiap kota 
 - [x] tombol "udahan dulu lah" belum berfungsi 
+
+- [ ] tombol "Help" belum berfungsi 
+- [ ] tombol "Maap bang telat" belum berfungsi 
+- [ ] setting > menu item "Serangan" belum berfungsi 
+- [ ] setting > menu item "Hide username" belum berfungsi 
+- [ ] fitur chat ingame 
+
+- [ ] edit mods untuk player selain admin 
